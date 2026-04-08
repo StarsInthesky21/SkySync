@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "SkySync",
+    "slug": "skysync",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.skysync.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "SkySync uses your location to align the sky in real time."
+      }
+    },
+    "android": {
+      "package": "com.skysync.app",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "RECORD_AUDIO"
+      ]
+    },
+    "plugins": [
+      "expo-location"
+    ],
+    "extra": {
+      "firebaseEnabled": false,
+      "nativeArEnabled": false
+    }
+  }
+}
