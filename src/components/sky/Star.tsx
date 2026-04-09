@@ -19,6 +19,9 @@ export function Star({ object, selected, highlighted, onPress }: StarProps) {
   return (
     <Pressable
       onPress={() => onPress(object.id)}
+      accessibilityRole="button"
+      accessibilityLabel={`${object.name}, ${object.kind}${selected ? ", selected" : ""}${highlighted ? ", highlighted" : ""}`}
+      accessibilityHint={`Tap to view details about ${object.name}`}
       style={[
         styles.wrapper,
         {
@@ -39,7 +42,11 @@ export function Star({ object, selected, highlighted, onPress }: StarProps) {
           highlighted && styles.highlighted,
         ]}
       />
-      {showLabel && <Text style={styles.label}>{object.name}</Text>}
+      {showLabel && (
+        <Text style={styles.label} accessibilityElementsHidden>
+          {object.name}
+        </Text>
+      )}
     </Pressable>
   );
 }

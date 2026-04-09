@@ -39,13 +39,17 @@ export type Badge = {
   title: string;
   description: string;
   progressLabel: string;
+  targetCount: number;
+  category: "planets" | "constellations" | "satellites";
 };
 
 export type DailyChallenge = {
   id: string;
   title: string;
   reward: string;
+  xpValue: number;
   objectId?: string;
+  type: "discover" | "story" | "track";
 };
 
 export type MythStory = {

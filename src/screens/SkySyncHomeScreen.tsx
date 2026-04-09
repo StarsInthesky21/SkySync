@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Modal,
   Pressable,
   ScrollView,
@@ -16,6 +17,7 @@ import { ObjectPreview3D } from "@/components/sky/ObjectPreview3D";
 import { SkyView } from "@/components/sky/SkyView";
 import { StoryPlayer } from "@/components/sky/StoryPlayer";
 import { useSelectedObjectDetails, useSkySync } from "@/providers/SkySyncProvider";
+import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { colors } from "@/theme/colors";
 import { Viewpoint } from "@/types/sky";
 
@@ -60,6 +62,9 @@ export function SkySyncHomeScreen() {
     selectedObjectNotes,
     draftConstellationIds,
     availableViewpoints,
+    isLoading,
+    userProfile,
+    challengeProgress,
     setRotation,
     setZoom,
     setSelectedDate,
@@ -77,8 +82,11 @@ export function SkySyncHomeScreen() {
     addStarToDraft,
     clearDraftConstellation,
     saveDraftConstellation,
+    updateUsername,
+    completeChallenge,
   } = useSkySync();
   const { object: selectedObject, constellationName, story } = useSelectedObjectDetails();
+  const network = useNetworkStatus();
 
   const [voiceGuideEnabled, setVoiceGuideEnabled] = useState(true);
   const [statusMessage, setStatusMessage] = useState("Live sky ready");
@@ -91,11 +99,19 @@ export function SkySyncHomeScreen() {
   const [globalMessageInput, setGlobalMessageInput] = useState("");
   const [drawModeEnabled, setDrawModeEnabled] = useState(false);
   const [draftTitleInput, setDraftTitleInput] = useState("Custom Pattern");
+  const [usernameInput, setUsernameInput] = useState("");
+  const [showProfileEditor, setShowProfileEditor] = useState(false);
 
   const visibleText = useMemo(
     () => visibleTonight.map((object) => object.name).join(", "),
     [visibleTonight],
   );
+
+  useEffect(() => {
+    if (userProfile) {
+      setUsernameInput(userProfile.username);
+    }
+  }, [userProfile?.username]);
 
   useEffect(() => {
     setDateInput(formatDate(selectedDate));
@@ -120,6 +136,32 @@ export function SkySyncHomeScreen() {
       pitch: 1.0,
     });
   }, [selectedObject?.id, voiceGuideEnabled]);
+
+  // Auto-complete challenges when relevant objects are selected
+  useEffect(() => {
+    if (!selectedObject) return;
+    for (const challenge of dailyChallenges) {
+      if (challengeProgress.completedIds.includes(challenge.id)) continue;
+      if (challenge.objectId === selectedObject.id) {
+        if (challenge.type === "discover" || challenge.type === "track") {
+          completeChallenge(challenge.id);
+          setStatusMessage(`Challenge completed: ${challenge.title} (${challenge.reward})`);
+        }
+      }
+    }
+  }, [selectedObject?.id]);
+
+  // Auto-complete story challenges when a story is viewed
+  useEffect(() => {
+    if (!story) return;
+    for (const challenge of dailyChallenges) {
+      if (challengeProgress.completedIds.includes(challenge.id)) continue;
+      if (challenge.type === "story" && challenge.objectId === selectedObject?.id) {
+        completeChallenge(challenge.id);
+        setStatusMessage(`Challenge completed: ${challenge.title} (${challenge.reward})`);
+      }
+    }
+  }, [story?.id]);
 
   function handleSelectObject(objectId: string) {
     if (drawModeEnabled) {
@@ -157,6 +199,10 @@ export function SkySyncHomeScreen() {
   }
 
   function handleJoinRoom() {
+    if (!roomCodeInput.trim()) {
+      setStatusMessage("Please enter a room code");
+      return;
+    }
     setStatusMessage(joinRoom(roomCodeInput.trim()));
   }
 
@@ -167,34 +213,26 @@ export function SkySyncHomeScreen() {
   }
 
   function handleSendRoomMessage() {
-    if (!roomMessageInput.trim()) {
-      return;
-    }
+    if (!roomMessageInput.trim()) return;
     sendRoomMessage(roomMessageInput);
     setRoomMessageInput("");
   }
 
   function handleSendGlobalMessage() {
-    if (!globalMessageInput.trim()) {
-      return;
-    }
+    if (!globalMessageInput.trim()) return;
     sendGlobalMessage(globalMessageInput);
     setGlobalMessageInput("");
   }
 
   function handleAddNote() {
-    if (!noteInput.trim()) {
-      return;
-    }
+    if (!noteInput.trim()) return;
     addNoteToSelectedObject(noteInput);
     setNoteInput("");
     setStatusMessage("Note saved to the current object");
   }
 
   function handleSpeakSelected() {
-    if (!selectedObject) {
-      return;
-    }
+    if (!selectedObject) return;
     Speech.stop();
     Speech.speak(
       `${selectedObject.name}. ${selectedObject.distanceFromEarth}. ${selectedObject.mythologyStory}. ${selectedObject.scientificFacts.join(" ")}`,
@@ -202,12 +240,38 @@ export function SkySyncHomeScreen() {
     );
   }
 
+  function handleSaveUsername() {
+    if (usernameInput.trim()) {
+      updateUsername(usernameInput.trim());
+      setShowProfileEditor(false);
+      setStatusMessage(`Username updated to ${usernameInput.trim()}`);
+    }
+  }
+
   const currentYear = selectedDate.getUTCFullYear();
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.loadingContainer} accessibilityRole="progressbar" accessibilityLabel="Loading SkySync">
+          <ActivityIndicator size="large" color={colors.accent} />
+          <Text style={styles.loadingText}>Initializing SkySync...</Text>
+          <Text style={styles.loadingSubtext}>Mapping the night sky</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.hero}>
+        {!network.isConnected && (
+          <View style={styles.offlineBanner} accessibilityRole="alert">
+            <Text style={styles.offlineBannerText}>Offline - Using local data only</Text>
+          </View>
+        )}
+
+        <View style={styles.hero} accessibilityRole="header">
           <View style={styles.heroCopy}>
             <Text style={styles.brand}>SkySync Android</Text>
             <Text style={styles.title}>Real-time social stargazing with time travel, voice guidance, and shared sky rooms.</Text>
@@ -223,7 +287,50 @@ export function SkySyncHomeScreen() {
           </View>
         </View>
 
-        <View style={styles.viewpointRow}>
+        {/* User Profile Card */}
+        <View style={styles.card} accessibilityRole="summary" accessibilityLabel={`User profile for ${userProfile?.username}`}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>Stargazer Profile</Text>
+            <Pressable
+              style={styles.chip}
+              onPress={() => setShowProfileEditor(!showProfileEditor)}
+              accessibilityRole="button"
+              accessibilityLabel="Edit profile"
+            >
+              <Text style={styles.chipText}>Edit</Text>
+            </Pressable>
+          </View>
+          <View style={styles.profileRow}>
+            <View style={styles.profileAvatar}>
+              <Text style={styles.profileAvatarText}>{(userProfile?.username ?? "S")[0].toUpperCase()}</Text>
+            </View>
+            <View style={styles.profileInfo}>
+              <Text style={styles.profileName}>{userProfile?.username ?? "Stargazer"}</Text>
+              <Text style={styles.profileStat}>{userProfile?.xp ?? 0} XP earned</Text>
+              <Text style={styles.profileStat}>
+                {userProfile?.planetsDiscovered.length ?? 0} planets | {userProfile?.satellitesTracked.length ?? 0} satellites | {userProfile?.totalStarsViewed ?? 0} objects viewed
+              </Text>
+            </View>
+          </View>
+          {showProfileEditor && (
+            <View style={styles.profileEditor}>
+              <TextInput
+                value={usernameInput}
+                onChangeText={setUsernameInput}
+                style={styles.input}
+                placeholder="Enter username"
+                placeholderTextColor={colors.textMuted}
+                accessibilityLabel="Username input"
+                maxLength={20}
+              />
+              <Pressable style={styles.primaryButton} onPress={handleSaveUsername} accessibilityRole="button" accessibilityLabel="Save username">
+                <Text style={styles.primaryButtonText}>Save</Text>
+              </Pressable>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.viewpointRow} accessibilityRole="radiogroup" accessibilityLabel="Sky viewpoint selector">
           {availableViewpoints.map((item) => (
             <Pressable
               key={item.id}
@@ -232,6 +339,9 @@ export function SkySyncHomeScreen() {
                 setStatusMessage(`Viewing sky from ${item.label}`);
               }}
               style={[styles.chip, viewpoint === item.id && styles.chipActive]}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: viewpoint === item.id }}
+              accessibilityLabel={`View from ${item.label}`}
             >
               <Text style={[styles.chipText, viewpoint === item.id && styles.chipTextActive]}>{item.label}</Text>
             </Pressable>
@@ -257,7 +367,7 @@ export function SkySyncHomeScreen() {
           onZoom={setZoom}
         />
 
-        <View style={styles.statusBar}>
+        <View style={styles.statusBar} accessibilityRole="alert" accessibilityLiveRegion="polite">
           <Text style={styles.statusText}>{statusMessage}</Text>
         </View>
 
@@ -271,6 +381,8 @@ export function SkySyncHomeScreen() {
                 onValueChange={setVoiceGuideEnabled}
                 thumbColor={voiceGuideEnabled ? colors.accent : "#d7d7d7"}
                 trackColor={{ false: "rgba(255,255,255,0.2)", true: colors.glow }}
+                accessibilityLabel="Toggle voice guide"
+                accessibilityRole="switch"
               />
             </View>
           </View>
@@ -282,6 +394,8 @@ export function SkySyncHomeScreen() {
               style={styles.input}
               placeholder="YYYY-MM-DD"
               placeholderTextColor={colors.textMuted}
+              accessibilityLabel="Date input for time travel"
+              accessibilityHint="Enter date in YYYY-MM-DD format"
             />
             <TextInput
               value={timeInput}
@@ -289,19 +403,21 @@ export function SkySyncHomeScreen() {
               style={styles.input}
               placeholder="HH:MM"
               placeholderTextColor={colors.textMuted}
+              accessibilityLabel="Time input for time travel"
+              accessibilityHint="Enter time in HH:MM format"
             />
           </View>
 
           <View style={styles.buttonRow}>
-            <Pressable style={styles.secondaryButton} onPress={handleApplyDateTime}>
+            <Pressable style={styles.secondaryButton} onPress={handleApplyDateTime} accessibilityRole="button" accessibilityLabel="Apply date and time">
               <Text style={styles.secondaryButtonText}>Apply</Text>
             </Pressable>
-            <Pressable style={styles.primaryButton} onPress={handleNow}>
+            <Pressable style={styles.primaryButton} onPress={handleNow} accessibilityRole="button" accessibilityLabel="Return to current time">
               <Text style={styles.primaryButtonText}>Now</Text>
             </Pressable>
           </View>
 
-          <Text style={styles.caption}>Timeline year: {currentYear}</Text>
+          <Text style={styles.caption} accessibilityLabel={`Timeline year: ${currentYear}`}>Timeline year: {currentYear}</Text>
           <Slider
             minimumValue={1800}
             maximumValue={2100}
@@ -315,16 +431,18 @@ export function SkySyncHomeScreen() {
             minimumTrackTintColor={colors.accent}
             maximumTrackTintColor="rgba(255,255,255,0.15)"
             thumbTintColor={colors.accentWarm}
+            accessibilityLabel={`Year slider, current value ${currentYear}`}
+            accessibilityRole="adjustable"
           />
 
           <View style={styles.quickJumpRow}>
-            <Pressable style={styles.chip} onPress={() => handleJumpToYear(1800)}>
+            <Pressable style={styles.chip} onPress={() => handleJumpToYear(1800)} accessibilityRole="button" accessibilityLabel="Jump to year 1800">
               <Text style={styles.chipText}>1800</Text>
             </Pressable>
-            <Pressable style={styles.chip} onPress={() => handleJumpToYear(2100)}>
+            <Pressable style={styles.chip} onPress={() => handleJumpToYear(2100)} accessibilityRole="button" accessibilityLabel="Jump to year 2100">
               <Text style={styles.chipText}>2100</Text>
             </Pressable>
-            <Pressable style={styles.chip} onPress={() => handleJumpToYear(new Date().getUTCFullYear())}>
+            <Pressable style={styles.chip} onPress={() => handleJumpToYear(new Date().getUTCFullYear())} accessibilityRole="button" accessibilityLabel="Jump to current year">
               <Text style={styles.chipText}>This Year</Text>
             </Pressable>
           </View>
@@ -340,6 +458,8 @@ export function SkySyncHomeScreen() {
                 focusObject(item.objectId);
                 setStatusMessage(`Centered on ${item.title}`);
               }}
+              accessibilityRole="button"
+              accessibilityLabel={`${item.title}: ${item.subtitle}`}
             >
               <Text style={styles.listTitle}>{item.title}</Text>
               <Text style={styles.listBody}>{item.subtitle}</Text>
@@ -347,23 +467,64 @@ export function SkySyncHomeScreen() {
           ))}
         </View>
 
-        <View style={styles.card}>
+        <View style={styles.card} accessibilityRole="summary" accessibilityLabel="Badges and daily challenges">
           <Text style={styles.cardTitle}>Badges & Challenges</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalRow}>
-            {badges.map((badge) => (
-              <View key={badge.id} style={styles.miniCard}>
-                <Text style={styles.miniCardTitle}>{badge.title}</Text>
-                <Text style={styles.miniCardBody}>{badge.description}</Text>
-                <Text style={styles.miniCardMeta}>{badge.progressLabel}</Text>
-              </View>
-            ))}
+            {badges.map((badge) => {
+              const isCompleted = badge.progressLabel.startsWith("Completed");
+              return (
+                <View
+                  key={badge.id}
+                  style={[styles.miniCard, isCompleted && styles.miniCardCompleted]}
+                  accessibilityLabel={`${badge.title}: ${badge.description}. ${badge.progressLabel}`}
+                >
+                  <Text style={styles.miniCardTitle}>{isCompleted ? `${badge.title}` : badge.title}</Text>
+                  <Text style={styles.miniCardBody}>{badge.description}</Text>
+                  <Text style={[styles.miniCardMeta, isCompleted && styles.miniCardMetaCompleted]}>{badge.progressLabel}</Text>
+                </View>
+              );
+            })}
           </ScrollView>
-          {dailyChallenges.map((challenge) => (
-            <View key={challenge.id} style={styles.listItem}>
-              <Text style={styles.listTitle}>{challenge.title}</Text>
-              <Text style={styles.listBody}>{challenge.reward}</Text>
-            </View>
-          ))}
+          <Text style={[styles.caption, { marginTop: 14, marginBottom: 4 }]}>
+            Daily Challenges ({challengeProgress.completedIds.length}/{dailyChallenges.length} completed today)
+          </Text>
+          {dailyChallenges.map((challenge) => {
+            const isCompleted = challengeProgress.completedIds.includes(challenge.id);
+            return (
+              <View
+                key={challenge.id}
+                style={[styles.listItem, isCompleted && styles.listItemCompleted]}
+                accessibilityLabel={`${challenge.title}: ${challenge.reward}${isCompleted ? ", completed" : ""}`}
+              >
+                <View style={styles.challengeRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.listTitle, isCompleted && styles.listTitleCompleted]}>
+                      {isCompleted ? `[done] ${challenge.title}` : challenge.title}
+                    </Text>
+                    <Text style={styles.listBody}>{challenge.reward}</Text>
+                  </View>
+                  {!isCompleted && (
+                    <Pressable
+                      style={styles.chipSmall}
+                      onPress={() => {
+                        if (challenge.objectId) {
+                          focusObject(challenge.objectId);
+                          setStatusMessage(`Go find: ${challenge.title}`);
+                        }
+                      }}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Go to ${challenge.title}`}
+                    >
+                      <Text style={styles.chipText}>Go</Text>
+                    </Pressable>
+                  )}
+                </View>
+              </View>
+            );
+          })}
+          <View style={styles.xpBar}>
+            <Text style={styles.xpText}>Total XP: {challengeProgress.totalXpEarned}</Text>
+          </View>
         </View>
 
         <View style={styles.card}>
@@ -375,20 +536,28 @@ export function SkySyncHomeScreen() {
                 value={callActive}
                 onValueChange={(next) => {
                   setCallActive(next);
-                  setStatusMessage(next ? "Voice lounge marked live" : "Voice lounge ended");
+                  setStatusMessage(next ? "Voice lounge marked live - participants can see you're available" : "Voice lounge ended");
                 }}
                 thumbColor={callActive ? colors.accentWarm : "#d7d7d7"}
                 trackColor={{ false: "rgba(255,255,255,0.2)", true: "rgba(255,177,95,0.35)" }}
+                accessibilityLabel="Toggle voice lounge availability"
+                accessibilityRole="switch"
               />
             </View>
           </View>
-          <Text style={styles.caption}>Participants: {participants.join(", ") || "You"}</Text>
+          {callActive && (
+            <View style={styles.callBanner}>
+              <Text style={styles.callBannerText}>Voice lounge is active - You're marked as available for voice chat</Text>
+            </View>
+          )}
+          <Text style={styles.caption}>Participants: {participants.join(", ") || (userProfile?.username ?? "You")}</Text>
           <TextInput
             value={roomNameInput}
             onChangeText={setRoomNameInput}
             style={styles.input}
             placeholder="Room name"
             placeholderTextColor={colors.textMuted}
+            accessibilityLabel="Room name input"
           />
           <TextInput
             value={roomCodeInput}
@@ -397,16 +566,18 @@ export function SkySyncHomeScreen() {
             placeholder="Room code"
             placeholderTextColor={colors.textMuted}
             autoCapitalize="characters"
+            accessibilityLabel="Room code input"
+            accessibilityHint="Enter a room code like SKY-428 to join"
           />
           <View style={styles.buttonRow}>
-            <Pressable style={styles.secondaryButton} onPress={handleJoinRoom}>
+            <Pressable style={styles.secondaryButton} onPress={handleJoinRoom} accessibilityRole="button" accessibilityLabel="Join room">
               <Text style={styles.secondaryButtonText}>Join Room</Text>
             </Pressable>
-            <Pressable style={styles.primaryButton} onPress={handleCreateRoom}>
+            <Pressable style={styles.primaryButton} onPress={handleCreateRoom} accessibilityRole="button" accessibilityLabel="Create new room">
               <Text style={styles.primaryButtonText}>Create Room</Text>
             </Pressable>
           </View>
-          <Text style={styles.roomMeta}>Available rooms: {rooms.map((room) => room.roomCode).join(", ")}</Text>
+          <Text style={styles.roomMeta}>Available rooms: {rooms.map((room) => room.roomCode).join(", ") || "None yet"}</Text>
         </View>
 
         <View style={styles.card}>
@@ -422,6 +593,8 @@ export function SkySyncHomeScreen() {
                 }}
                 thumbColor={drawModeEnabled ? colors.accent : "#d7d7d7"}
                 trackColor={{ false: "rgba(255,255,255,0.2)", true: colors.glow }}
+                accessibilityLabel="Toggle constellation draw mode"
+                accessibilityRole="switch"
               />
             </View>
           </View>
@@ -432,17 +605,25 @@ export function SkySyncHomeScreen() {
             style={styles.input}
             placeholder="Custom constellation title"
             placeholderTextColor={colors.textMuted}
+            accessibilityLabel="Custom constellation title"
           />
           <View style={styles.buttonRow}>
-            <Pressable style={styles.secondaryButton} onPress={clearDraftConstellation}>
+            <Pressable style={styles.secondaryButton} onPress={clearDraftConstellation} accessibilityRole="button" accessibilityLabel="Clear draft constellation">
               <Text style={styles.secondaryButtonText}>Clear Draft</Text>
             </Pressable>
             <Pressable
-              style={styles.primaryButton}
+              style={[styles.primaryButton, draftConstellationIds.length < 2 && styles.buttonDisabled]}
               onPress={() => {
+                if (draftConstellationIds.length < 2) {
+                  setStatusMessage("Select at least 2 stars to save a constellation");
+                  return;
+                }
                 saveDraftConstellation(draftTitleInput);
                 setStatusMessage("Custom constellation saved to room");
               }}
+              accessibilityRole="button"
+              accessibilityLabel="Save draft constellation"
+              accessibilityState={{ disabled: draftConstellationIds.length < 2 }}
             >
               <Text style={styles.primaryButtonText}>Save Draft</Text>
             </Pressable>
@@ -451,8 +632,11 @@ export function SkySyncHomeScreen() {
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Room Chat</Text>
+          {roomChat.length === 0 && (
+            <Text style={styles.emptyText}>No messages yet. Start the conversation!</Text>
+          )}
           {roomChat.map((message) => (
-            <View key={message.id} style={styles.message}>
+            <View key={message.id} style={styles.message} accessibilityLabel={`${message.author} said: ${message.text}, ${message.timestampLabel}`}>
               <Text style={styles.messageAuthor}>
                 {message.author} | {message.timestampLabel}
               </Text>
@@ -465,8 +649,11 @@ export function SkySyncHomeScreen() {
             style={styles.input}
             placeholder="Send a room message"
             placeholderTextColor={colors.textMuted}
+            accessibilityLabel="Room message input"
+            onSubmitEditing={handleSendRoomMessage}
+            returnKeyType="send"
           />
-          <Pressable style={styles.primaryButton} onPress={handleSendRoomMessage}>
+          <Pressable style={styles.primaryButton} onPress={handleSendRoomMessage} accessibilityRole="button" accessibilityLabel="Send message to room">
             <Text style={styles.primaryButtonText}>Send To Room</Text>
           </Pressable>
         </View>
@@ -474,7 +661,7 @@ export function SkySyncHomeScreen() {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Global Chatroom</Text>
           {globalChat.map((message) => (
-            <View key={message.id} style={styles.message}>
+            <View key={message.id} style={styles.message} accessibilityLabel={`${message.author} said: ${message.text}, ${message.timestampLabel}`}>
               <Text style={styles.messageAuthor}>
                 {message.author} | {message.timestampLabel}
               </Text>
@@ -487,8 +674,11 @@ export function SkySyncHomeScreen() {
             style={styles.input}
             placeholder="Discuss space facts with the world"
             placeholderTextColor={colors.textMuted}
+            accessibilityLabel="Global message input"
+            onSubmitEditing={handleSendGlobalMessage}
+            returnKeyType="send"
           />
-          <Pressable style={styles.primaryButton} onPress={handleSendGlobalMessage}>
+          <Pressable style={styles.primaryButton} onPress={handleSendGlobalMessage} accessibilityRole="button" accessibilityLabel="Send message to global chat">
             <Text style={styles.primaryButtonText}>Send Global Message</Text>
           </Pressable>
         </View>
@@ -502,6 +692,7 @@ export function SkySyncHomeScreen() {
           Speech.stop();
           selectObject(undefined);
         }}
+        accessibilityViewIsModal
       >
         <Pressable
           style={styles.modalBackdrop}
@@ -509,10 +700,12 @@ export function SkySyncHomeScreen() {
             Speech.stop();
             selectObject(undefined);
           }}
+          accessibilityLabel="Close object details"
+          accessibilityRole="button"
         >
           <ScrollView contentContainerStyle={styles.modalScroll}>
-            <Pressable style={styles.modalCard} onPress={() => {}}>
-              <Text style={styles.modalTitle}>{selectedObject?.name}</Text>
+            <Pressable style={styles.modalCard} onPress={() => {}} accessibilityRole="none">
+              <Text style={styles.modalTitle} accessibilityRole="header">{selectedObject?.name}</Text>
               <Text style={styles.modalMeta}>
                 {selectedObject?.kind}
                 {constellationName ? ` | ${constellationName}` : ""}
@@ -526,27 +719,27 @@ export function SkySyncHomeScreen() {
                 description={selectedObject?.previewDescription}
               />
 
-              <Text style={styles.sectionTitle}>Mythology</Text>
+              <Text style={styles.sectionTitle} accessibilityRole="header">Mythology</Text>
               <Text style={styles.modalBody}>{selectedObject?.mythologyStory}</Text>
 
-              <Text style={styles.sectionTitle}>Scientific Facts</Text>
-              {selectedObject?.scientificFacts.map((fact) => (
-                <Text key={fact} style={styles.fact}>
+              <Text style={styles.sectionTitle} accessibilityRole="header">Scientific Facts</Text>
+              {selectedObject?.scientificFacts.map((fact, index) => (
+                <Text key={`${selectedObject.id}-fact-${index}`} style={styles.fact} accessibilityLabel={fact}>
                   - {fact}
                 </Text>
               ))}
 
               {story ? (
                 <>
-                  <Text style={styles.sectionTitle}>Animated Story</Text>
+                  <Text style={styles.sectionTitle} accessibilityRole="header">Animated Story</Text>
                   <StoryPlayer story={story} />
                 </>
               ) : null}
 
-              <Text style={styles.sectionTitle}>Shared Notes</Text>
+              <Text style={styles.sectionTitle} accessibilityRole="header">Shared Notes</Text>
               {selectedObjectNotes.length === 0 ? <Text style={styles.modalBody}>No room notes yet for this object.</Text> : null}
               {selectedObjectNotes.map((note) => (
-                <View key={note.id} style={styles.noteCard}>
+                <View key={note.id} style={styles.noteCard} accessibilityLabel={`Note by ${note.author}: ${note.text}`}>
                   <Text style={styles.messageAuthor}>{note.author}</Text>
                   <Text style={styles.messageBody}>{note.text}</Text>
                 </View>
@@ -558,6 +751,9 @@ export function SkySyncHomeScreen() {
                 style={styles.input}
                 placeholder="Add a note to this star or planet"
                 placeholderTextColor={colors.textMuted}
+                accessibilityLabel="Note input for this object"
+                onSubmitEditing={handleAddNote}
+                returnKeyType="done"
               />
 
               <View style={styles.buttonRow}>
@@ -568,18 +764,20 @@ export function SkySyncHomeScreen() {
                       toggleHighlight(selectedObject.id);
                     }
                   }}
+                  accessibilityRole="button"
+                  accessibilityLabel={selectedObject && highlightedIds.includes(selectedObject.id) ? "Remove highlight" : "Highlight this object"}
                 >
                   <Text style={styles.secondaryButtonText}>
                     {selectedObject && highlightedIds.includes(selectedObject.id) ? "Unhighlight" : "Highlight"}
                   </Text>
                 </Pressable>
-                <Pressable style={styles.secondaryButton} onPress={handleSpeakSelected}>
+                <Pressable style={styles.secondaryButton} onPress={handleSpeakSelected} accessibilityRole="button" accessibilityLabel="Read object information aloud">
                   <Text style={styles.secondaryButtonText}>Speak</Text>
                 </Pressable>
               </View>
 
               <View style={styles.buttonRow}>
-                <Pressable style={styles.secondaryButton} onPress={handleAddNote}>
+                <Pressable style={styles.secondaryButton} onPress={handleAddNote} accessibilityRole="button" accessibilityLabel="Save note">
                   <Text style={styles.secondaryButtonText}>Save Note</Text>
                 </Pressable>
                 <Pressable
@@ -590,6 +788,8 @@ export function SkySyncHomeScreen() {
                     }
                     selectObject(undefined);
                   }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Zoom and focus on this object"
                 >
                   <Text style={styles.primaryButtonText}>Zoom Focus</Text>
                 </Pressable>
@@ -611,6 +811,34 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 40,
     gap: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 16,
+  },
+  loadingText: {
+    color: colors.accent,
+    fontSize: 20,
+    fontWeight: "800",
+  },
+  loadingSubtext: {
+    color: colors.textMuted,
+    fontSize: 14,
+  },
+  offlineBanner: {
+    borderRadius: 12,
+    padding: 10,
+    backgroundColor: "rgba(255,111,97,0.15)",
+    borderWidth: 1,
+    borderColor: colors.accentDanger,
+    alignItems: "center",
+  },
+  offlineBannerText: {
+    color: colors.accentDanger,
+    fontWeight: "700",
+    fontSize: 13,
   },
   hero: {
     borderRadius: 28,
@@ -667,6 +895,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 9,
     backgroundColor: colors.cardSoft,
+  },
+  chipSmall: {
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: colors.accent,
   },
   chipActive: {
     backgroundColor: colors.accent,
@@ -762,6 +996,9 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontWeight: "700",
   },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
   caption: {
     color: colors.textMuted,
     marginTop: 6,
@@ -778,9 +1015,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.cardSoft,
     marginTop: 10,
   },
+  listItemCompleted: {
+    backgroundColor: "rgba(115,251,211,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(115,251,211,0.2)",
+  },
   listTitle: {
     color: colors.text,
     fontWeight: "700",
+  },
+  listTitleCompleted: {
+    color: colors.accent,
   },
   listBody: {
     color: colors.textMuted,
@@ -797,6 +1042,11 @@ const styles = StyleSheet.create({
     padding: 14,
     backgroundColor: colors.cardSoft,
   },
+  miniCardCompleted: {
+    backgroundColor: "rgba(115,251,211,0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(115,251,211,0.25)",
+  },
   miniCardTitle: {
     color: colors.text,
     fontWeight: "700",
@@ -811,10 +1061,85 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontWeight: "700",
   },
+  miniCardMetaCompleted: {
+    color: colors.accent,
+  },
+  challengeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  xpBar: {
+    borderRadius: 12,
+    padding: 10,
+    marginTop: 12,
+    backgroundColor: "rgba(255,177,95,0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(255,177,95,0.2)",
+    alignItems: "center",
+  },
+  xpText: {
+    color: colors.accentWarm,
+    fontWeight: "800",
+  },
   roomMeta: {
     color: colors.textMuted,
     marginTop: 10,
     lineHeight: 18,
+  },
+  callBanner: {
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 8,
+    backgroundColor: "rgba(255,177,95,0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(255,177,95,0.2)",
+  },
+  callBannerText: {
+    color: colors.accentWarm,
+    fontWeight: "600",
+    fontSize: 13,
+    textAlign: "center",
+  },
+  profileRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+  },
+  profileAvatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 999,
+    backgroundColor: colors.accent,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  profileAvatarText: {
+    color: "#05262a",
+    fontSize: 22,
+    fontWeight: "800",
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  profileName: {
+    color: colors.text,
+    fontSize: 17,
+    fontWeight: "800",
+  },
+  profileStat: {
+    color: colors.textMuted,
+    fontSize: 13,
+    marginTop: 3,
+  },
+  profileEditor: {
+    marginTop: 12,
+    gap: 8,
+  },
+  emptyText: {
+    color: colors.textMuted,
+    fontStyle: "italic",
+    marginTop: 8,
   },
   message: {
     borderRadius: 16,
