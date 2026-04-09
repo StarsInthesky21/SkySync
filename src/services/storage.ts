@@ -37,8 +37,17 @@ export type AppSettings = {
   lastViewpoint: string;
 };
 
+function generateUsername(): string {
+  const adjectives = ["Cosmic", "Stellar", "Astral", "Lunar", "Solar", "Nebula", "Orbit", "Nova", "Quasar", "Pulsar"];
+  const nouns = ["Gazer", "Walker", "Seeker", "Pilot", "Scout", "Voyager", "Watcher", "Ranger", "Drifter", "Hunter"];
+  const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+  const noun = nouns[Math.floor(Math.random() * nouns.length)];
+  const num = Math.floor(10 + Math.random() * 90);
+  return `${adj}${noun}${num}`;
+}
+
 const DEFAULT_PROFILE: UserProfile = {
-  username: `Stargazer${Math.floor(100 + Math.random() * 900)}`,
+  username: generateUsername(),
   xp: 0,
   joinedAt: new Date().toISOString(),
   planetsDiscovered: [],
@@ -60,14 +69,24 @@ const DEFAULT_CHALLENGE_PROGRESS: ChallengeProgress = {
   totalXpEarned: 0,
 };
 
+function isValidObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 async function getJson<T>(key: string, fallback: T): Promise<T> {
   try {
     const raw = await AsyncStorage.getItem(key);
     if (raw === null) {
       return fallback;
     }
-    return JSON.parse(raw) as T;
-  } catch {
+    const parsed: unknown = JSON.parse(raw);
+    if (!isValidObject(parsed)) {
+      console.warn(`[SkySync Storage] Invalid data at ${key}, using defaults`);
+      return fallback;
+    }
+    return parsed as T;
+  } catch (error) {
+    console.warn(`[SkySync Storage] Failed to read ${key}:`, error);
     return fallback;
   }
 }
@@ -75,8 +94,8 @@ async function getJson<T>(key: string, fallback: T): Promise<T> {
 async function setJson<T>(key: string, value: T): Promise<void> {
   try {
     await AsyncStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // Storage write failed silently - app continues with in-memory state
+  } catch (error) {
+    console.warn(`[SkySync Storage] Failed to write ${key}:`, error);
   }
 }
 
@@ -112,8 +131,8 @@ export const storage = {
   async clearAll(): Promise<void> {
     try {
       await AsyncStorage.multiRemove(Object.values(KEYS));
-    } catch {
-      // Clear failed silently
+    } catch (error) {
+      console.warn("[SkySync Storage] Failed to clear:", error);
     }
   },
 };

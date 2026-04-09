@@ -42,7 +42,7 @@ describe("roomSyncService", () => {
       expect(room).toHaveProperty("name", "Test Room");
       expect(room).toHaveProperty("state");
       expect(room).toHaveProperty("chat");
-      expect(room.roomCode).toMatch(/^SKY-\d{3}$/);
+      expect(room.roomCode).toMatch(/^SKY-\d{3}[A-Z]$/);
       expect(room.state.participants).toContain("You");
       expect(room.chat.length).toBe(1);
     });

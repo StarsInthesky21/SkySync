@@ -42,7 +42,7 @@ export const roomSyncService = {
     const now = Date.now();
     const room: SkyRoom = {
       id: `room-${now}`,
-      roomCode: `SKY-${Math.floor(100 + Math.random() * 900)}`,
+      roomCode: `SKY-${Math.floor(100 + Math.random() * 900)}${String.fromCharCode(65 + Math.floor(Math.random() * 26))}`,
       name,
       state: {
         rotation: 0,

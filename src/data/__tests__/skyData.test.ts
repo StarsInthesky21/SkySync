@@ -136,7 +136,7 @@ describe("skyData", () => {
     it("initial room has valid structure", () => {
       const room = initialRooms[0];
       expect(room.id).toBeTruthy();
-      expect(room.roomCode).toMatch(/^SKY-\d{3}$/);
+      expect(room.roomCode).toMatch(/^SKY-\d{3}/);
       expect(room.state.participants.length).toBeGreaterThan(0);
       expect(room.chat.length).toBeGreaterThan(0);
       for (const msg of room.chat) {
@@ -181,7 +181,7 @@ describe("skyData", () => {
 
     it("returns a date string for old timestamps", () => {
       const result = formatTimestamp(Date.now() - 172800000); // 2 days ago
-      expect(result).toMatch(/\d/); // Contains some date-like format
+      expect(result).toMatch(/\d{1,2}\/\d{1,2}\/\d{4}|\d{4}-\d{2}-\d{2}/);
     });
   });
 });

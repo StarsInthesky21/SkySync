@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Modal,
@@ -29,7 +29,13 @@ function formatTime(date: Date) {
   return date.toISOString().slice(11, 16);
 }
 
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_REGEX = /^\d{2}:\d{2}$/;
+
 function parseDateTime(dateInput: string, timeInput: string) {
+  if (!DATE_REGEX.test(dateInput) || !TIME_REGEX.test(timeInput)) {
+    return null;
+  }
   const parsed = new Date(`${dateInput}T${timeInput}:00.000Z`);
   if (Number.isNaN(parsed.getTime())) {
     return null;
@@ -90,7 +96,7 @@ export function SkySyncHomeScreen() {
 
   const [voiceGuideEnabled, setVoiceGuideEnabled] = useState(true);
   const [statusMessage, setStatusMessage] = useState("Live sky ready");
-  const [roomCodeInput, setRoomCodeInput] = useState("SKY-428");
+  const [roomCodeInput, setRoomCodeInput] = useState("");
   const [roomNameInput, setRoomNameInput] = useState("Orbit Club");
   const [dateInput, setDateInput] = useState(formatDate(selectedDate));
   const [timeInput, setTimeInput] = useState(formatTime(selectedDate));
@@ -118,6 +124,7 @@ export function SkySyncHomeScreen() {
     setTimeInput(formatTime(selectedDate));
   }, [selectedDate]);
 
+  // Voice guide with proper cleanup
   useEffect(() => {
     if (!voiceGuideEnabled || !selectedObject) {
       return;
@@ -135,13 +142,20 @@ export function SkySyncHomeScreen() {
       rate: 0.95,
       pitch: 1.0,
     });
+
+    return () => { Speech.stop(); };
   }, [selectedObject?.id, voiceGuideEnabled]);
+
+  // Use refs for challenge deps to avoid stale closures
+  const challengeProgressRef = useRef(challengeProgress);
+  challengeProgressRef.current = challengeProgress;
 
   // Auto-complete challenges when relevant objects are selected
   useEffect(() => {
     if (!selectedObject) return;
+    const progress = challengeProgressRef.current;
     for (const challenge of dailyChallenges) {
-      if (challengeProgress.completedIds.includes(challenge.id)) continue;
+      if (progress.completedIds.includes(challenge.id)) continue;
       if (challenge.objectId === selectedObject.id) {
         if (challenge.type === "discover" || challenge.type === "track") {
           completeChallenge(challenge.id);
@@ -149,19 +163,20 @@ export function SkySyncHomeScreen() {
         }
       }
     }
-  }, [selectedObject?.id]);
+  }, [selectedObject?.id, completeChallenge]);
 
   // Auto-complete story challenges when a story is viewed
   useEffect(() => {
-    if (!story) return;
+    if (!story || !selectedObject) return;
+    const progress = challengeProgressRef.current;
     for (const challenge of dailyChallenges) {
-      if (challengeProgress.completedIds.includes(challenge.id)) continue;
-      if (challenge.type === "story" && challenge.objectId === selectedObject?.id) {
+      if (progress.completedIds.includes(challenge.id)) continue;
+      if (challenge.type === "story" && challenge.objectId === selectedObject.id) {
         completeChallenge(challenge.id);
         setStatusMessage(`Challenge completed: ${challenge.title} (${challenge.reward})`);
       }
     }
-  }, [story?.id]);
+  }, [story?.id, selectedObject?.id, completeChallenge]);
 
   function handleSelectObject(objectId: string) {
     if (drawModeEnabled) {
@@ -558,16 +573,18 @@ export function SkySyncHomeScreen() {
             placeholder="Room name"
             placeholderTextColor={colors.textMuted}
             accessibilityLabel="Room name input"
+            maxLength={40}
           />
           <TextInput
             value={roomCodeInput}
             onChangeText={setRoomCodeInput}
             style={styles.input}
-            placeholder="Room code"
+            placeholder="Room code (e.g. SKY-428A)"
             placeholderTextColor={colors.textMuted}
             autoCapitalize="characters"
             accessibilityLabel="Room code input"
-            accessibilityHint="Enter a room code like SKY-428 to join"
+            accessibilityHint="Enter a room code like SKY-428A to join"
+            maxLength={10}
           />
           <View style={styles.buttonRow}>
             <Pressable style={styles.secondaryButton} onPress={handleJoinRoom} accessibilityRole="button" accessibilityLabel="Join room">
@@ -606,6 +623,7 @@ export function SkySyncHomeScreen() {
             placeholder="Custom constellation title"
             placeholderTextColor={colors.textMuted}
             accessibilityLabel="Custom constellation title"
+            maxLength={40}
           />
           <View style={styles.buttonRow}>
             <Pressable style={styles.secondaryButton} onPress={clearDraftConstellation} accessibilityRole="button" accessibilityLabel="Clear draft constellation">
@@ -652,6 +670,7 @@ export function SkySyncHomeScreen() {
             accessibilityLabel="Room message input"
             onSubmitEditing={handleSendRoomMessage}
             returnKeyType="send"
+            maxLength={500}
           />
           <Pressable style={styles.primaryButton} onPress={handleSendRoomMessage} accessibilityRole="button" accessibilityLabel="Send message to room">
             <Text style={styles.primaryButtonText}>Send To Room</Text>
@@ -677,6 +696,7 @@ export function SkySyncHomeScreen() {
             accessibilityLabel="Global message input"
             onSubmitEditing={handleSendGlobalMessage}
             returnKeyType="send"
+            maxLength={500}
           />
           <Pressable style={styles.primaryButton} onPress={handleSendGlobalMessage} accessibilityRole="button" accessibilityLabel="Send message to global chat">
             <Text style={styles.primaryButtonText}>Send Global Message</Text>
@@ -754,6 +774,7 @@ export function SkySyncHomeScreen() {
                 accessibilityLabel="Note input for this object"
                 onSubmitEditing={handleAddNote}
                 returnKeyType="done"
+                maxLength={500}
               />
 
               <View style={styles.buttonRow}>

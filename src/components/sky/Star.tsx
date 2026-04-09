@@ -1,3 +1,4 @@
+import { memo, useCallback } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { colors } from "@/theme/colors";
 import { RenderedSkyObject } from "@/types/sky";
@@ -9,7 +10,9 @@ type StarProps = {
   onPress: (objectId: string) => void;
 };
 
-export function Star({ object, selected, highlighted, onPress }: StarProps) {
+function StarComponent({ object, selected, highlighted, onPress }: StarProps) {
+  const handlePress = useCallback(() => onPress(object.id), [onPress, object.id]);
+
   if (!object.isVisible) {
     return null;
   }
@@ -18,7 +21,7 @@ export function Star({ object, selected, highlighted, onPress }: StarProps) {
 
   return (
     <Pressable
-      onPress={() => onPress(object.id)}
+      onPress={handlePress}
       accessibilityRole="button"
       accessibilityLabel={`${object.name}, ${object.kind}${selected ? ", selected" : ""}${highlighted ? ", highlighted" : ""}`}
       accessibilityHint={`Tap to view details about ${object.name}`}
@@ -50,6 +53,19 @@ export function Star({ object, selected, highlighted, onPress }: StarProps) {
     </Pressable>
   );
 }
+
+export const Star = memo(StarComponent, (prev, next) => {
+  return (
+    prev.object.id === next.object.id &&
+    prev.object.x === next.object.x &&
+    prev.object.y === next.object.y &&
+    prev.object.isVisible === next.object.isVisible &&
+    prev.object.size === next.object.size &&
+    prev.selected === next.selected &&
+    prev.highlighted === next.highlighted &&
+    prev.onPress === next.onPress
+  );
+});
 
 const styles = StyleSheet.create({
   wrapper: {

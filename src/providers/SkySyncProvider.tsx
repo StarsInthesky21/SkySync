@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useEffect, useMemo, useState, useCallback } from "react";
+import { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { badges as badgeDefinitions, dailyChallenges, formatTimestamp, guidedTargets, viewpoints } from "@/data/skyData";
 import { roomSyncService } from "@/services/mock/roomSyncService";
 import { storage, UserProfile, BadgeProgress, ChallengeProgress } from "@/services/storage";
@@ -84,6 +84,8 @@ const DEFAULT_CHALLENGE_PROGRESS: ChallengeProgress = {
   totalXpEarned: 0,
 };
 
+let constellationCounter = 0;
+
 export function SkySyncProvider({ children }: { children: ReactNode }) {
   const [rooms, setRooms] = useState<SkyRoom[]>([]);
   const [globalChat, setGlobalChat] = useState<ChatMessage[]>([]);
@@ -99,6 +101,10 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [badgeProgress, setBadgeProgress] = useState<BadgeProgress>(DEFAULT_BADGE_PROGRESS);
   const [challengeProgress, setChallengeProgress] = useState<ChallengeProgress>(DEFAULT_CHALLENGE_PROGRESS);
+
+  // Refs for stable access in callbacks without stale closures
+  const currentRoomIdRef = useRef(currentRoomId);
+  currentRoomIdRef.current = currentRoomId;
 
   // Load persisted data on mount
   useEffect(() => {
@@ -124,8 +130,8 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
         } else {
           setChallengeProgress(challenges);
         }
-      } catch {
-        // Continue with defaults on storage failure
+      } catch (error) {
+        console.warn("[SkySync] Failed to load persisted data:", error);
       } finally {
         if (mounted) setIsLoading(false);
       }
@@ -145,24 +151,29 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
     }
   }, [rooms, currentRoomId]);
 
+  // Sync local state when switching rooms (only on room ID change)
+  const prevRoomIdRef = useRef<string | undefined>(undefined);
   useEffect(() => {
-    if (!currentRoom) return;
+    if (!currentRoom || currentRoom.id === prevRoomIdRef.current) return;
+    prevRoomIdRef.current = currentRoom.id;
     setRotationState(currentRoom.state.rotation);
     setZoomState(currentRoom.state.zoom);
     setSelectedDateState(new Date(currentRoom.state.dateIso));
-  }, [currentRoom?.id, currentRoom?.state.rotation, currentRoom?.state.zoom, currentRoom?.state.dateIso]);
+  }, [currentRoom?.id]);
 
+  // Live mode timer using ref to avoid stale closure on currentRoom
   useEffect(() => {
     if (!liveMode) return;
     const timer = setInterval(() => {
       const now = new Date();
       setSelectedDateState(now);
-      if (currentRoom) {
-        roomSyncService.updateSkyState(currentRoom.id, { dateIso: now.toISOString() });
+      const roomId = currentRoomIdRef.current;
+      if (roomId) {
+        roomSyncService.updateSkyState(roomId, { dateIso: now.toISOString() });
       }
     }, 30000);
     return () => clearInterval(timer);
-  }, [liveMode, currentRoom?.id]);
+  }, [liveMode]);
 
   // Track planet/satellite discoveries when user selects objects
   const trackDiscovery = useCallback((objectId: string) => {
@@ -183,8 +194,6 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
 
       if (updated) {
         storage.saveBadgeProgress(next);
-
-        // Update user profile stats
         setUserProfile((profile) => {
           if (!profile) return profile;
           const updatedProfile = {
@@ -206,10 +215,14 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
     [rotation, zoom, selectedDate, viewpoint],
   );
   const segments = useMemo(() => getConstellationSegments(objects), [objects]);
+
+  const customConstellations = currentRoom?.state.customConstellations;
+  const stableCustomConstellations = useMemo(() => customConstellations ?? [], [customConstellations]);
   const customSegments = useMemo(
-    () => getCustomConstellationSegments(objects, currentRoom?.state.customConstellations ?? []),
-    [objects, currentRoom?.state.customConstellations],
+    () => getCustomConstellationSegments(objects, stableCustomConstellations),
+    [objects, stableCustomConstellations],
   );
+
   const draftSegments = useMemo(
     () =>
       getCustomConstellationSegments(
@@ -319,8 +332,6 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
     toggleHighlight: (objectId) => {
       if (!currentRoom) return;
       roomSyncService.toggleHighlight(currentRoom.id, objectId);
-
-      // Track satellite highlights for badge
       const object = findSkyObject(objectId);
       if (object?.kind === "satellite") {
         trackDiscovery(objectId);
@@ -328,21 +339,25 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
     },
     addNoteToSelectedObject: (text) => {
       if (!currentRoom || !selectedObjectId || !text.trim()) return;
+      const trimmed = text.trim().slice(0, 500);
       const note: SpaceNote = {
-        id: `note-${Date.now()}`,
+        id: `note-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         objectId: selectedObjectId,
         author: userProfile?.username ?? "You",
-        text: text.trim(),
+        text: trimmed,
       };
       roomSyncService.addNote(currentRoom.id, note);
     },
     createRoom: (name) => {
-      const room = roomSyncService.createRoom(name);
+      const trimmed = name.trim().slice(0, 40) || "Orbit Club";
+      const room = roomSyncService.createRoom(trimmed);
       setCurrentRoomId(room.id);
       return room.roomCode;
     },
     joinRoom: (roomCode) => {
-      const room = roomSyncService.joinRoom(roomCode);
+      const trimmed = roomCode.trim().toUpperCase();
+      if (!trimmed) return "Please enter a room code";
+      const room = roomSyncService.joinRoom(trimmed);
       if (!room) return "Room not found";
       setCurrentRoomId(room.id);
       return `Joined ${room.roomCode}`;
@@ -350,10 +365,11 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
     sendRoomMessage: (text) => {
       if (!currentRoom || !text.trim()) return;
       const now = Date.now();
+      const trimmed = text.trim().slice(0, 500);
       roomSyncService.sendRoomMessage(currentRoom.id, {
-        id: `room-msg-${now}`,
+        id: `room-msg-${now}-${Math.random().toString(36).slice(2, 6)}`,
         author: userProfile?.username ?? "You",
-        text: text.trim(),
+        text: trimmed,
         timestampLabel: formatTimestamp(now),
         timestamp: now,
       });
@@ -361,10 +377,11 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
     sendGlobalMessage: (text) => {
       if (!text.trim()) return;
       const now = Date.now();
+      const trimmed = text.trim().slice(0, 500);
       roomSyncService.sendGlobalMessage({
-        id: `global-msg-${now}`,
+        id: `global-msg-${now}-${Math.random().toString(36).slice(2, 6)}`,
         author: userProfile?.username ?? "You",
-        text: text.trim(),
+        text: trimmed,
         timestampLabel: formatTimestamp(now),
         timestamp: now,
       });
@@ -375,24 +392,27 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
     addStarToDraft: (objectId) => {
       const object = findSkyObject(objectId);
       if (!object || object.kind !== "star") return;
-      setDraftConstellationIds((current) => [...current, objectId]);
+      setDraftConstellationIds((current) => {
+        if (current.includes(objectId)) return current;
+        return [...current, objectId];
+      });
     },
     clearDraftConstellation: () => {
       setDraftConstellationIds([]);
     },
     saveDraftConstellation: (title) => {
       if (!currentRoom || draftConstellationIds.length < 2) return;
+      constellationCounter += 1;
+      const constellationId = `custom-${Date.now()}-${constellationCounter}`;
       roomSyncService.addCustomConstellation(currentRoom.id, {
-        id: `custom-${Date.now()}`,
-        title: title.trim() || "Custom Pattern",
+        id: constellationId,
+        title: title.trim().slice(0, 40) || "Custom Pattern",
         starIds: draftConstellationIds,
         color: "#73fbd3",
       });
 
-      // Track constellation for badge
+      // Track constellation for badge using the same ID
       setBadgeProgress((prev) => {
-        const constellationId = `custom-${Date.now()}`;
-        if (prev.constellationsTraced.includes(constellationId)) return prev;
         const next = { ...prev, constellationsTraced: [...prev.constellationsTraced, constellationId] };
         storage.saveBadgeProgress(next);
         return next;
@@ -401,9 +421,11 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
       setDraftConstellationIds([]);
     },
     updateUsername: (name: string) => {
+      const trimmed = name.trim().slice(0, 20);
+      if (!trimmed) return;
       setUserProfile((prev) => {
         if (!prev) return prev;
-        const updated = { ...prev, username: name.trim() || prev.username };
+        const updated = { ...prev, username: trimmed };
         storage.saveUserProfile(updated);
         return updated;
       });
@@ -420,7 +442,6 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
         };
         storage.saveChallengeProgress(next);
 
-        // Update user XP
         setUserProfile((profile) => {
           if (!profile) return profile;
           const updated = { ...profile, xp: profile.xp + xp, challengesCompleted: [...profile.challengesCompleted, challengeId] };
