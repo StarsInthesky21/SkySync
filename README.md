@@ -1,39 +1,55 @@
 # SkySync
 
-SkySync is a cross-platform React Native app concept for social AR stargazing. This MVP ships a modular Expo/TypeScript foundation with:
+SkySync is an Android-first Expo app for social stargazing. It turns the earlier lightweight sky map into a richer mobile app with real-time sky simulation, time travel, voice guidance, shared rooms, notes, chat, and educational mythology stories.
 
-- real-time sky viewport abstraction ready to swap with ARKit and ARCore
-- tappable celestial objects with facts, mythology, and distance metadata
-- time travel simulation for past and future sky positions
-- basic Sky Rooms with shared pins, live friend pointer indicators, and room switching
-- guided discovery cards, space events feed, achievements, and astrophotography prompts
+## Current features
 
-## Stack
-
-- Expo + React Native + TypeScript
-- `react-native-svg` for constellation overlays
-- mocked sensor and room sync services behind provider boundaries
+- real-time virtual sky viewer built with `react-native-svg`
+- stars, constellations, planets, satellites, and a meteor radiant
+- drag to rotate the sky
+- pinch to zoom
+- real-time mode and time travel date/time controls
+- quick jumps to 1800, 2100, and the current sky
+- Earth, Mars, and Moon sky viewpoints
+- tap any object to view:
+  - name
+  - distance from Earth
+  - mythology story
+  - scientific facts
+- voice guide powered by `expo-speech`
+- simplified 3D-style object preview
+- animated mythology story playback for supported constellations
+- badges and daily challenges
+- Sky Rooms with shared:
+  - time
+  - highlights
+  - notes
+  - custom constellation drawings
+- room chat and a global chatroom
+- voice lounge state toggle for future conference-call integration
 
 ## Project structure
 
-- `App.tsx`: app entrypoint
-- `src/screens`: screen composition
-- `src/components`: UI modules
-- `src/providers`: global state and orchestration
-- `src/services`: sky calculations and realtime room adapters
-- `src/data`: seed data and MVP catalogs
-- `src/types`: shared domain types
+- `App.tsx`: entrypoint
+- `src/screens/SkySyncHomeScreen.tsx`: primary Android UI
+- `src/providers/SkySyncProvider.tsx`: app state, time travel, room sync, and social state
+- `src/components/sky/SkyView.tsx`: interactive sky renderer
+- `src/components/sky/Star.tsx`: reusable object marker
+- `src/components/sky/Constellation.tsx`: reusable sky line segment
+- `src/components/sky/ObjectPreview3D.tsx`: rotating 3D-style object preview
+- `src/components/sky/StoryPlayer.tsx`: animated mythology story player
+- `src/services/skyEngine.ts`: projection and sky simulation logic
+- `src/services/mock/roomSyncService.ts`: in-memory room and chat sync
+- `src/data/skyData.ts`: static sky catalog and feature content
 
 ## Run
 
 1. Install dependencies with `npm install`
-2. Start the dev server with `npm run start`
-3. Launch on iOS or Android with `npm run ios` or `npm run android`
+2. Start Expo with `npm run start`
+3. Open the project in Expo Go or run `npm run android`
 
-## Production integration path
+## Notes
 
-- Replace `useSkyOrientation` with `expo-sensors` or native AR pose tracking.
-- Replace `SkyViewport` with a native scene bridge backed by ARKit on iOS and ARCore on Android.
-- Replace `roomSyncService` with Firebase or Supabase realtime channels.
-- Connect `skyEngine` to live ephemeris data from NASA/JPL and star catalogs from Gaia or Hipparcos.
-- Route assistant prompts through your preferred LLM API with the current sky context attached.
+- The current social sync is mocked in memory so the app works without a backend.
+- Voice lounge and conference call behavior are UI scaffolds, not real VoIP yet.
+- If you want full multiplayer sync next, replace `src/services/mock/roomSyncService.ts` with Firebase Realtime Database or Firestore.

@@ -1,59 +1,136 @@
-import { initialRooms } from "@/data/skyData";
-import { SkyMarker, SkyRoom } from "@/types/rooms";
+import { initialGlobalChat, initialRooms } from "@/data/skyData";
+import { ChatMessage, CustomConstellation, RoomSkyState, SkyRoom, SpaceNote } from "@/types/rooms";
 
-type Listener = (rooms: SkyRoom[]) => void;
+type RoomsListener = (rooms: SkyRoom[]) => void;
+type GlobalChatListener = (messages: ChatMessage[]) => void;
 
 let rooms = [...initialRooms];
-const listeners = new Set<Listener>();
+let globalChat = [...initialGlobalChat];
 
-function notify() {
-  listeners.forEach((listener) => listener([...rooms]));
+const roomListeners = new Set<RoomsListener>();
+const globalChatListeners = new Set<GlobalChatListener>();
+
+function notifyRooms() {
+  roomListeners.forEach((listener) => listener([...rooms]));
+}
+
+function notifyGlobalChat() {
+  globalChatListeners.forEach((listener) => listener([...globalChat]));
+}
+
+function updateRoom(roomId: string, updater: (room: SkyRoom) => SkyRoom) {
+  rooms = rooms.map((room) => (room.id === roomId ? updater(room) : room));
+  notifyRooms();
 }
 
 export const roomSyncService = {
-  subscribe(listener: Listener) {
-    listeners.add(listener);
+  subscribeRooms(listener: RoomsListener) {
+    roomListeners.add(listener);
     listener([...rooms]);
     return () => {
-      listeners.delete(listener);
+      roomListeners.delete(listener);
+    };
+  },
+  subscribeGlobalChat(listener: GlobalChatListener) {
+    globalChatListeners.add(listener);
+    listener([...globalChat]);
+    return () => {
+      globalChatListeners.delete(listener);
     };
   },
   createRoom(name: string) {
-    const newRoom: SkyRoom = {
+    const room: SkyRoom = {
       id: `room-${Date.now()}`,
+      roomCode: `SKY-${Math.floor(100 + Math.random() * 900)}`,
       name,
-      inviteCode: `SKY-${Math.floor(100 + Math.random() * 899)}`,
-      voiceEnabled: true,
-      participants: ["You"],
-      markers: [],
-      pointers: [],
+      state: {
+        rotation: 0,
+        zoom: 1,
+        dateIso: new Date().toISOString(),
+        highlightedObjectIds: [],
+        notes: [],
+        customConstellations: [],
+        callActive: false,
+        participants: ["You"],
+      },
+      chat: [
+        {
+          id: `chat-${Date.now()}`,
+          author: "SkySync",
+          text: "Room created. Invite your friends to stargaze together.",
+          timestampLabel: "Now",
+        },
+      ],
     };
-    rooms = [newRoom, ...rooms];
-    notify();
-    return newRoom;
+    rooms = [room, ...rooms];
+    notifyRooms();
+    return room;
   },
-  joinRoom(inviteCode: string) {
-    const existingRoom = rooms.find((room) => room.inviteCode.toLowerCase() === inviteCode.toLowerCase());
-    if (!existingRoom) {
+  joinRoom(roomCode: string) {
+    const room = rooms.find((entry) => entry.roomCode.toLowerCase() === roomCode.toLowerCase()) ?? null;
+    if (!room) {
       return null;
     }
-
-    if (!existingRoom.participants.includes("You")) {
-      existingRoom.participants = [...existingRoom.participants, "You"];
-    }
-    notify();
-    return existingRoom;
+    updateRoom(room.id, (current) => ({
+      ...current,
+      state: {
+        ...current.state,
+        participants: current.state.participants.includes("You")
+          ? current.state.participants
+          : [...current.state.participants, "You"],
+      },
+    }));
+    return room;
   },
-  addMarker(roomId: string, marker: SkyMarker) {
-    rooms = rooms.map((room) => {
-      if (room.id !== roomId) {
-        return room;
-      }
+  updateSkyState(roomId: string, partial: Partial<RoomSkyState>) {
+    updateRoom(roomId, (room) => ({
+      ...room,
+      state: {
+        ...room.state,
+        ...partial,
+      },
+    }));
+  },
+  toggleHighlight(roomId: string, objectId: string) {
+    updateRoom(roomId, (room) => {
+      const exists = room.state.highlightedObjectIds.includes(objectId);
       return {
         ...room,
-        markers: [marker, ...room.markers],
+        state: {
+          ...room.state,
+          highlightedObjectIds: exists
+            ? room.state.highlightedObjectIds.filter((id) => id !== objectId)
+            : [...room.state.highlightedObjectIds, objectId],
+        },
       };
     });
-    notify();
+  },
+  addNote(roomId: string, note: SpaceNote) {
+    updateRoom(roomId, (room) => ({
+      ...room,
+      state: {
+        ...room.state,
+        notes: [note, ...room.state.notes],
+      },
+    }));
+  },
+  addCustomConstellation(roomId: string, constellation: CustomConstellation) {
+    updateRoom(roomId, (room) => ({
+      ...room,
+      state: {
+        ...room.state,
+        customConstellations: [constellation, ...room.state.customConstellations],
+      },
+    }));
+  },
+  sendRoomMessage(roomId: string, message: ChatMessage) {
+    updateRoom(roomId, (room) => ({
+      ...room,
+      chat: [...room.chat, message],
+    }));
+  },
+  sendGlobalMessage(message: ChatMessage) {
+    globalChat = [...globalChat, message];
+    notifyGlobalChat();
   },
 };

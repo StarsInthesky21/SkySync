@@ -4,25 +4,34 @@
   "private": true,
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
-    "start": "expo start",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
+    "start": "set EXPO_NO_TELEMETRY=1&& set HOME=%cd%&& set USERPROFILE=%cd%&& expo start --offline",
+    "start:offline": "set EXPO_NO_TELEMETRY=1&& set HOME=%cd%&& set USERPROFILE=%cd%&& expo start --offline",
+    "web": "set EXPO_NO_TELEMETRY=1&& set HOME=%cd%&& set USERPROFILE=%cd%&& expo start --web",
+    "build:web": "set EXPO_NO_TELEMETRY=1&& set HOME=%cd%&& set USERPROFILE=%cd%&& expo export --platform web",
+    "deploy:web": "npm run build:web && gh-pages -d dist",
+    "prebuild": "set EXPO_NO_TELEMETRY=1&& set HOME=%cd%&& set USERPROFILE=%cd%&& expo prebuild",
+    "android": "set EXPO_NO_TELEMETRY=1&& set HOME=%cd%&& set USERPROFILE=%cd%&& expo start --android --offline",
+    "ios": "set EXPO_NO_TELEMETRY=1&& set HOME=%cd%&& set USERPROFILE=%cd%&& expo start --ios --offline",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@expo/metro-runtime": "~5.0.5",
     "@react-native-community/slider": "^4.5.5",
     "expo": "~53.0.0",
-    "expo-location": "~18.1.0",
-    "expo-sensors": "~14.1.0",
+    "expo-speech": "~13.1.7",
     "expo-status-bar": "~2.2.3",
     "react": "19.0.0",
+    "react-dom": "19.0.0",
     "react-native": "0.79.2",
     "react-native-safe-area-context": "^5.4.0",
-    "react-native-svg": "15.11.2"
+    "react-native-svg": "15.11.2",
+    "react-native-web": "^0.20.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@expo/ngrok": "^4.1.0",
     "@types/react": "~19.0.10",
+    "gh-pages": "^6.3.0",
     "typescript": "~5.8.3"
   }
 }

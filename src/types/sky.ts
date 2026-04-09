@@ -1,42 +1,70 @@
-export type CelestialKind =
-  | "star"
-  | "planet"
-  | "satellite"
-  | "meteor"
-  | "constellation-anchor";
+export type SkyObjectKind = "star" | "planet" | "satellite" | "meteor";
 
-export type CelestialObject = {
+export type Viewpoint = "earth" | "mars" | "moon";
+
+export type SkyObject = {
   id: string;
   name: string;
-  kind: CelestialKind;
-  distance: string;
-  magnitude: number;
-  mythology: string;
-  facts: string[];
-  screenX: number;
-  screenY: number;
+  kind: SkyObjectKind;
+  description: string;
+  distanceFromEarth: string;
+  mythologyStory: string;
+  scientificFacts: string[];
   color: string;
-  label?: string;
+  longitude: number;
+  latitude: number;
+  magnitude: number;
+  motionFactor: number;
   constellationId?: string;
+  previewTitle?: string;
+  previewDescription?: string;
 };
 
-export type ConstellationLine = {
+export type Constellation = {
   id: string;
-  from: string;
-  to: string;
+  name: string;
+  starIds: string[];
+  storyId?: string;
 };
 
-export type DiscoverySuggestion = {
+export type GuidedTarget = {
   id: string;
   title: string;
-  detail: string;
+  subtitle: string;
+  objectId: string;
+};
+
+export type Badge = {
+  id: string;
+  title: string;
+  description: string;
+  progressLabel: string;
+};
+
+export type DailyChallenge = {
+  id: string;
+  title: string;
+  reward: string;
   objectId?: string;
-  urgency?: "live" | "tonight" | "watch";
 };
 
-export type SpaceEvent = {
+export type MythStory = {
   id: string;
   title: string;
-  window: string;
-  detail: string;
+  constellationId?: string;
+  frames: string[];
+};
+
+export type RenderedSkyObject = SkyObject & {
+  x: number;
+  y: number;
+  size: number;
+  isVisible: boolean;
+};
+
+export type SkyTransform = {
+  rotation: number;
+  zoom: number;
+  date: Date;
+  viewpoint: Viewpoint;
 };

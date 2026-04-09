@@ -1,31 +1,39 @@
-export type FriendPointer = {
+export type SpaceNote = {
   id: string;
-  name: string;
-  azimuth: number;
-  elevation: number;
+  objectId: string;
+  author: string;
+  text: string;
+};
+
+export type ChatMessage = {
+  id: string;
+  author: string;
+  text: string;
+  timestampLabel: string;
+};
+
+export type CustomConstellation = {
+  id: string;
+  title: string;
+  starIds: string[];
   color: string;
 };
 
-export type SkyMarker = {
-  id: string;
-  objectId?: string;
-  title: string;
-  note: string;
-  color: string;
+export type RoomSkyState = {
+  rotation: number;
+  zoom: number;
+  dateIso: string;
+  highlightedObjectIds: string[];
+  notes: SpaceNote[];
+  customConstellations: CustomConstellation[];
+  callActive: boolean;
+  participants: string[];
 };
 
 export type SkyRoom = {
   id: string;
+  roomCode: string;
   name: string;
-  inviteCode: string;
-  voiceEnabled: boolean;
-  participants: string[];
-  markers: SkyMarker[];
-  pointers: FriendPointer[];
-};
-
-export type Achievement = {
-  id: string;
-  title: string;
-  progressLabel: string;
+  state: RoomSkyState;
+  chat: ChatMessage[];
 };
