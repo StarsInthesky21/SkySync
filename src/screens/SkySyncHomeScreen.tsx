@@ -18,6 +18,7 @@ import {
 import * as Speech from "expo-speech";
 import Slider from "@react-native-community/slider";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { SectionErrorBoundary } from "@/components/SectionErrorBoundary";
 import { ObjectPreview3D } from "@/components/sky/ObjectPreview3D";
 import { SkyView } from "@/components/sky/SkyView";
 import { StoryPlayer } from "@/components/sky/StoryPlayer";
@@ -337,11 +338,13 @@ export function SkySyncHomeScreen() {
         </View>
 
         {/* Sky View */}
+        <SectionErrorBoundary section="Sky Viewer">
         <SkyView objects={objects} segments={segments} customSegments={customSegments} draftSegments={draftSegments}
           selectedObjectId={selectedObject?.id} highlightedIds={highlightedIds} roomCode={currentRoom?.roomCode}
           liveMode={liveMode} viewpointLabel={viewpoint.toUpperCase()} dateLabel={`${dateInput} ${timeInput}`}
           callActive={callActive} rotation={rotation} zoom={zoom} onSelectObject={handleSelectObject}
           onRotate={setRotation} onZoom={setZoom} />
+        </SectionErrorBoundary>
 
         {/* Status */}
         <View style={styles.statusBar}>
