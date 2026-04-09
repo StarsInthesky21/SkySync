@@ -1,4 +1,5 @@
 import { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { LIVE_MODE_INTERVAL_MS, MAX_MESSAGE_LENGTH, MAX_NAME_LENGTH, MAX_USERNAME_LENGTH, MESSAGE_RATE_LIMIT_MS } from "@/constants";
 import { badges as badgeDefinitions, dailyChallenges, formatTimestamp, guidedTargets, viewpoints } from "@/data/skyData";
 import { roomSyncService, isFirebaseEnabled } from "@/services/roomSyncService";
 import { storage, UserProfile, BadgeProgress, ChallengeProgress } from "@/services/storage";
@@ -163,8 +164,21 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
     return () => { mounted = false; };
   }, [userId]);
 
+  const [roomChat, setRoomChat] = useState<ChatMessage[]>([]);
+
   useEffect(() => roomSyncService.subscribeRooms(setRooms), []);
   useEffect(() => roomSyncService.subscribeGlobalChat(setGlobalChat), []);
+
+  // Subscribe to room-specific chat when current room changes
+  useEffect(() => {
+    if (!currentRoomId) {
+      setRoomChat([]);
+      return;
+    }
+    if (roomSyncService.subscribeRoomChat) {
+      return roomSyncService.subscribeRoomChat(currentRoomId, setRoomChat);
+    }
+  }, [currentRoomId]);
 
   const currentRoom = rooms.find((room) => room.id === currentRoomId);
 
@@ -194,7 +208,7 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
       if (roomId) {
         roomSyncService.updateSkyState(roomId, { dateIso: now.toISOString() });
       }
-    }, 30000);
+    }, LIVE_MODE_INTERVAL_MS);
     return () => clearInterval(timer);
   }, [liveMode]);
 
@@ -283,6 +297,15 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
     });
   }, [badgeProgress]);
 
+  // Rate limiting for messages
+  const lastMessageTimeRef = useRef(0);
+  function isRateLimited(): boolean {
+    const now = Date.now();
+    if (now - lastMessageTimeRef.current < MESSAGE_RATE_LIMIT_MS) return true;
+    lastMessageTimeRef.current = now;
+    return false;
+  }
+
   function syncRoomState(partial: Partial<SkyRoom["state"]>) {
     if (!currentRoom) return;
     roomSyncService.updateSkyState(currentRoom.id, partial);
@@ -301,7 +324,7 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
     dailyChallenges,
     rooms,
     currentRoom,
-    roomChat: currentRoom?.chat ?? [],
+    roomChat,
     globalChat,
     participants: currentRoom?.state.participants ?? [],
     callActive: currentRoom?.state.callActive ?? false,
@@ -386,9 +409,9 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
       return `Joined ${room.roomCode}`;
     },
     sendRoomMessage: (text) => {
-      if (!currentRoom || !text.trim()) return;
+      if (!currentRoom || !text.trim() || isRateLimited()) return;
       const now = Date.now();
-      const trimmed = text.trim().slice(0, 500);
+      const trimmed = text.trim().slice(0, MAX_MESSAGE_LENGTH);
       roomSyncService.sendRoomMessage(currentRoom.id, {
         id: `room-msg-${now}-${Math.random().toString(36).slice(2, 6)}`,
         author: userProfile?.username ?? "You",
@@ -398,9 +421,9 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
       });
     },
     sendGlobalMessage: (text) => {
-      if (!text.trim()) return;
+      if (!text.trim() || isRateLimited()) return;
       const now = Date.now();
-      const trimmed = text.trim().slice(0, 500);
+      const trimmed = text.trim().slice(0, MAX_MESSAGE_LENGTH);
       roomSyncService.sendGlobalMessage({
         id: `global-msg-${now}-${Math.random().toString(36).slice(2, 6)}`,
         author: userProfile?.username ?? "You",

@@ -22,9 +22,11 @@ function normalizeLongitude(value: number) {
   return normalized;
 }
 
+// J2000.0 epoch - standard astronomical reference (Jan 1, 2000 12:00 TT)
+const J2000_EPOCH = Date.UTC(2000, 0, 1, 12, 0, 0, 0);
+
 function totalHoursSinceReference(date: Date) {
-  const reference = Date.UTC(2026, 0, 1, 0, 0, 0, 0);
-  return (date.getTime() - reference) / (1000 * 60 * 60);
+  return (date.getTime() - J2000_EPOCH) / (1000 * 60 * 60);
 }
 
 function relativeLongitude(objectLongitude: number, transform: SkyTransform, motionFactor: number) {
@@ -36,11 +38,15 @@ function relativeLongitude(objectLongitude: number, transform: SkyTransform, mot
 }
 
 export function renderSkyObjects(transform: SkyTransform): RenderedSkyObject[] {
+  const safeZoom = Math.max(0.1, Math.min(10, Number.isFinite(transform.zoom) ? transform.zoom : 1));
+  const safeRotation = Number.isFinite(transform.rotation) ? transform.rotation : 0;
+  const safeTransform = { ...transform, zoom: safeZoom, rotation: safeRotation };
+
   return skyObjects.map((object) => {
-    const lon = relativeLongitude(object.longitude, transform, object.motionFactor);
-    const latitude = object.latitude + viewpointLatitudeOffsets[transform.viewpoint];
-    const x = 0.5 + (lon / 180) * 0.46 * transform.zoom;
-    const y = 0.5 - (latitude / 90) * 0.33 * transform.zoom;
+    const lon = relativeLongitude(object.longitude, safeTransform, object.motionFactor);
+    const latitude = object.latitude + viewpointLatitudeOffsets[safeTransform.viewpoint];
+    const x = 0.5 + (lon / 180) * 0.46 * safeTransform.zoom;
+    const y = 0.5 - (latitude / 90) * 0.33 * safeTransform.zoom;
     const sizeBoost = object.kind === "planet" ? 2.5 : object.kind === "satellite" ? 1.5 : object.kind === "meteor" ? 2 : 0;
     const size = Math.max(2.5, 6.2 - object.magnitude + sizeBoost);
     const isVisible = x >= -0.2 && x <= 1.2 && y >= -0.15 && y <= 1.15;

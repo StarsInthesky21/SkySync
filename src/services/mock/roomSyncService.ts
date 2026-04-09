@@ -1,3 +1,4 @@
+import { ROOM_CODE_CHARS, ROOM_CODE_LENGTH } from "@/constants";
 import { formatTimestamp, initialGlobalChat, initialRooms } from "@/data/skyData";
 import { ChatMessage, CustomConstellation, RoomSkyState, SkyRoom, SpaceNote } from "@/types/rooms";
 
@@ -18,6 +19,14 @@ function notifyGlobalChat() {
   globalChatListeners.forEach((listener) => listener([...globalChat]));
 }
 
+function generateRoomCode(): string {
+  let code = "SKY-";
+  for (let i = 0; i < ROOM_CODE_LENGTH; i++) {
+    code += ROOM_CODE_CHARS[Math.floor(Math.random() * ROOM_CODE_CHARS.length)];
+  }
+  return code;
+}
+
 function updateRoom(roomId: string, updater: (room: SkyRoom) => SkyRoom) {
   rooms = rooms.map((room) => (room.id === roomId ? updater(room) : room));
   notifyRooms();
@@ -31,6 +40,17 @@ export const roomSyncService = {
       roomListeners.delete(listener);
     };
   },
+  subscribeRoomChat(roomId: string, listener: (messages: ChatMessage[]) => void) {
+    const handler: RoomsListener = (updatedRooms) => {
+      const room = updatedRooms.find((r) => r.id === roomId);
+      listener(room?.chat ?? []);
+    };
+    roomListeners.add(handler);
+    // Send initial chat state
+    const room = rooms.find((r) => r.id === roomId);
+    listener(room?.chat ?? []);
+    return () => { roomListeners.delete(handler); };
+  },
   subscribeGlobalChat(listener: GlobalChatListener) {
     globalChatListeners.add(listener);
     listener([...globalChat]);
@@ -42,7 +62,7 @@ export const roomSyncService = {
     const now = Date.now();
     const room: SkyRoom = {
       id: `room-${now}`,
-      roomCode: `SKY-${Math.floor(100 + Math.random() * 900)}${String.fromCharCode(65 + Math.floor(Math.random() * 26))}`,
+      roomCode: generateRoomCode(),
       name,
       state: {
         rotation: 0,

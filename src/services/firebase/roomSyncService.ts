@@ -17,6 +17,7 @@ import {
 } from "firebase/firestore";
 import { db } from "./config";
 import { authService } from "./authService";
+import { ROOM_CODE_CHARS, ROOM_CODE_LENGTH, SKY_STATE_DEBOUNCE_MS } from "@/constants";
 import { formatTimestamp } from "@/data/skyData";
 import { ChatMessage, CustomConstellation, RoomSkyState, SkyRoom, SpaceNote } from "@/types/rooms";
 
@@ -131,7 +132,10 @@ export const roomSyncService = {
 
   async createRoom(name: string): Promise<SkyRoom> {
     const userId = authService.getCurrentUserId() ?? "anonymous";
-    const roomCode = `SKY-${Math.floor(100 + Math.random() * 900)}${String.fromCharCode(65 + Math.floor(Math.random() * 26))}`;
+    let roomCode = "SKY-";
+    for (let i = 0; i < ROOM_CODE_LENGTH; i++) {
+      roomCode += ROOM_CODE_CHARS[Math.floor(Math.random() * ROOM_CODE_CHARS.length)];
+    }
     const now = Date.now();
 
     const roomData = {
@@ -200,7 +204,7 @@ export const roomSyncService = {
     // Debounce to avoid hammering Firestore during drag gestures
     pendingSkyState = { roomId, partial: { ...pendingSkyState?.partial, ...partial } };
     if (skyStateTimeout) clearTimeout(skyStateTimeout);
-    skyStateTimeout = setTimeout(flushSkyState, 250);
+    skyStateTimeout = setTimeout(flushSkyState, SKY_STATE_DEBOUNCE_MS);
   },
 
   async toggleHighlight(roomId: string, objectId: string): Promise<void> {

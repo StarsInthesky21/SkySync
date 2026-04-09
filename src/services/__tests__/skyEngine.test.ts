@@ -60,6 +60,25 @@ describe("skyEngine", () => {
       expect(earthJup.x).not.toEqual(marsJup.x);
     });
 
+    it("handles NaN zoom gracefully", () => {
+      const objects = renderSkyObjects({ ...baseTransform, zoom: NaN });
+      expect(objects.length).toBeGreaterThan(0);
+      for (const obj of objects.slice(0, 3)) {
+        expect(Number.isFinite(obj.x)).toBe(true);
+        expect(Number.isFinite(obj.y)).toBe(true);
+      }
+    });
+
+    it("handles extreme zoom values", () => {
+      const objects = renderSkyObjects({ ...baseTransform, zoom: 999 });
+      expect(objects.length).toBeGreaterThan(0);
+    });
+
+    it("handles negative rotation", () => {
+      const objects = renderSkyObjects({ ...baseTransform, rotation: -180 });
+      expect(objects.length).toBeGreaterThan(0);
+    });
+
     it("includes all sky object kinds", () => {
       const objects = renderSkyObjects(baseTransform);
       const kinds = new Set(objects.map((o) => o.kind));
