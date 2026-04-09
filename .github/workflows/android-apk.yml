@@ -65,7 +65,7 @@ jobs:
         run: node scripts/generate-icons.js
 
       - name: Generate Android project
-        run: npx expo prebuild --platform android --no-install --non-interactive
+        run: npx expo prebuild --platform android --no-install
 
       - name: Build debug APK
         working-directory: android
