@@ -1,7 +1,8 @@
 import { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { badges as badgeDefinitions, dailyChallenges, formatTimestamp, guidedTargets, viewpoints } from "@/data/skyData";
-import { roomSyncService } from "@/services/mock/roomSyncService";
+import { roomSyncService, isFirebaseEnabled } from "@/services/roomSyncService";
 import { storage, UserProfile, BadgeProgress, ChallengeProgress } from "@/services/storage";
+import { useAuth } from "@/providers/AuthProvider";
 import {
   findSkyObject,
   focusRotationForObject,
@@ -87,6 +88,9 @@ const DEFAULT_CHALLENGE_PROGRESS: ChallengeProgress = {
 let constellationCounter = 0;
 
 export function SkySyncProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
+  const userId = user?.uid ?? "local-user";
+
   const [rooms, setRooms] = useState<SkyRoom[]>([]);
   const [globalChat, setGlobalChat] = useState<ChatMessage[]>([]);
   const [currentRoomId, setCurrentRoomId] = useState<string | undefined>(undefined);
@@ -106,11 +110,12 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
   const currentRoomIdRef = useRef(currentRoomId);
   currentRoomIdRef.current = currentRoomId;
 
-  // Load persisted data on mount
+  // Load persisted data on mount - local first, then sync with Firestore if enabled
   useEffect(() => {
     let mounted = true;
     async function loadData() {
       try {
+        // Always load from local storage first (instant)
         const [profile, badges, challenges] = await Promise.all([
           storage.getUserProfile(),
           storage.getBadgeProgress(),
@@ -130,6 +135,24 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
         } else {
           setChallengeProgress(challenges);
         }
+
+        // If Firebase is enabled, also sync profile to Firestore
+        if (isFirebaseEnabled && userId !== "local-user") {
+          try {
+            const { userService } = await import("@/services/firebase/userService");
+            const firestoreProfile = await userService.getUserProfile(userId);
+            if (firestoreProfile && mounted) {
+              // Merge: Firestore profile takes precedence if newer
+              setUserProfile(firestoreProfile);
+              storage.saveUserProfile(firestoreProfile);
+            } else if (!firestoreProfile) {
+              // First time: push local profile to Firestore
+              await userService.saveUserProfile(userId, profile);
+            }
+          } catch (error) {
+            console.warn("[SkySync] Firestore sync failed, using local data:", error);
+          }
+        }
       } catch (error) {
         console.warn("[SkySync] Failed to load persisted data:", error);
       } finally {
@@ -138,7 +161,7 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
     }
     loadData();
     return () => { mounted = false; };
-  }, []);
+  }, [userId]);
 
   useEffect(() => roomSyncService.subscribeRooms(setRooms), []);
   useEffect(() => roomSyncService.subscribeGlobalChat(setGlobalChat), []);

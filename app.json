@@ -45,7 +45,13 @@
       ]
     ],
     "extra": {
-      "firebaseEnabled": false
+      "firebaseEnabled": false,
+      "firebaseApiKey": "",
+      "firebaseAuthDomain": "",
+      "firebaseProjectId": "",
+      "firebaseStorageBucket": "",
+      "firebaseMessagingSenderId": "",
+      "firebaseAppId": ""
     }
   }
 }
