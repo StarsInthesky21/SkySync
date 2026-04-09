@@ -1,6 +1,6 @@
 import { Component, ErrorInfo, ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { colors } from "@/theme/colors";
+import { colors, fontSize, radius } from "@/theme/colors";
 
 type Props = {
   children: ReactNode;

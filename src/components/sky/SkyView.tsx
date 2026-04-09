@@ -3,7 +3,7 @@ import { PanResponder, StyleSheet, Text, View } from "react-native";
 import Svg from "react-native-svg";
 import { Star } from "@/components/sky/Star";
 import { Constellation } from "@/components/sky/Constellation";
-import { colors } from "@/theme/colors";
+import { colors, fontSize, radius } from "@/theme/colors";
 import { RenderedSkyObject } from "@/types/sky";
 
 type GestureRef = {
@@ -80,7 +80,6 @@ export function SkyView({
           onZoom(nextZoom);
           return;
         }
-
         onRotate(gesture.current.startRotation - gestureState.dx * 0.25);
       },
       onPanResponderRelease: () => {
@@ -119,15 +118,29 @@ export function SkyView({
         />
       ))}
 
+      {/* Compact HUD overlay */}
       <View style={styles.hud} accessibilityRole="summary">
-        <Text style={styles.hudTitle}>SkySync</Text>
-        <Text style={styles.hudText}>
-          Drag to rotate | Pinch to zoom | {liveMode ? "Real-time sky" : "Time travel mode"}
+        <View style={styles.hudRow}>
+          <Text style={styles.hudBrand}>SkySync</Text>
+          <View style={styles.hudPills}>
+            <View style={[styles.hudPill, liveMode && styles.hudPillLive]}>
+              <Text style={styles.hudPillText}>{liveMode ? "LIVE" : "TIME TRAVEL"}</Text>
+            </View>
+            {roomCode && (
+              <View style={styles.hudPill}>
+                <Text style={styles.hudPillText}>{roomCode}</Text>
+              </View>
+            )}
+          </View>
+        </View>
+        <Text style={styles.hudMeta}>
+          {viewpointLabel} | {dateLabel} | {Math.round(rotation)}deg | {zoom.toFixed(1)}x
         </Text>
-        <Text style={styles.hudSubtext}>
-          {dateLabel} | View {viewpointLabel} | Room {roomCode ?? "Solo"} | Voice lounge {callActive ? "on" : "off"}
-        </Text>
-        <Text style={styles.hudSubtext}>Rotation {Math.round(rotation)} deg | Zoom {zoom.toFixed(1)}x</Text>
+      </View>
+
+      {/* Subtle instruction overlay at top */}
+      <View style={styles.instructionBadge}>
+        <Text style={styles.instructionText}>Drag to rotate | Pinch to zoom</Text>
       </View>
     </View>
   );
@@ -135,36 +148,77 @@ export function SkyView({
 
 const styles = StyleSheet.create({
   frame: {
-    height: 420,
-    borderRadius: 28,
+    height: 440,
+    borderRadius: radius.xl,
     overflow: "hidden",
     backgroundColor: "#020814",
     borderWidth: 1,
     borderColor: colors.border,
     position: "relative",
+    shadowColor: colors.shadowMedium,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 1,
+    shadowRadius: 24,
+    elevation: 12,
   },
   hud: {
     position: "absolute",
-    left: 14,
-    right: 14,
-    bottom: 14,
-    borderRadius: 18,
-    padding: 12,
-    backgroundColor: "rgba(4,17,31,0.84)",
+    left: 12,
+    right: 12,
+    bottom: 12,
+    borderRadius: radius.md,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: "rgba(4,17,31,0.88)",
+    borderWidth: 1,
+    borderColor: "rgba(115,251,211,0.1)",
   },
-  hudTitle: {
+  hudRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  hudBrand: {
     color: colors.accent,
     fontWeight: "800",
-    marginBottom: 4,
+    fontSize: fontSize.sm,
+    letterSpacing: 1,
   },
-  hudText: {
+  hudPills: {
+    flexDirection: "row",
+    gap: 6,
+  },
+  hudPill: {
+    borderRadius: radius.pill,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    backgroundColor: "rgba(255,255,255,0.08)",
+  },
+  hudPillLive: {
+    backgroundColor: "rgba(115,251,211,0.15)",
+  },
+  hudPillText: {
     color: colors.text,
-    fontSize: 12,
-    lineHeight: 18,
+    fontSize: fontSize.xs,
+    fontWeight: "700",
   },
-  hudSubtext: {
-    color: colors.textMuted,
+  hudMeta: {
+    color: colors.textDim,
+    fontSize: fontSize.xs,
     marginTop: 4,
-    fontSize: 12,
+  },
+  instructionBadge: {
+    position: "absolute",
+    top: 12,
+    alignSelf: "center",
+    borderRadius: radius.pill,
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    backgroundColor: "rgba(4,17,31,0.7)",
+  },
+  instructionText: {
+    color: colors.textDim,
+    fontSize: fontSize.xs,
+    fontWeight: "600",
   },
 });
