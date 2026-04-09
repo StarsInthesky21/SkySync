@@ -91,7 +91,12 @@ export function SkyView({
   ).current;
 
   return (
-    <View style={styles.frame} {...panResponder.panHandlers}>
+    <View
+      style={styles.frame}
+      {...panResponder.panHandlers}
+      accessibilityRole="image"
+      accessibilityLabel={`Interactive sky view showing ${objects.filter((o) => o.isVisible).length} celestial objects. Drag to rotate, pinch to zoom.`}
+    >
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
         {segments.map((segment) => (
           <Constellation key={segment.id} from={segment.from} to={segment.to} color={segment.color} />
@@ -114,7 +119,7 @@ export function SkyView({
         />
       ))}
 
-      <View style={styles.hud}>
+      <View style={styles.hud} accessibilityRole="summary">
         <Text style={styles.hudTitle}>SkySync</Text>
         <Text style={styles.hudText}>
           Drag to rotate | Pinch to zoom | {liveMode ? "Real-time sky" : "Time travel mode"}

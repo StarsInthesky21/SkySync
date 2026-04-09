@@ -4,15 +4,17 @@
   "private": true,
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
-    "start": "set EXPO_NO_TELEMETRY=1&& set HOME=%cd%&& set USERPROFILE=%cd%&& expo start --offline",
-    "start:offline": "set EXPO_NO_TELEMETRY=1&& set HOME=%cd%&& set USERPROFILE=%cd%&& expo start --offline",
-    "web": "set EXPO_NO_TELEMETRY=1&& set HOME=%cd%&& set USERPROFILE=%cd%&& expo start --web",
-    "build:web": "set EXPO_NO_TELEMETRY=1&& set HOME=%cd%&& set USERPROFILE=%cd%&& expo export --platform web",
+    "start": "EXPO_NO_TELEMETRY=1 expo start",
+    "start:offline": "EXPO_NO_TELEMETRY=1 expo start --offline",
+    "web": "EXPO_NO_TELEMETRY=1 expo start --web",
+    "build:web": "EXPO_NO_TELEMETRY=1 expo export --platform web",
     "deploy:web": "npm run build:web && gh-pages -d dist",
-    "prebuild": "set EXPO_NO_TELEMETRY=1&& set HOME=%cd%&& set USERPROFILE=%cd%&& expo prebuild",
-    "android": "set EXPO_NO_TELEMETRY=1&& set HOME=%cd%&& set USERPROFILE=%cd%&& expo start --android --offline",
-    "ios": "set EXPO_NO_TELEMETRY=1&& set HOME=%cd%&& set USERPROFILE=%cd%&& expo start --ios --offline",
-    "typecheck": "tsc --noEmit"
+    "prebuild": "EXPO_NO_TELEMETRY=1 expo prebuild",
+    "android": "EXPO_NO_TELEMETRY=1 expo start --android",
+    "ios": "EXPO_NO_TELEMETRY=1 expo start --ios",
+    "typecheck": "tsc --noEmit",
+    "test": "jest --watchAll=false",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.5",
@@ -25,13 +27,26 @@
     "react-native": "0.79.2",
     "react-native-safe-area-context": "^5.4.0",
     "react-native-svg": "15.11.2",
-    "react-native-web": "^0.20.0"
+    "react-native-web": "^0.20.0",
+    "@react-native-async-storage/async-storage": "2.1.2",
+    "@react-native-community/netinfo": "11.4.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@expo/ngrok": "^4.1.0",
     "@types/react": "~19.0.10",
     "gh-pages": "^6.3.0",
-    "typescript": "~5.8.3"
+    "typescript": "~5.8.3",
+    "jest": "^29.7.0",
+    "jest-expo": "~53.0.0",
+    "@testing-library/react-native": "^12.9.0",
+    "@types/jest": "^29.5.14",
+    "react-test-renderer": "19.0.0"
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "transformIgnorePatterns": [
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)/|expo(nent)?/|@expo(nent)?/.*|expo-modules-core/|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|@react-native-async-storage/.*|@react-native-community/.*)"
+    ]
   }
 }

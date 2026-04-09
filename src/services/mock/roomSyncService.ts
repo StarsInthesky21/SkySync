@@ -1,4 +1,4 @@
-import { initialGlobalChat, initialRooms } from "@/data/skyData";
+import { formatTimestamp, initialGlobalChat, initialRooms } from "@/data/skyData";
 import { ChatMessage, CustomConstellation, RoomSkyState, SkyRoom, SpaceNote } from "@/types/rooms";
 
 type RoomsListener = (rooms: SkyRoom[]) => void;
@@ -39,8 +39,9 @@ export const roomSyncService = {
     };
   },
   createRoom(name: string) {
+    const now = Date.now();
     const room: SkyRoom = {
-      id: `room-${Date.now()}`,
+      id: `room-${now}`,
       roomCode: `SKY-${Math.floor(100 + Math.random() * 900)}`,
       name,
       state: {
@@ -55,10 +56,11 @@ export const roomSyncService = {
       },
       chat: [
         {
-          id: `chat-${Date.now()}`,
+          id: `chat-${now}`,
           author: "SkySync",
           text: "Room created. Invite your friends to stargaze together.",
-          timestampLabel: "Now",
+          timestampLabel: formatTimestamp(now),
+          timestamp: now,
         },
       ],
     };

@@ -5,6 +5,11 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "backgroundColor": "#04111f",
+      "resizeMode": "contain"
+    },
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -13,8 +18,27 @@
       "bundleIdentifier": "com.skysync.app"
     },
     "android": {
-      "package": "com.skysync.app"
+      "package": "com.skysync.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#04111f"
+      },
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE"
+      ]
     },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#04111f",
+          "dark": {
+            "backgroundColor": "#04111f"
+          }
+        }
+      ]
+    ],
     "extra": {
       "firebaseEnabled": false
     }

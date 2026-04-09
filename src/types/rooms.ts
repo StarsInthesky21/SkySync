@@ -10,6 +10,7 @@ export type ChatMessage = {
   author: string;
   text: string;
   timestampLabel: string;
+  timestamp: number;
 };
 
 export type CustomConstellation = {
