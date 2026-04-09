@@ -31,6 +31,9 @@ export const colors = {
   // Pressed states
   pressedPrimary: "#5ce0b8",
   pressedSecondary: "#1e4270",
+
+  // Text on accent backgrounds
+  onAccent: "#05262a",
 };
 
 // Consistent type scale

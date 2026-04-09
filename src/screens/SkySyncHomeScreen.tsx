@@ -639,7 +639,7 @@ const styles = StyleSheet.create({
   // Profile
   profileRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   profileAvatar: { width: 48, height: 48, borderRadius: radius.pill, backgroundColor: colors.accent, alignItems: "center", justifyContent: "center" },
-  profileAvatarText: { color: "#05262a", fontSize: fontSize.lg, fontWeight: "800" },
+  profileAvatarText: { color: colors.onAccent, fontSize: fontSize.lg, fontWeight: "800" },
   profileInfo: { flex: 1 },
   profileName: { color: colors.text, fontSize: fontSize.base, fontWeight: "800" },
   profileStat: { color: colors.textDim, fontSize: fontSize.xs, marginTop: 2 },
@@ -657,7 +657,7 @@ const styles = StyleSheet.create({
   chipActive: { backgroundColor: colors.accent },
   chipPressed: { opacity: 0.7 },
   chipText: { color: colors.text, fontWeight: "700", fontSize: fontSize.sm },
-  chipTextActive: { color: "#05262a" },
+  chipTextActive: { color: colors.onAccent },
   chipSmall: { borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 5, backgroundColor: "rgba(255,255,255,0.08)" },
   chipSmallText: { color: colors.accent, fontWeight: "700", fontSize: fontSize.xs },
 
@@ -673,7 +673,7 @@ const styles = StyleSheet.create({
   buttonRow: { flexDirection: "row", gap: 8, marginTop: 10 },
   primaryButton: { flex: 1, borderRadius: radius.md, paddingVertical: 12, backgroundColor: colors.accent, alignItems: "center", justifyContent: "center" },
   primaryPressed: { backgroundColor: colors.pressedPrimary },
-  primaryButtonText: { color: "#05262a", fontWeight: "800", fontSize: fontSize.sm },
+  primaryButtonText: { color: colors.onAccent, fontWeight: "800", fontSize: fontSize.sm },
   secondaryButton: { flex: 1, borderRadius: radius.md, paddingVertical: 12, backgroundColor: colors.cardSoft, alignItems: "center", justifyContent: "center" },
   secondaryPressed: { backgroundColor: colors.pressedSecondary },
   secondaryButtonText: { color: colors.text, fontWeight: "700", fontSize: fontSize.sm },
@@ -717,7 +717,7 @@ const styles = StyleSheet.create({
   chatInputRow: { flexDirection: "row", gap: 8, marginTop: 8, alignItems: "center" },
   chatInput: { flex: 1, borderRadius: radius.md, backgroundColor: "rgba(255,255,255,0.03)", borderWidth: 1, borderColor: colors.border, paddingHorizontal: 12, paddingVertical: 10, color: colors.text, fontSize: fontSize.sm },
   sendButton: { borderRadius: radius.md, paddingHorizontal: 16, paddingVertical: 10, backgroundColor: colors.accent },
-  sendButtonText: { color: "#05262a", fontWeight: "800", fontSize: fontSize.sm },
+  sendButtonText: { color: colors.onAccent, fontWeight: "800", fontSize: fontSize.sm },
   emptyText: { color: colors.textDim, fontStyle: "italic", fontSize: fontSize.xs, marginTop: 4 },
 
   // Info banner

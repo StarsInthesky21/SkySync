@@ -66,17 +66,16 @@ function mapChatMessage(docId: string, data: Record<string, unknown>): ChatMessa
   };
 }
 
-// Debounce utility for throttling sky state updates
-let skyStateTimeout: ReturnType<typeof setTimeout> | null = null;
-let pendingSkyState: { roomId: string; partial: Partial<RoomSkyState> } | null = null;
+// Per-room debounce to avoid losing updates when switching rooms
+const pendingUpdates = new Map<string, { timeout: ReturnType<typeof setTimeout>; partial: Partial<RoomSkyState> }>();
 
-function flushSkyState() {
-  if (!pendingSkyState) return;
-  const { roomId, partial } = pendingSkyState;
-  pendingSkyState = null;
+function flushSkyState(roomId: string) {
+  const entry = pendingUpdates.get(roomId);
+  if (!entry) return;
+  pendingUpdates.delete(roomId);
 
   const updates: { [key: string]: unknown } = {};
-  for (const [key, value] of Object.entries(partial)) {
+  for (const [key, value] of Object.entries(entry.partial)) {
     updates[`state.${key}`] = value;
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -203,10 +202,11 @@ export const roomSyncService = {
   },
 
   updateSkyState(roomId: string, partial: Partial<RoomSkyState>): void {
-    // Debounce to avoid hammering Firestore during drag gestures
-    pendingSkyState = { roomId, partial: { ...pendingSkyState?.partial, ...partial } };
-    if (skyStateTimeout) clearTimeout(skyStateTimeout);
-    skyStateTimeout = setTimeout(flushSkyState, SKY_STATE_DEBOUNCE_MS);
+    const existing = pendingUpdates.get(roomId);
+    if (existing) clearTimeout(existing.timeout);
+    const merged = { ...(existing?.partial ?? {}), ...partial };
+    const timeout = setTimeout(() => flushSkyState(roomId), SKY_STATE_DEBOUNCE_MS);
+    pendingUpdates.set(roomId, { timeout, partial: merged });
   },
 
   async toggleHighlight(roomId: string, objectId: string): Promise<void> {
