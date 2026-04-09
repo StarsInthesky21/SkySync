@@ -45,7 +45,7 @@ export function ObjectPreview3D({
   const orbSize = kind === "satellite" ? 48 : kind === "meteor" ? 40 : 72;
 
   return (
-    <View style={styles.card}>
+    <View style={styles.card} accessibilityRole="image" accessibilityLabel={`3D preview of ${title ?? "celestial object"}. ${description ?? ""}`}>
       <Animated.View style={[styles.previewWrap, { transform: [{ scale: pulse }] }]}>
         <Animated.View style={{ transform: [{ rotateY }] }}>
           <View style={[styles.orb, { backgroundColor: color, width: orbSize, height: orbSize }]}>

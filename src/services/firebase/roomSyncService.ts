@@ -54,11 +54,13 @@ function mapRoomDoc(docId: string, data: Record<string, unknown>): SkyRoom {
 
 function mapChatMessage(docId: string, data: Record<string, unknown>): ChatMessage {
   const ts = firestoreTimestampToNumber(data.timestamp);
+  const author = typeof data.author === "string" && data.author.length > 0 ? data.author : "Unknown";
+  const text = typeof data.text === "string" ? data.text : "";
   return {
     id: docId,
-    author: (data.author as string) ?? "Unknown",
-    authorId: (data.authorId as string) ?? "",
-    text: (data.text as string) ?? "",
+    author,
+    authorId: typeof data.authorId === "string" ? data.authorId : "",
+    text,
     timestamp: ts,
     timestampLabel: formatTimestamp(ts),
   };

@@ -28,17 +28,23 @@ function mapUser(user: User | null): AuthUser | null {
 export const authService = {
   async signInAnonymous(): Promise<AuthUser> {
     const result = await signInAnonymously(auth);
-    return mapUser(result.user)!;
+    const user = mapUser(result.user);
+    if (!user) throw new Error("Anonymous sign-in returned no user");
+    return user;
   },
 
   async signInWithEmail(email: string, password: string): Promise<AuthUser> {
     const result = await signInWithEmailAndPassword(auth, email, password);
-    return mapUser(result.user)!;
+    const user = mapUser(result.user);
+    if (!user) throw new Error("Email sign-in returned no user");
+    return user;
   },
 
   async createAccount(email: string, password: string): Promise<AuthUser> {
     const result = await createUserWithEmailAndPassword(auth, email, password);
-    return mapUser(result.user)!;
+    const user = mapUser(result.user);
+    if (!user) throw new Error("Account creation returned no user");
+    return user;
   },
 
   async upgradeAnonymousToEmail(email: string, password: string): Promise<AuthUser> {
@@ -48,7 +54,9 @@ export const authService = {
     }
     const credential = EmailAuthProvider.credential(email, password);
     const result = await linkWithCredential(currentUser, credential);
-    return mapUser(result.user)!;
+    const user = mapUser(result.user);
+    if (!user) throw new Error("Account upgrade returned no user");
+    return user;
   },
 
   async signOut(): Promise<void> {

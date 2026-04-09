@@ -73,7 +73,15 @@ function isValidObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-async function getJson<T>(key: string, fallback: T): Promise<T> {
+function hasRequiredFields(obj: Record<string, unknown>, fields: string[]): boolean {
+  return fields.every((field) => field in obj);
+}
+
+const PROFILE_REQUIRED_FIELDS = ["username", "xp", "planetsDiscovered", "satellitesTracked", "totalStarsViewed"];
+const BADGE_REQUIRED_FIELDS = ["planetsDiscovered", "constellationsTraced", "satellitesTracked"];
+const CHALLENGE_REQUIRED_FIELDS = ["completedIds", "lastResetDate", "totalXpEarned"];
+
+async function getJson<T>(key: string, fallback: T, requiredFields?: string[]): Promise<T> {
   try {
     const raw = await AsyncStorage.getItem(key);
     if (raw === null) {
@@ -83,6 +91,10 @@ async function getJson<T>(key: string, fallback: T): Promise<T> {
     if (!isValidObject(parsed)) {
       console.warn(`[SkySync Storage] Invalid data at ${key}, using defaults`);
       return fallback;
+    }
+    if (requiredFields && !hasRequiredFields(parsed, requiredFields)) {
+      console.warn(`[SkySync Storage] Missing required fields in ${key}, merging with defaults`);
+      return { ...fallback, ...parsed } as T;
     }
     return parsed as T;
   } catch (error) {
@@ -101,21 +113,21 @@ async function setJson<T>(key: string, value: T): Promise<void> {
 
 export const storage = {
   async getUserProfile(): Promise<UserProfile> {
-    return getJson(KEYS.USER_PROFILE, DEFAULT_PROFILE);
+    return getJson(KEYS.USER_PROFILE, DEFAULT_PROFILE, PROFILE_REQUIRED_FIELDS);
   },
   async saveUserProfile(profile: UserProfile): Promise<void> {
     await setJson(KEYS.USER_PROFILE, profile);
   },
 
   async getBadgeProgress(): Promise<BadgeProgress> {
-    return getJson(KEYS.BADGE_PROGRESS, DEFAULT_BADGE_PROGRESS);
+    return getJson(KEYS.BADGE_PROGRESS, DEFAULT_BADGE_PROGRESS, BADGE_REQUIRED_FIELDS);
   },
   async saveBadgeProgress(progress: BadgeProgress): Promise<void> {
     await setJson(KEYS.BADGE_PROGRESS, progress);
   },
 
   async getChallengeProgress(): Promise<ChallengeProgress> {
-    return getJson(KEYS.CHALLENGE_PROGRESS, DEFAULT_CHALLENGE_PROGRESS);
+    return getJson(KEYS.CHALLENGE_PROGRESS, DEFAULT_CHALLENGE_PROGRESS, CHALLENGE_REQUIRED_FIELDS);
   },
   async saveChallengeProgress(progress: ChallengeProgress): Promise<void> {
     await setJson(KEYS.CHALLENGE_PROGRESS, progress);
