@@ -4896,20 +4896,6 @@ export const hygStars: SkyObject[] = [
     motionFactor: 0.98,
   },
   {
-    id: "hyg-epsilon-peg",
-    name: "Enif",
-    kind: "star",
-    description: "The nose of Pegasus.",
-    distanceFromEarth: "690 light-years",
-    mythologyStory: "Marks the muzzle of the winged horse.",
-    scientificFacts: ["A K2Ib supergiant."],
-    color: "#ffd9a0",
-    longitude: 326.0,
-    latitude: 9.9,
-    magnitude: 2.39,
-    motionFactor: 0.98,
-  },
-  {
     id: "hyg-alpha-psc",
     name: "Alrescha",
     kind: "star",
@@ -5046,7 +5032,6 @@ export const hygStars: SkyObject[] = [
   { id: "hyg-sigma-sco", name: "Alniyat", kind: "star", description: "A blue star near Antares.", distanceFromEarth: "568 light-years", mythologyStory: "One of the companions flanking the heart of the Scorpion.", scientificFacts: ["A B1III star."], color: "#adc8ff", longitude: 247.4, latitude: -25.6, magnitude: 2.88, motionFactor: 0.98 },
 
   // RA 16h-17h
-  { id: "hyg-zeta-her", name: "Zeta Herculis A", kind: "star", description: "A visual binary in Hercules.", distanceFromEarth: "35 light-years", mythologyStory: "Part of the hero Hercules.", scientificFacts: ["A G0IV primary in a 34.5-year binary."], color: "#fff4d6", longitude: 250.3, latitude: 31.6, magnitude: 2.81, motionFactor: 0.98 },
   { id: "hyg-delta-her", name: "Sarin", kind: "star", description: "A white star in Hercules.", distanceFromEarth: "75 light-years", mythologyStory: "Part of the Keystone in Hercules.", scientificFacts: ["An A3IV subgiant."], color: "#d4e2ff", longitude: 254.0, latitude: 24.8, magnitude: 3.14, motionFactor: 0.98 },
   { id: "hyg-mu-her", name: "Mu Herculis", kind: "star", description: "A nearby yellow star in Hercules.", distanceFromEarth: "27.4 light-years", mythologyStory: "One of the nearest evolved stars.", scientificFacts: ["A G5IV subgiant at 27.4 ly, a triple system."], color: "#fff4d6", longitude: 261.3, latitude: 27.7, magnitude: 3.42, motionFactor: 0.98 },
   { id: "hyg-theta-oph", name: "Theta Ophiuchi", kind: "star", description: "A blue-white star in Ophiuchus.", distanceFromEarth: "436 light-years", mythologyStory: "Part of the Serpent-Bearer.", scientificFacts: ["A B2IV star and Beta Cephei variable."], color: "#adc8ff", longitude: 259.1, latitude: -24.9, magnitude: 3.27, motionFactor: 0.98 },
