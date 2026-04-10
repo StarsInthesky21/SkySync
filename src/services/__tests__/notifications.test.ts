@@ -14,6 +14,18 @@ jest.mock("react-native", () => ({
   Platform: { OS: "ios" },
 }));
 
+// Mock expo-notifications to avoid native module errors in test environment
+jest.mock("expo-notifications", () => ({
+  getPermissionsAsync: jest.fn(() => Promise.resolve({ status: "undetermined" })),
+  requestPermissionsAsync: jest.fn(() => Promise.resolve({ status: "denied" })),
+  scheduleNotificationAsync: jest.fn(() => Promise.resolve("mock-id")),
+  cancelAllScheduledNotificationsAsync: jest.fn(() => Promise.resolve()),
+  getAllScheduledNotificationsAsync: jest.fn(() => Promise.resolve([])),
+  setNotificationChannelAsync: jest.fn(() => Promise.resolve()),
+  AndroidImportance: { DEFAULT: 3 },
+  SchedulableTriggerInputTypes: { DATE: "date" },
+}));
+
 describe("notificationService", () => {
   beforeEach(() => {
     Object.keys(mockStore).forEach((key) => delete mockStore[key]);
