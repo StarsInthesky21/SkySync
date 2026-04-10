@@ -1,5 +1,6 @@
 import { Badge, Constellation, DailyChallenge, GuidedTarget, MythStory, SkyObject, Viewpoint } from "@/types/sky";
 import { ChatMessage, SkyRoom } from "@/types/rooms";
+import { hygStars } from "./hygCatalog";
 
 const featuredObjects: SkyObject[] = [
   {
@@ -534,25 +535,13 @@ const featuredObjects: SkyObject[] = [
   },
 ];
 
-const fillerStars: SkyObject[] = Array.from({ length: 60 }, (_, index) => ({
-  id: `field-star-${index + 1}`,
-  name: `Field Star ${index + 1}`,
-  kind: "star" as const,
-  description: "A background star in the virtual real-time sky.",
-  distanceFromEarth: `${40 + index * 3} light-years`,
-  mythologyStory: "This background star represents the wider stellar field around the constellations.",
-  scientificFacts: [
-    "One of billions of stars in the Milky Way galaxy.",
-    "Appears as a faint point of light in the night sky.",
-  ],
-  color: index % 7 === 0 ? "#ffd9a0" : index % 5 === 0 ? "#d7edff" : "#f9fcff",
-  longitude: (index * 37 + 12) % 360,
-  latitude: ((index * 19) % 140) - 70,
-  magnitude: 1.8 + (index % 5) * 0.5,
-  motionFactor: 0.98,
-}));
+// Deduplicate: skip hygStars entries that share a name with featuredObjects
+const featuredNames = new Set(featuredObjects.map((o) => o.name.toLowerCase()));
+const deduplicatedHygStars = hygStars.filter(
+  (star) => !featuredNames.has(star.name.toLowerCase()),
+);
 
-export const skyObjects: SkyObject[] = [...featuredObjects, ...fillerStars];
+export const skyObjects: SkyObject[] = [...featuredObjects, ...deduplicatedHygStars];
 
 export const constellations: Constellation[] = [
   {
@@ -569,13 +558,13 @@ export const constellations: Constellation[] = [
   {
     id: "ursa-major",
     name: "Ursa Major",
-    starIds: ["dubhe", "merak", "field-star-12", "field-star-13", "field-star-14"],
+    starIds: ["dubhe", "merak", "hyg-phecda", "hyg-megrez", "hyg-alioth", "hyg-mizar", "hyg-alkaid"],
     storyId: "story-ursa-major",
   },
   {
     id: "taurus",
     name: "Taurus",
-    starIds: ["aldebaran", "field-star-7", "field-star-8", "field-star-9"],
+    starIds: ["aldebaran", "hyg-elnath", "hyg-alcyone", "hyg-zeta-tau"],
     storyId: "story-taurus",
   },
 ];
@@ -733,7 +722,7 @@ export const initialRooms: SkyRoom[] = [
         {
           id: "custom-1",
           title: "Hunter Arc",
-          starIds: ["betelgeuse", "rigel", "field-star-2"],
+          starIds: ["betelgeuse", "rigel", "hyg-saiph"],
           color: "#73fbd3",
         },
       ],

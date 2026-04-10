@@ -35,10 +35,26 @@ export type ChallengeProgress = {
 export type AppSettings = {
   voiceGuideEnabled: boolean;
   lastViewpoint: string;
+  latitude?: number;
+  longitude?: number;
 };
 
+const DEFAULT_SETTINGS: AppSettings = {
+  voiceGuideEnabled: true,
+  lastViewpoint: "earth",
+};
+
+function generateUsername(): string {
+  const adjectives = ["Cosmic", "Stellar", "Astral", "Lunar", "Solar", "Nebula", "Orbit", "Nova", "Quasar", "Pulsar"];
+  const nouns = ["Gazer", "Walker", "Seeker", "Pilot", "Scout", "Voyager", "Watcher", "Ranger", "Drifter", "Hunter"];
+  const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+  const noun = nouns[Math.floor(Math.random() * nouns.length)];
+  const num = Math.floor(10 + Math.random() * 90);
+  return `${adj}${noun}${num}`;
+}
+
 const DEFAULT_PROFILE: UserProfile = {
-  username: `Stargazer${Math.floor(100 + Math.random() * 900)}`,
+  username: generateUsername(),
   xp: 0,
   joinedAt: new Date().toISOString(),
   planetsDiscovered: [],
@@ -60,14 +76,36 @@ const DEFAULT_CHALLENGE_PROGRESS: ChallengeProgress = {
   totalXpEarned: 0,
 };
 
-async function getJson<T>(key: string, fallback: T): Promise<T> {
+function isValidObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function hasRequiredFields(obj: Record<string, unknown>, fields: string[]): boolean {
+  return fields.every((field) => field in obj);
+}
+
+const PROFILE_REQUIRED_FIELDS = ["username", "xp", "planetsDiscovered", "satellitesTracked", "totalStarsViewed"];
+const BADGE_REQUIRED_FIELDS = ["planetsDiscovered", "constellationsTraced", "satellitesTracked"];
+const CHALLENGE_REQUIRED_FIELDS = ["completedIds", "lastResetDate", "totalXpEarned"];
+
+async function getJson<T>(key: string, fallback: T, requiredFields?: string[]): Promise<T> {
   try {
     const raw = await AsyncStorage.getItem(key);
     if (raw === null) {
       return fallback;
     }
-    return JSON.parse(raw) as T;
-  } catch {
+    const parsed: unknown = JSON.parse(raw);
+    if (!isValidObject(parsed)) {
+      console.warn(`[SkySync Storage] Invalid data at ${key}, using defaults`);
+      return fallback;
+    }
+    if (requiredFields && !hasRequiredFields(parsed, requiredFields)) {
+      console.warn(`[SkySync Storage] Missing required fields in ${key}, merging with defaults`);
+      return { ...fallback, ...parsed } as T;
+    }
+    return parsed as T;
+  } catch (error) {
+    console.warn(`[SkySync Storage] Failed to read ${key}:`, error);
     return fallback;
   }
 }
@@ -75,45 +113,51 @@ async function getJson<T>(key: string, fallback: T): Promise<T> {
 async function setJson<T>(key: string, value: T): Promise<void> {
   try {
     await AsyncStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // Storage write failed silently - app continues with in-memory state
+  } catch (error) {
+    console.warn(`[SkySync Storage] Failed to write ${key}:`, error);
   }
 }
 
 export const storage = {
   async getUserProfile(): Promise<UserProfile> {
-    return getJson(KEYS.USER_PROFILE, DEFAULT_PROFILE);
+    return getJson(KEYS.USER_PROFILE, DEFAULT_PROFILE, PROFILE_REQUIRED_FIELDS);
   },
   async saveUserProfile(profile: UserProfile): Promise<void> {
     await setJson(KEYS.USER_PROFILE, profile);
   },
 
   async getBadgeProgress(): Promise<BadgeProgress> {
-    return getJson(KEYS.BADGE_PROGRESS, DEFAULT_BADGE_PROGRESS);
+    return getJson(KEYS.BADGE_PROGRESS, DEFAULT_BADGE_PROGRESS, BADGE_REQUIRED_FIELDS);
   },
   async saveBadgeProgress(progress: BadgeProgress): Promise<void> {
     await setJson(KEYS.BADGE_PROGRESS, progress);
   },
 
   async getChallengeProgress(): Promise<ChallengeProgress> {
-    return getJson(KEYS.CHALLENGE_PROGRESS, DEFAULT_CHALLENGE_PROGRESS);
+    return getJson(KEYS.CHALLENGE_PROGRESS, DEFAULT_CHALLENGE_PROGRESS, CHALLENGE_REQUIRED_FIELDS);
   },
   async saveChallengeProgress(progress: ChallengeProgress): Promise<void> {
     await setJson(KEYS.CHALLENGE_PROGRESS, progress);
   },
 
   async getSettings(): Promise<AppSettings> {
-    return getJson(KEYS.SETTINGS, { voiceGuideEnabled: true, lastViewpoint: "earth" });
+    return getJson(KEYS.SETTINGS, DEFAULT_SETTINGS);
   },
   async saveSettings(settings: AppSettings): Promise<void> {
     await setJson(KEYS.SETTINGS, settings);
+  },
+  async updateSettings(partial: Partial<AppSettings>): Promise<AppSettings> {
+    const current = await this.getSettings();
+    const next = { ...current, ...partial };
+    await setJson(KEYS.SETTINGS, next);
+    return next;
   },
 
   async clearAll(): Promise<void> {
     try {
       await AsyncStorage.multiRemove(Object.values(KEYS));
-    } catch {
-      // Clear failed silently
+    } catch (error) {
+      console.warn("[SkySync Storage] Failed to clear:", error);
     }
   },
 };

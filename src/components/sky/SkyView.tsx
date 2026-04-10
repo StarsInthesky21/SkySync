@@ -1,9 +1,9 @@
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { PanResponder, StyleSheet, Text, View } from "react-native";
 import Svg from "react-native-svg";
 import { Star } from "@/components/sky/Star";
 import { Constellation } from "@/components/sky/Constellation";
-import { colors } from "@/theme/colors";
+import { colors, fontSize, radius } from "@/theme/colors";
 import { RenderedSkyObject } from "@/types/sky";
 
 type GestureRef = {
@@ -41,6 +41,28 @@ function getDistance(touches: readonly { pageX: number; pageY: number }[]) {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
+/**
+ * Performance optimization: Only render stars that are currently visible.
+ * For dim stars (magnitude > 4.5), only render them when zoomed in.
+ * This keeps the render count manageable on low-end devices.
+ */
+function useVisibleObjects(objects: RenderedSkyObject[], zoom: number) {
+  return useMemo(() => {
+    // At default zoom, skip very dim stars
+    const magLimit = zoom > 1.5 ? 7.0 : zoom > 1.2 ? 6.0 : 5.0;
+
+    return objects.filter((o) => {
+      if (!o.isVisible) return false;
+      // Always show planets, satellites, meteors, selected/highlighted
+      if (o.kind !== "star") return true;
+      // Show all named stars (not field/catalog stars)
+      if (!o.id.startsWith("hyg-")) return true;
+      // For catalog stars, filter by magnitude based on zoom level
+      return o.magnitude <= magLimit;
+    });
+  }, [objects, zoom]);
+}
+
 export function SkyView({
   objects,
   segments,
@@ -65,6 +87,9 @@ export function SkyView({
     startDistance: null,
   });
 
+  const visibleObjects = useVisibleObjects(objects, zoom);
+  const visibleCount = visibleObjects.length;
+
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: () => true,
@@ -80,7 +105,6 @@ export function SkyView({
           onZoom(nextZoom);
           return;
         }
-
         onRotate(gesture.current.startRotation - gestureState.dx * 0.25);
       },
       onPanResponderRelease: () => {
@@ -95,7 +119,7 @@ export function SkyView({
       style={styles.frame}
       {...panResponder.panHandlers}
       accessibilityRole="image"
-      accessibilityLabel={`Interactive sky view showing ${objects.filter((o) => o.isVisible).length} celestial objects. Drag to rotate, pinch to zoom.`}
+      accessibilityLabel={`Interactive sky view showing ${visibleCount} celestial objects. Drag to rotate, pinch to zoom.`}
     >
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
         {segments.map((segment) => (
@@ -109,7 +133,7 @@ export function SkyView({
         ))}
       </Svg>
 
-      {objects.map((object) => (
+      {visibleObjects.map((object) => (
         <Star
           key={object.id}
           object={object}
@@ -119,15 +143,29 @@ export function SkyView({
         />
       ))}
 
+      {/* Compact HUD overlay */}
       <View style={styles.hud} accessibilityRole="summary">
-        <Text style={styles.hudTitle}>SkySync</Text>
-        <Text style={styles.hudText}>
-          Drag to rotate | Pinch to zoom | {liveMode ? "Real-time sky" : "Time travel mode"}
+        <View style={styles.hudRow}>
+          <Text style={styles.hudBrand}>SkySync</Text>
+          <View style={styles.hudPills}>
+            <View style={[styles.hudPill, liveMode && styles.hudPillLive]}>
+              <Text style={styles.hudPillText}>{liveMode ? "LIVE" : "TIME TRAVEL"}</Text>
+            </View>
+            {roomCode && (
+              <View style={styles.hudPill}>
+                <Text style={styles.hudPillText}>{roomCode}</Text>
+              </View>
+            )}
+          </View>
+        </View>
+        <Text style={styles.hudMeta}>
+          {viewpointLabel} | {dateLabel} | {visibleCount} objects | {zoom.toFixed(1)}x
         </Text>
-        <Text style={styles.hudSubtext}>
-          {dateLabel} | View {viewpointLabel} | Room {roomCode ?? "Solo"} | Voice lounge {callActive ? "on" : "off"}
-        </Text>
-        <Text style={styles.hudSubtext}>Rotation {Math.round(rotation)} deg | Zoom {zoom.toFixed(1)}x</Text>
+      </View>
+
+      {/* Subtle instruction overlay at top */}
+      <View style={styles.instructionBadge} accessibilityElementsHidden>
+        <Text style={styles.instructionText}>Drag to rotate | Pinch to zoom</Text>
       </View>
     </View>
   );
@@ -135,36 +173,77 @@ export function SkyView({
 
 const styles = StyleSheet.create({
   frame: {
-    height: 420,
-    borderRadius: 28,
+    height: 480,
+    borderRadius: radius.xl,
     overflow: "hidden",
-    backgroundColor: "#020814",
+    backgroundColor: "#010510",
     borderWidth: 1,
     borderColor: colors.border,
     position: "relative",
+    shadowColor: colors.shadowMedium,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 1,
+    shadowRadius: 24,
+    elevation: 12,
   },
   hud: {
     position: "absolute",
-    left: 14,
-    right: 14,
-    bottom: 14,
-    borderRadius: 18,
-    padding: 12,
-    backgroundColor: "rgba(4,17,31,0.84)",
+    left: 12,
+    right: 12,
+    bottom: 12,
+    borderRadius: radius.md,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: "rgba(4,17,31,0.88)",
+    borderWidth: 1,
+    borderColor: "rgba(115,251,211,0.1)",
   },
-  hudTitle: {
+  hudRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  hudBrand: {
     color: colors.accent,
     fontWeight: "800",
-    marginBottom: 4,
+    fontSize: fontSize.sm,
+    letterSpacing: 1,
   },
-  hudText: {
+  hudPills: {
+    flexDirection: "row",
+    gap: 6,
+  },
+  hudPill: {
+    borderRadius: radius.pill,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    backgroundColor: "rgba(255,255,255,0.08)",
+  },
+  hudPillLive: {
+    backgroundColor: "rgba(115,251,211,0.15)",
+  },
+  hudPillText: {
     color: colors.text,
-    fontSize: 12,
-    lineHeight: 18,
+    fontSize: fontSize.xs,
+    fontWeight: "700",
   },
-  hudSubtext: {
-    color: colors.textMuted,
+  hudMeta: {
+    color: colors.textDim,
+    fontSize: fontSize.xs,
     marginTop: 4,
-    fontSize: 12,
+  },
+  instructionBadge: {
+    position: "absolute",
+    top: 12,
+    alignSelf: "center",
+    borderRadius: radius.pill,
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    backgroundColor: "rgba(4,17,31,0.7)",
+  },
+  instructionText: {
+    color: colors.textDim,
+    fontSize: fontSize.xs,
+    fontWeight: "600",
   },
 });

@@ -1,22 +1,56 @@
 {
   "cli": {
-    "version": ">= 16.0.0"
+    "version": ">= 16.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "FIREBASE_ENABLED": "false",
+        "FIREBASE_API_KEY": "",
+        "FIREBASE_AUTH_DOMAIN": "",
+        "FIREBASE_PROJECT_ID": "",
+        "FIREBASE_STORAGE_BUCKET": "",
+        "FIREBASE_MESSAGING_SENDER_ID": "",
+        "FIREBASE_APP_ID": ""
+      }
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "FIREBASE_ENABLED": "false",
+        "FIREBASE_API_KEY": "",
+        "FIREBASE_AUTH_DOMAIN": "",
+        "FIREBASE_PROJECT_ID": "",
+        "FIREBASE_STORAGE_BUCKET": "",
+        "FIREBASE_MESSAGING_SENDER_ID": "",
+        "FIREBASE_APP_ID": ""
       }
     },
     "production": {
       "android": {
         "buildType": "app-bundle"
+      },
+      "env": {
+        "FIREBASE_ENABLED": "false",
+        "FIREBASE_API_KEY": "",
+        "FIREBASE_AUTH_DOMAIN": "",
+        "FIREBASE_PROJECT_ID": "",
+        "FIREBASE_STORAGE_BUCKET": "",
+        "FIREBASE_MESSAGING_SENDER_ID": "",
+        "FIREBASE_APP_ID": ""
       }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {},
+      "android": {}
     }
   }
 }

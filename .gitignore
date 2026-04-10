@@ -1,5 +1,14 @@
 node_modules
 .expo
+.npm-cache
 dist
 build
 *.log
+tmp/
+
+# Secrets - never commit real credentials
+.env
+.env.local
+.env.production
+google-services.json
+GoogleService-Info.plist

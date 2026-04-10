@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users: anyone authenticated can read public profile, only owner can write
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if false;
+
+      // Private subcollection: only the user themselves
+      match /private/{document} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // Rooms: authenticated users can read and create, participants can update
+    match /rooms/{roomId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update: if request.auth != null
+        && (request.auth.uid in resource.data.state.participants
+            || request.auth.uid == resource.data.createdBy);
+      allow delete: if false;
+
+      // Room chat: authenticated can read, author must match for create
+      match /chat/{messageId} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null
+          && request.resource.data.authorId == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() <= 500;
+        allow update, delete: if false;
+      }
+    }
+
+    // Global chat: authenticated can read and create, author must match
+    match /globalChat/{messageId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() <= 500;
+      allow update, delete: if false;
+    }
+  }
+}

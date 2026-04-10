@@ -22,9 +22,11 @@ function normalizeLongitude(value: number) {
   return normalized;
 }
 
+// J2000.0 epoch - standard astronomical reference (Jan 1, 2000 12:00 TT)
+const J2000_EPOCH = Date.UTC(2000, 0, 1, 12, 0, 0, 0);
+
 function totalHoursSinceReference(date: Date) {
-  const reference = Date.UTC(2026, 0, 1, 0, 0, 0, 0);
-  return (date.getTime() - reference) / (1000 * 60 * 60);
+  return (date.getTime() - J2000_EPOCH) / (1000 * 60 * 60);
 }
 
 function relativeLongitude(objectLongitude: number, transform: SkyTransform, motionFactor: number) {
@@ -36,14 +38,35 @@ function relativeLongitude(objectLongitude: number, transform: SkyTransform, mot
 }
 
 export function renderSkyObjects(transform: SkyTransform): RenderedSkyObject[] {
+  const safeZoom = Math.max(0.1, Math.min(10, Number.isFinite(transform.zoom) ? transform.zoom : 1));
+  const safeRotation = Number.isFinite(transform.rotation) ? transform.rotation : 0;
+  const safeTransform = { ...transform, zoom: safeZoom, rotation: safeRotation };
+
+  // Observer latitude affects which part of the sky is visible
+  // Northern observers see more northern sky, southern observers see more southern sky
+  const observerLat = safeTransform.observerLatitude ?? 0;
+  const observerLon = safeTransform.observerLongitude ?? 0;
+
+  // Local sidereal time approximation: shifts the sky based on time + longitude
+  const hours = totalHoursSinceReference(safeTransform.date);
+  const lst = (hours * 15.04107 + observerLon) % 360; // approximate LST in degrees
+
   return skyObjects.map((object) => {
-    const lon = relativeLongitude(object.longitude, transform, object.motionFactor);
-    const latitude = object.latitude + viewpointLatitudeOffsets[transform.viewpoint];
-    const x = 0.5 + (lon / 180) * 0.46 * transform.zoom;
-    const y = 0.5 - (latitude / 90) * 0.33 * transform.zoom;
+    const lon = relativeLongitude(object.longitude, safeTransform, object.motionFactor);
+    // Shift latitude rendering based on observer position
+    // Objects at the observer's zenith appear near center; objects below horizon are hidden
+    const objectDeclination = object.latitude + viewpointLatitudeOffsets[safeTransform.viewpoint];
+    // Altitude check: object is above horizon if dec > (observerLat - 90)
+    const minVisibleDec = observerLat - 90;
+    const maxVisibleDec = observerLat + 90;
+    const isAboveHorizon = objectDeclination >= minVisibleDec && objectDeclination <= maxVisibleDec;
+
+    const x = 0.5 + (lon / 180) * 0.46 * safeTransform.zoom;
+    const y = 0.5 - (objectDeclination / 90) * 0.33 * safeTransform.zoom;
     const sizeBoost = object.kind === "planet" ? 2.5 : object.kind === "satellite" ? 1.5 : object.kind === "meteor" ? 2 : 0;
     const size = Math.max(2.5, 6.2 - object.magnitude + sizeBoost);
-    const isVisible = x >= -0.2 && x <= 1.2 && y >= -0.15 && y <= 1.15;
+    const isInView = x >= -0.2 && x <= 1.2 && y >= -0.15 && y <= 1.15;
+    const isVisible = isInView && isAboveHorizon;
 
     return {
       ...object,

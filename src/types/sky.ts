@@ -71,4 +71,6 @@ export type SkyTransform = {
   zoom: number;
   date: Date;
   viewpoint: Viewpoint;
+  observerLatitude?: number;
+  observerLongitude?: number;
 };

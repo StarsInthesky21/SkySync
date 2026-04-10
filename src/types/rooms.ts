@@ -8,6 +8,7 @@ export type SpaceNote = {
 export type ChatMessage = {
   id: string;
   author: string;
+  authorId?: string;
   text: string;
   timestampLabel: string;
   timestamp: number;
@@ -35,6 +36,8 @@ export type SkyRoom = {
   id: string;
   roomCode: string;
   name: string;
+  createdBy?: string;
+  createdAt?: number;
   state: RoomSkyState;
   chat: ChatMessage[];
 };

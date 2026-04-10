@@ -60,6 +60,25 @@ describe("skyEngine", () => {
       expect(earthJup.x).not.toEqual(marsJup.x);
     });
 
+    it("handles NaN zoom gracefully", () => {
+      const objects = renderSkyObjects({ ...baseTransform, zoom: NaN });
+      expect(objects.length).toBeGreaterThan(0);
+      for (const obj of objects.slice(0, 3)) {
+        expect(Number.isFinite(obj.x)).toBe(true);
+        expect(Number.isFinite(obj.y)).toBe(true);
+      }
+    });
+
+    it("handles extreme zoom values", () => {
+      const objects = renderSkyObjects({ ...baseTransform, zoom: 999 });
+      expect(objects.length).toBeGreaterThan(0);
+    });
+
+    it("handles negative rotation", () => {
+      const objects = renderSkyObjects({ ...baseTransform, rotation: -180 });
+      expect(objects.length).toBeGreaterThan(0);
+    });
+
     it("includes all sky object kinds", () => {
       const objects = renderSkyObjects(baseTransform);
       const kinds = new Set(objects.map((o) => o.kind));
@@ -72,8 +91,8 @@ describe("skyEngine", () => {
     it("calculates size based on magnitude", () => {
       const objects = renderSkyObjects(baseTransform);
       const sirius = objects.find((o) => o.id === "sirius")!;
-      const dimStar = objects.find((o) => o.id === "field-star-5")!;
-      // Sirius (magnitude -1.46) should be larger than a dim field star
+      const dimStar = objects.find((o) => o.id === "hyg-51-pegasi")!;
+      // Sirius (magnitude -1.46) should be larger than a dim catalog star
       expect(sirius.size).toBeGreaterThan(dimStar.size);
     });
   });
