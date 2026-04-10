@@ -23,11 +23,10 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: 22
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Type check
         run: npm run typecheck
@@ -49,8 +48,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: 22
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -59,7 +57,7 @@ jobs:
           java-version: 17
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Generate app icons
         run: node scripts/generate-icons.js
