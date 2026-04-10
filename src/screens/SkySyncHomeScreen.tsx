@@ -17,7 +17,8 @@ import {
   TextInput,
   View,
 } from "react-native";
-import * as Speech from "expo-speech";
+let Speech: any = null;
+try { Speech = require("expo-speech"); } catch {}
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SectionErrorBoundary } from "@/components/SectionErrorBoundary";
 import { ObjectPreview3D } from "@/components/sky/ObjectPreview3D";

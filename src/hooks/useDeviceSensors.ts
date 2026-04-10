@@ -5,7 +5,17 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
-import { Magnetometer, Accelerometer, type MagnetometerMeasurement, type AccelerometerMeasurement } from "expo-sensors";
+
+// Dynamic import to avoid crash if expo-sensors native module isn't linked
+let Magnetometer: any = null;
+let Accelerometer: any = null;
+try {
+  const sensors = require("expo-sensors");
+  Magnetometer = sensors.Magnetometer;
+  Accelerometer = sensors.Accelerometer;
+} catch {
+  // expo-sensors not available - AR features will be disabled
+}
 
 export type DeviceOrientation = {
   /** Compass heading in degrees (0 = North, 90 = East, 180 = South, 270 = West) */
@@ -46,7 +56,7 @@ export function useDeviceSensors() {
   const availableRef = useRef(false);
 
   useEffect(() => {
-    if (Platform.OS === "web") return;
+    if (Platform.OS === "web" || !Magnetometer || !Accelerometer) return;
 
     async function setup() {
       const [magAvail, accAvail] = await Promise.all([
@@ -69,7 +79,7 @@ export function useDeviceSensors() {
 
   // Start/stop sensor subscriptions based on AR mode
   useEffect(() => {
-    if (Platform.OS === "web" || !arActive) {
+    if (Platform.OS === "web" || !arActive || !Magnetometer || !Accelerometer) {
       setOrientation((prev) => ({ ...prev, active: false }));
       return;
     }
@@ -77,7 +87,7 @@ export function useDeviceSensors() {
     Magnetometer.setUpdateInterval(100);
     Accelerometer.setUpdateInterval(100);
 
-    const magSub = Magnetometer.addListener((data: MagnetometerMeasurement) => {
+    const magSub = Magnetometer.addListener((data: { x: number; y: number; z: number }) => {
       // Calculate compass heading from magnetometer
       // atan2(y, x) gives angle from magnetic north
       let angle = Math.atan2(data.y, data.x) * (180 / Math.PI);
@@ -85,7 +95,7 @@ export function useDeviceSensors() {
       headingRef.current = lowPass(headingRef.current, angle, 0.15);
     });
 
-    const accSub = Accelerometer.addListener((data: AccelerometerMeasurement) => {
+    const accSub = Accelerometer.addListener((data: { x: number; y: number; z: number }) => {
       // Calculate pitch from accelerometer
       // When phone points straight up: z ≈ 0, y ≈ -1
       // When phone is flat: z ≈ -1, y ≈ 0

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, View, Text, StyleSheet } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import * as SplashScreen from "expo-splash-screen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -13,42 +14,64 @@ import { SkySyncProvider } from "@/providers/SkySyncProvider";
 import { notificationService } from "@/services/notifications";
 import { colors, fontSize } from "@/theme/colors";
 
+// Keep splash screen visible while we check onboarding state.
+// Safety: if anything goes wrong, force-hide after 5 seconds so the app isn't stuck.
+SplashScreen.preventAutoHideAsync().catch(() => {});
+setTimeout(() => { SplashScreen.hideAsync().catch(() => {}); }, 5000);
+
 const ONBOARDING_KEY = "@skysync/onboarding_complete";
 
 export default function RootLayout() {
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
   const notificationsInitialized = useRef(false);
 
-  // Set up push notification handler on mount
+  // Set up push notification handler on mount (non-blocking, fully wrapped in try/catch).
+  // This entire block is fire-and-forget - it must NEVER block app launch.
   useEffect(() => {
     if (notificationsInitialized.current) return;
     notificationsInitialized.current = true;
 
-    // Configure how foreground notifications are displayed
-    notificationService.setupNotificationHandler();
-
-    // Initialize notification channels + push token registration
-    notificationService.init().catch((err) => {
-      console.warn("[SkySync] Notification init failed:", err);
-    });
-
-    // Set up foreground notification listener
     let listenerSub: { remove: () => void } | undefined;
-    (async () => {
+
+    const initNotifications = async () => {
+      try {
+        await notificationService.setupNotificationHandler();
+      } catch {
+        // Notifications not available on this platform
+      }
+
+      try {
+        await notificationService.init();
+      } catch {
+        // Notification init failed - not critical
+      }
+
       try {
         const expoNotifications = require("expo-notifications");
-        listenerSub = expoNotifications.addNotificationReceivedListener(
-          (notification: any) => {
-            notificationService.handleNotificationReceived(notification);
-          },
-        );
+        if (expoNotifications?.addNotificationReceivedListener) {
+          listenerSub = expoNotifications.addNotificationReceivedListener(
+            (notification: any) => {
+              try {
+                notificationService.handleNotificationReceived(notification);
+              } catch {
+                // ignore
+              }
+            },
+          );
+        }
       } catch {
         // expo-notifications not available
       }
-    })();
+    };
+
+    // Run with a timeout guard so it never blocks the app
+    Promise.race([
+      initNotifications(),
+      new Promise((resolve) => setTimeout(resolve, 3000)),
+    ]).catch(() => {});
 
     return () => {
-      listenerSub?.remove();
+      try { listenerSub?.remove(); } catch {}
     };
   }, []);
 
@@ -57,6 +80,9 @@ export default function RootLayout() {
       setShowOnboarding(value !== "true");
     }).catch(() => {
       setShowOnboarding(true);
+    }).finally(() => {
+      // Hide splash screen once we know the onboarding state
+      SplashScreen.hideAsync().catch(() => {});
     });
   }, []);
 

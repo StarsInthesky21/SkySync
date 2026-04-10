@@ -9,7 +9,8 @@ import {
   TextInput,
   View,
 } from "react-native";
-import * as Speech from "expo-speech";
+let Speech: any = null;
+try { Speech = require("expo-speech"); } catch {}
 import { ObjectPreview3D } from "@/components/sky/ObjectPreview3D";
 import { StoryPlayer } from "@/components/sky/StoryPlayer";
 import { colors, fontSize, radius, spacing } from "@/theme/colors";
@@ -50,11 +51,11 @@ export function ObjectDetailModal({
       visible={Boolean(selectedObject)}
       transparent
       animationType="slide"
-      onRequestClose={() => { Speech.stop(); onClose(); }}
+      onRequestClose={() => { try { Speech?.stop(); } catch {} onClose(); }}
       accessibilityViewIsModal
     >
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <Pressable style={styles.backdrop} onPress={() => { Speech.stop(); onClose(); }}>
+        <Pressable style={styles.backdrop} onPress={() => { try { Speech?.stop(); } catch {} onClose(); }}>
           <View style={styles.modalSheet}>
             <Pressable onPress={() => {}} style={{ flex: 1 }}>
               <ScrollView contentContainerStyle={styles.modalContent} showsVerticalScrollIndicator={false}>
@@ -62,7 +63,7 @@ export function ObjectDetailModal({
                 <View style={styles.modalHeader}>
                   <Pressable
                     style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]}
-                    onPress={() => { Speech.stop(); onClose(); }}
+                    onPress={() => { try { Speech?.stop(); } catch {} onClose(); }}
                   >
                     <Text style={styles.closeBtnText}>Close</Text>
                   </Pressable>
@@ -140,11 +141,13 @@ export function ObjectDetailModal({
                     style={({ pressed }) => [styles.secondaryBtn, pressed && styles.secondaryPressed]}
                     onPress={() => {
                       if (!selectedObject) return;
-                      Speech.stop();
-                      Speech.speak(
-                        `${selectedObject.name}. ${selectedObject.distanceFromEarth}. ${selectedObject.scientificFacts.join(" ")}`,
-                        { rate: 0.95, pitch: 1.0 },
-                      );
+                      try {
+                        Speech?.stop();
+                        Speech?.speak(
+                          `${selectedObject.name}. ${selectedObject.distanceFromEarth}. ${selectedObject.scientificFacts.join(" ")}`,
+                          { rate: 0.95, pitch: 1.0 },
+                        );
+                      } catch {}
                     }}
                     accessibilityRole="button"
                     accessibilityLabel={`Read aloud information about ${selectedObject?.name ?? "this object"}`}

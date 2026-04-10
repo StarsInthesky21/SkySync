@@ -17,10 +17,15 @@ export type RoomSyncService = {
 
 // Controlled via app.json extra.firebaseEnabled
 // For EAS builds, use app.config.js to read from env vars
-const useFirebase = Constants.expoConfig?.extra?.firebaseEnabled === true;
+const configEnabled = Constants.expoConfig?.extra?.firebaseEnabled === true;
+const hasCredentials = Boolean(Constants.expoConfig?.extra?.firebaseApiKey);
+
+// Only truly enable Firebase when the flag is on AND real credentials exist.
+// This prevents hangs when firebaseEnabled=true but keys are empty strings.
+const useFirebase = configEnabled && hasCredentials;
 
 // Dynamic import based on config flag
-// When firebaseEnabled is true, use real Firestore backend
+// When useFirebase is true, use real Firestore backend
 // When false, use in-memory mock for development/testing
 const serviceModule = useFirebase
   ? require("./firebase/roomSyncService")

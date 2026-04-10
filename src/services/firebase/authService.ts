@@ -8,7 +8,16 @@ import {
   signOut as firebaseSignOut,
   User,
 } from "firebase/auth";
-import { auth } from "./config";
+import { auth as _auth } from "./config";
+
+// Firebase services are only dynamically imported when isFirebaseEnabled=true,
+// which means auth is guaranteed to be non-null here.
+// If somehow reached without valid config, throw early with a clear message.
+function getAuth() {
+  if (!_auth) throw new Error("[SkySync] Firebase auth not initialized. Check your Firebase config.");
+  return _auth;
+}
+const auth = getAuth();
 
 export type AuthUser = {
   uid: string;

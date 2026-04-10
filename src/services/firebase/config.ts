@@ -21,32 +21,43 @@ const firebaseConfig = {
   appId: extra.firebaseAppId ?? "",
 };
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+// Guard: only initialize Firebase if we have real credentials.
+// Empty strings from app.json defaults will cause initializeApp to throw or hang.
+const hasValidConfig = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
 
-function createAuth(): Auth {
-  if (Platform.OS === "web") {
-    return getAuth(app);
-  }
+let app: ReturnType<typeof initializeApp> | null = null;
+let auth: Auth | null = null;
+let db: Firestore | null = null;
+
+if (hasValidConfig) {
   try {
-    return initializeAuth(app, {
-      persistence: getReactNativePersistence(AsyncStorage),
-    });
-  } catch {
-    return getAuth(app);
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+
+    if (Platform.OS === "web") {
+      auth = getAuth(app);
+    } else {
+      try {
+        auth = initializeAuth(app, {
+          persistence: getReactNativePersistence(AsyncStorage),
+        });
+      } catch {
+        auth = getAuth(app);
+      }
+    }
+
+    try {
+      db = initializeFirestore(app, {
+        localCache: persistentLocalCache({ tabManager: persistentSingleTabManager(undefined) }),
+      });
+    } catch {
+      db = getFirestore(app);
+    }
+  } catch (error) {
+    console.warn("[SkySync Firebase] Failed to initialize:", error);
+    app = null;
+    auth = null;
+    db = null;
   }
 }
-
-function createFirestore(): Firestore {
-  try {
-    return initializeFirestore(app, {
-      localCache: persistentLocalCache({ tabManager: persistentSingleTabManager(undefined) }),
-    });
-  } catch {
-    return getFirestore(app);
-  }
-}
-
-const auth: Auth = createAuth();
-const db: Firestore = createFirestore();
 
 export { app, auth, db };

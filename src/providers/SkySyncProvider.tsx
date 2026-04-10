@@ -174,7 +174,13 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
       }
     }
     loadData();
-    return () => { mounted = false; };
+
+    // Safety: if loadData hangs (e.g. Firestore timeout), force isLoading=false after 6s
+    const safetyTimeout = setTimeout(() => {
+      if (mounted) setIsLoading(false);
+    }, 6000);
+
+    return () => { mounted = false; clearTimeout(safetyTimeout); };
   }, [userId]);
 
   useEffect(() => {

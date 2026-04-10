@@ -3,7 +3,8 @@
  * Extracted from the monolithic SkySyncHomeScreen to support route-based navigation.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import * as Speech from "expo-speech";
+let Speech: any = null;
+try { Speech = require("expo-speech"); } catch {}
 import { Share } from "react-native";
 import { useSkySync, useSelectedObjectDetails } from "@/providers/SkySyncProvider";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
@@ -93,13 +94,15 @@ export function useAppState() {
 
   // Voice guide
   useEffect(() => {
-    if (!voiceGuideEnabled || !details.object) return;
-    Speech.stop();
-    Speech.speak(
-      `${details.object.name}. ${details.object.distanceFromEarth} from Earth. ${details.object.mythologyStory}. ${details.object.scientificFacts[0]}`,
-      { rate: 0.95, pitch: 1.0 },
-    );
-    return () => { Speech.stop(); };
+    if (!voiceGuideEnabled || !details.object || !Speech) return;
+    try {
+      Speech.stop();
+      Speech.speak(
+        `${details.object.name}. ${details.object.distanceFromEarth} from Earth. ${details.object.mythologyStory}. ${details.object.scientificFacts[0]}`,
+        { rate: 0.95, pitch: 1.0 },
+      );
+    } catch {}
+    return () => { try { Speech?.stop(); } catch {} };
   }, [details.object?.id, voiceGuideEnabled]);
 
   // Challenge auto-completion

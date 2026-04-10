@@ -15,7 +15,8 @@ import {
   arrayRemove,
   Timestamp,
 } from "firebase/firestore";
-import { db } from "./config";
+import { db as _db } from "./config";
+const db = _db!; // Non-null: this module is only loaded when Firebase is properly configured
 import { authService } from "./authService";
 import { ROOM_CODE_CHARS, ROOM_CODE_LENGTH, SKY_STATE_DEBOUNCE_MS } from "@/constants";
 import { formatTimestamp } from "@/data/skyData";

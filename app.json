@@ -65,7 +65,7 @@
       ]
     ],
     "extra": {
-      "firebaseEnabled": true,
+      "firebaseEnabled": false,
       "firebaseApiKey": "",
       "firebaseAuthDomain": "",
       "firebaseProjectId": "",

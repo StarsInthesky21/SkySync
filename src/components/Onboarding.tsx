@@ -12,8 +12,11 @@ import {
   View,
   ViewToken,
 } from "react-native";
-import * as Location from "expo-location";
-import * as Haptics from "expo-haptics";
+// Dynamic imports to avoid crash if native modules aren't linked in debug APK
+let Location: any = null;
+let Haptics: any = null;
+try { Location = require("expo-location"); } catch {}
+try { Haptics = require("expo-haptics"); } catch {}
 import { colors, fontSize, radius, spacing } from "@/theme/colors";
 import { storage } from "@/services/storage";
 
@@ -132,22 +135,20 @@ export function Onboarding({ onComplete }: Props) {
   }, []);
 
   const handleNext = useCallback(async () => {
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
+    try { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
 
     // Save username if on username step
     if (STEPS[currentIndex].interactive === "username" && usernameInput.trim()) {
-      const profile = await storage.getUserProfile();
-      await storage.saveUserProfile({ ...profile, username: usernameInput.trim().slice(0, 20) });
+      try {
+        const profile = await storage.getUserProfile();
+        await storage.saveUserProfile({ ...profile, username: usernameInput.trim().slice(0, 20) });
+      } catch {}
     }
 
     if (currentIndex < STEPS.length - 1) {
       flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
     } else {
-      if (Platform.OS !== "web") {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      }
+      try { if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
       onComplete();
     }
   }, [currentIndex, onComplete, usernameInput]);

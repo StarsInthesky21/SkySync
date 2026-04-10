@@ -5,7 +5,9 @@
  */
 import { useEffect, useMemo, useRef } from "react";
 import { Animated, Easing, Platform, Pressable, StyleSheet, Text, View } from "react-native";
-import * as Haptics from "expo-haptics";
+// Dynamic import to avoid crash if native module isn't available
+let Haptics: any = null;
+try { Haptics = require("expo-haptics"); } catch {}
 import { DeviceOrientation } from "@/hooks/useDeviceSensors";
 import { colors, fontSize, radius, spacing } from "@/theme/colors";
 import { RenderedSkyObject } from "@/types/sky";
@@ -71,7 +73,7 @@ export function AROverlay({ orientation, objects, arActive, onToggleAr, onSelect
   // Haptic when object detected
   useEffect(() => {
     if (nearbyObjects.length > 0 && Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      try { Haptics?.impactAsync?.(Haptics.ImpactFeedbackStyle.Light); } catch {}
     }
   }, [nearbyObjects.length]);
 
@@ -89,7 +91,7 @@ export function AROverlay({ orientation, objects, arActive, onToggleAr, onSelect
       <Pressable
         onPress={() => {
           if (Platform.OS !== "web") {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            try { Haptics?.impactAsync?.(Haptics.ImpactFeedbackStyle.Medium); } catch {}
           }
           onToggleAr();
         }}

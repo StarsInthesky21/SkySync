@@ -33,12 +33,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Firebase mode: listen for auth state and sign in anonymously
     let unsubscribe: (() => void) | undefined;
+    let timedOut = false;
+
+    // Safety timeout: if Firebase auth doesn't resolve within 8 seconds, fall back to local
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      console.warn("[SkySync Auth] Firebase auth timed out, falling back to local user");
+      setUser({ uid: "local-user", isAnonymous: true, email: null });
+      setIsLoading(false);
+    }, 8000);
 
     async function initAuth() {
       try {
         const { authService } = await import("@/services/firebase/authService");
 
         unsubscribe = authService.onAuthStateChanged((authUser) => {
+          if (timedOut) return;
+          clearTimeout(timeout);
           setUser(authUser);
           setIsLoading(false);
         });
@@ -48,6 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           await authService.signInAnonymous();
         }
       } catch (error) {
+        if (timedOut) return;
+        clearTimeout(timeout);
         console.warn("[SkySync Auth] Failed to initialize:", error);
         // Fall back to local user on auth failure
         setUser({ uid: "local-user", isAnonymous: true, email: null });
@@ -56,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     initAuth();
-    return () => { unsubscribe?.(); };
+    return () => { clearTimeout(timeout); unsubscribe?.(); };
   }, []);
 
   const value: AuthContextValue = {

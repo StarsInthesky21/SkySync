@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useRef } from "react";
 import { Animated, Easing, Platform, Pressable, StyleSheet, Text, View } from "react-native";
-import * as Haptics from "expo-haptics";
+let Haptics: any = null;
+try { Haptics = require("expo-haptics"); } catch {}
 import { colors } from "@/theme/colors";
 import { RenderedSkyObject } from "@/types/sky";
 
@@ -13,11 +14,13 @@ type StarProps = {
 
 function StarComponent({ object, selected, highlighted, onPress }: StarProps) {
   const handlePress = useCallback(() => {
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(
-        object.kind === "planet" ? Haptics.ImpactFeedbackStyle.Medium : Haptics.ImpactFeedbackStyle.Light,
-      );
-    }
+    try {
+      if (Platform.OS !== "web" && Haptics) {
+        Haptics.impactAsync(
+          object.kind === "planet" ? Haptics.ImpactFeedbackStyle.Medium : Haptics.ImpactFeedbackStyle.Light,
+        );
+      }
+    } catch {}
     onPress(object.id);
   }, [onPress, object.id, object.kind]);
   const twinkle = useRef(new Animated.Value(1)).current;
