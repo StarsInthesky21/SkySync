@@ -91,8 +91,8 @@ describe("skyEngine", () => {
     it("calculates size based on magnitude", () => {
       const objects = renderSkyObjects(baseTransform);
       const sirius = objects.find((o) => o.id === "sirius")!;
-      const dimStar = objects.find((o) => o.id === "field-star-5")!;
-      // Sirius (magnitude -1.46) should be larger than a dim field star
+      const dimStar = objects.find((o) => o.id === "hyg-51-pegasi")!;
+      // Sirius (magnitude -1.46) should be larger than a dim catalog star
       expect(sirius.size).toBeGreaterThan(dimStar.size);
     });
   });

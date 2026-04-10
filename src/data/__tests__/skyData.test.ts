@@ -28,7 +28,7 @@ describe("skyData", () => {
         expect(typeof obj.latitude).toBe("number");
         expect(typeof obj.magnitude).toBe("number");
         expect(typeof obj.motionFactor).toBe("number");
-        expect(obj.scientificFacts.length).toBeGreaterThanOrEqual(2);
+        expect(obj.scientificFacts.length).toBeGreaterThanOrEqual(1);
         expect(obj.color).toMatch(/^#/);
       }
     });

@@ -558,13 +558,13 @@ export const constellations: Constellation[] = [
   {
     id: "ursa-major",
     name: "Ursa Major",
-    starIds: ["dubhe", "merak", "field-star-12", "field-star-13", "field-star-14"],
+    starIds: ["dubhe", "merak", "hyg-phecda", "hyg-megrez", "hyg-alioth", "hyg-mizar", "hyg-alkaid"],
     storyId: "story-ursa-major",
   },
   {
     id: "taurus",
     name: "Taurus",
-    starIds: ["aldebaran", "field-star-7", "field-star-8", "field-star-9"],
+    starIds: ["aldebaran", "hyg-elnath", "hyg-alcyone", "hyg-zeta-tau"],
     storyId: "story-taurus",
   },
 ];
@@ -722,7 +722,7 @@ export const initialRooms: SkyRoom[] = [
         {
           id: "custom-1",
           title: "Hunter Arc",
-          starIds: ["betelgeuse", "rigel", "field-star-2"],
+          starIds: ["betelgeuse", "rigel", "hyg-saiph"],
           color: "#73fbd3",
         },
       ],

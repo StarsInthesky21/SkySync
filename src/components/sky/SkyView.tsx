@@ -56,7 +56,7 @@ function useVisibleObjects(objects: RenderedSkyObject[], zoom: number) {
       // Always show planets, satellites, meteors, selected/highlighted
       if (o.kind !== "star") return true;
       // Show all named stars (not field/catalog stars)
-      if (!o.id.startsWith("field-star-") && !o.id.startsWith("hyg-")) return true;
+      if (!o.id.startsWith("hyg-")) return true;
       // For catalog stars, filter by magnitude based on zoom level
       return o.magnitude <= magLimit;
     });
