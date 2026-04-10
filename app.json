@@ -2,7 +2,8 @@
   "expo": {
     "name": "SkySync",
     "slug": "skysync",
-    "version": "1.0.1",
+    "scheme": "skysync",
+    "version": "1.2.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "icon": "./assets/icon.png",
@@ -17,18 +18,23 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.skysync.app",
-      "buildNumber": "2"
+      "buildNumber": "4",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "SkySync uses your location to show exactly what stars and planets are visible from where you are right now."
+      }
     },
     "android": {
       "package": "com.skysync.app",
-      "versionCode": 2,
+      "versionCode": 4,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#04111f"
       },
       "permissions": [
         "android.permission.INTERNET",
-        "android.permission.ACCESS_NETWORK_STATE"
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION"
       ]
     },
     "plugins": [
@@ -42,10 +48,24 @@
             "image": "./assets/icon.png"
           }
         }
+      ],
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "SkySync uses your location to show exactly what stars and planets are visible from where you are right now."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#73fbd3"
+        }
       ]
     ],
     "extra": {
-      "firebaseEnabled": false,
+      "firebaseEnabled": true,
       "firebaseApiKey": "",
       "firebaseAuthDomain": "",
       "firebaseProjectId": "",

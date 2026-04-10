@@ -8,7 +8,7 @@ type Props = {
 
 export function SectionHeader({ title, subtitle }: Props) {
   return (
-    <View style={styles.container}>
+    <View style={styles.container} accessibilityRole="header">
       <Text style={styles.title}>{title}</Text>
       {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
     </View>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background gradient - deep space -->
+    <radialGradient id="bg" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#0b1d33"/>
+      <stop offset="50%" stop-color="#061428"/>
+      <stop offset="100%" stop-color="#020810"/>
+    </radialGradient>
+
+    <!-- Glow for accent elements -->
+    <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#73fbd3" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#73fbd3" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Subtle nebula glow -->
+    <radialGradient id="nebula1" cx="30%" cy="25%" r="40%">
+      <stop offset="0%" stop-color="#4a5aff" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#4a5aff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="nebula2" cx="70%" cy="75%" r="35%">
+      <stop offset="0%" stop-color="#ff6f61" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#ff6f61" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Icon shape mask (rounded square) -->
+    <clipPath id="iconClip">
+      <rect width="1024" height="1024" rx="224" ry="224"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#iconClip)">
+    <!-- Background -->
+    <rect width="1024" height="1024" fill="url(#bg)"/>
+
+    <!-- Nebula hints -->
+    <rect width="1024" height="1024" fill="url(#nebula1)"/>
+    <rect width="1024" height="1024" fill="url(#nebula2)"/>
+
+    <!-- Background stars -->
+    <circle cx="358.7" cy="765.2" r="2.8" fill="white" opacity="0.51"/>
+    <circle cx="581.5" cy="1001.5" r="2.6" fill="white" opacity="0.75"/>
+    <circle cx="296.3" cy="281.6" r="3.5" fill="white" opacity="0.89"/>
+    <circle cx="94.1" cy="727.0" r="1.3" fill="white" opacity="0.49"/>
+    <circle cx="735.4" cy="246.3" r="1.2" fill="white" opacity="0.34"/>
+    <circle cx="985.6" cy="606.3" r="2.0" fill="white" opacity="0.86"/>
+    <circle cx="103.9" cy="621.9" r="2.7" fill="white" opacity="0.68"/>
+    <circle cx="971.5" cy="780.1" r="2.3" fill="white" opacity="0.96"/>
+    <circle cx="502.6" cy="205.4" r="2.9" fill="white" opacity="0.43"/>
+    <circle cx="808.7" cy="26.5" r="3.2" fill="white" opacity="0.93"/>
+    <circle cx="407.6" cy="111.1" r="2.5" fill="white" opacity="0.75"/>
+    <circle cx="965.7" cy="674.7" r="2.6" fill="white" opacity="0.97"/>
+    <circle cx="560.6" cy="534.8" r="2.5" fill="white" opacity="0.94"/>
+    <circle cx="956.8" cy="598.0" r="1.3" fill="white" opacity="0.59"/>
+    <circle cx="157.1" cy="74.3" r="3.9" fill="white" opacity="0.53"/>
+    <circle cx="3.6" cy="421.5" r="3.3" fill="white" opacity="0.30"/>
+    <circle cx="52.9" cy="406.0" r="1.6" fill="white" opacity="0.58"/>
+    <circle cx="327.9" cy="561.4" r="3.8" fill="white" opacity="0.62"/>
+    <circle cx="38.6" cy="495.0" r="2.9" fill="white" opacity="0.57"/>
+    <circle cx="766.0" cy="376.1" r="3.9" fill="white" opacity="0.94"/>
+    <circle cx="626.3" cy="65.0" r="3.0" fill="white" opacity="0.51"/>
+    <circle cx="444.9" cy="598.9" r="2.1" fill="white" opacity="0.76"/>
+    <circle cx="404.7" cy="245.1" r="3.3" fill="white" opacity="0.90"/>
+    <circle cx="136.7" cy="128.1" r="2.6" fill="white" opacity="0.41"/>
+    <circle cx="463.9" cy="772.3" r="2.2" fill="white" opacity="0.99"/>
+    <circle cx="887.0" cy="922.8" r="1.2" fill="white" opacity="0.68"/>
+    <circle cx="154.4" cy="675.1" r="1.5" fill="white" opacity="0.74"/>
+    <circle cx="488.9" cy="120.2" r="2.5" fill="white" opacity="0.52"/>
+    <circle cx="15.4" cy="974.0" r="3.0" fill="white" opacity="0.94"/>
+    <circle cx="101.4" cy="185.3" r="2.4" fill="white" opacity="0.90"/>
+    <circle cx="566.3" cy="893.4" r="2.6" fill="white" opacity="0.62"/>
+    <circle cx="680.3" cy="695.8" r="3.0" fill="white" opacity="0.89"/>
+    <circle cx="853.7" cy="932.2" r="2.5" fill="white" opacity="0.96"/>
+    <circle cx="301.8" cy="994.6" r="3.5" fill="white" opacity="0.56"/>
+    <circle cx="321.5" cy="560.3" r="2.1" fill="white" opacity="0.73"/>
+    <circle cx="159.0" cy="316.1" r="3.4" fill="white" opacity="1.00"/>
+    <circle cx="287.5" cy="489.2" r="3.8" fill="white" opacity="0.49"/>
+    <circle cx="80.6" cy="436.4" r="2.4" fill="white" opacity="0.41"/>
+    <circle cx="981.6" cy="489.7" r="1.5" fill="white" opacity="0.99"/>
+    <circle cx="69.2" cy="604.0" r="3.3" fill="white" opacity="0.82"/>
+    <circle cx="156.3" cy="5.9" r="1.0" fill="white" opacity="0.83"/>
+    <circle cx="403.2" cy="323.4" r="3.1" fill="white" opacity="0.85"/>
+    <circle cx="621.7" cy="304.2" r="2.8" fill="white" opacity="0.53"/>
+    <circle cx="554.3" cy="580.8" r="2.3" fill="white" opacity="0.97"/>
+    <circle cx="117.1" cy="649.9" r="1.0" fill="white" opacity="0.70"/>
+    <circle cx="235.1" cy="6.3" r="1.4" fill="white" opacity="0.71"/>
+    <circle cx="839.4" cy="378.7" r="2.6" fill="white" opacity="0.85"/>
+    <circle cx="724.0" cy="856.5" r="1.1" fill="white" opacity="0.45"/>
+    <circle cx="472.7" cy="444.2" r="2.3" fill="white" opacity="0.47"/>
+    <circle cx="767.7" cy="513.0" r="2.7" fill="white" opacity="0.41"/>
+    <circle cx="78.1" cy="263.7" r="1.5" fill="white" opacity="0.51"/>
+    <circle cx="675.6" cy="560.7" r="1.3" fill="white" opacity="0.43"/>
+    <circle cx="506.7" cy="119.7" r="1.6" fill="white" opacity="0.88"/>
+    <circle cx="88.6" cy="569.0" r="1.8" fill="white" opacity="0.34"/>
+    <circle cx="547.1" cy="256.0" r="1.3" fill="white" opacity="0.49"/>
+    <circle cx="74.7" cy="159.7" r="2.8" fill="white" opacity="0.41"/>
+    <circle cx="684.4" cy="279.2" r="2.8" fill="white" opacity="0.71"/>
+    <circle cx="838.0" cy="806.3" r="3.8" fill="white" opacity="0.43"/>
+    <circle cx="848.6" cy="12.6" r="2.3" fill="white" opacity="0.89"/>
+    <circle cx="791.3" cy="859.3" r="1.0" fill="white" opacity="0.84"/>
+    <circle cx="359.0" cy="588.3" r="2.5" fill="white" opacity="0.93"/>
+    <circle cx="1016.6" cy="695.0" r="3.4" fill="white" opacity="0.92"/>
+    <circle cx="19.7" cy="659.2" r="3.3" fill="white" opacity="0.48"/>
+    <circle cx="635.0" cy="648.9" r="2.0" fill="white" opacity="0.67"/>
+    <circle cx="251.1" cy="54.1" r="2.0" fill="white" opacity="0.42"/>
+    <circle cx="114.4" cy="219.1" r="3.2" fill="white" opacity="0.59"/>
+    <circle cx="203.5" cy="399.1" r="2.2" fill="white" opacity="0.45"/>
+    <circle cx="1016.5" cy="401.5" r="1.7" fill="white" opacity="0.86"/>
+    <circle cx="600.8" cy="497.8" r="1.6" fill="white" opacity="0.39"/>
+    <circle cx="645.4" cy="728.3" r="1.6" fill="white" opacity="0.84"/>
+    <circle cx="93.9" cy="1018.5" r="1.5" fill="white" opacity="0.79"/>
+    <circle cx="285.2" cy="45.6" r="1.2" fill="white" opacity="0.58"/>
+    <circle cx="925.9" cy="842.0" r="3.5" fill="white" opacity="0.46"/>
+    <circle cx="740.5" cy="635.6" r="2.2" fill="white" opacity="0.41"/>
+    <circle cx="902.1" cy="437.3" r="3.3" fill="white" opacity="0.50"/>
+    <circle cx="311.6" cy="830.4" r="3.6" fill="white" opacity="0.37"/>
+    <circle cx="749.7" cy="668.2" r="3.1" fill="white" opacity="0.92"/>
+    <circle cx="90.3" cy="477.0" r="1.7" fill="white" opacity="0.34"/>
+    <circle cx="400.8" cy="880.5" r="2.4" fill="white" opacity="0.59"/>
+    <circle cx="932.9" cy="841.9" r="2.2" fill="white" opacity="0.47"/>
+
+    <!-- Constellation pattern -->
+    <line x1="650" y1="280" x2="580" y2="350" stroke="rgba(115,251,211,0.35)" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="580" y1="350" x2="500" y2="380" stroke="rgba(115,251,211,0.35)" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="500" y1="380" x2="440" y2="450" stroke="rgba(115,251,211,0.35)" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="440" y1="450" x2="420" y2="540" stroke="rgba(115,251,211,0.35)" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="420" y1="540" x2="470" y2="620" stroke="rgba(115,251,211,0.35)" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="470" y1="620" x2="560" y2="660" stroke="rgba(115,251,211,0.35)" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="560" y1="660" x2="640" y2="700" stroke="rgba(115,251,211,0.35)" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="650" cy="280" r="6" fill="#73fbd3" opacity="1"/>
+    <circle cx="650" cy="280" r="14" fill="#73fbd3" opacity="0.12"/>
+    <circle cx="580" cy="350" r="4" fill="#73fbd3" opacity="0.8"/>
+    <circle cx="580" cy="350" r="10" fill="#73fbd3" opacity="0.12"/>
+    <circle cx="500" cy="380" r="4" fill="#73fbd3" opacity="0.8"/>
+    <circle cx="500" cy="380" r="10" fill="#73fbd3" opacity="0.12"/>
+    <circle cx="440" cy="450" r="4" fill="#73fbd3" opacity="0.8"/>
+    <circle cx="440" cy="450" r="10" fill="#73fbd3" opacity="0.12"/>
+    <circle cx="420" cy="540" r="4" fill="#73fbd3" opacity="0.8"/>
+    <circle cx="420" cy="540" r="10" fill="#73fbd3" opacity="0.12"/>
+    <circle cx="470" cy="620" r="4" fill="#73fbd3" opacity="0.8"/>
+    <circle cx="470" cy="620" r="10" fill="#73fbd3" opacity="0.12"/>
+    <circle cx="560" cy="660" r="4" fill="#73fbd3" opacity="0.8"/>
+    <circle cx="560" cy="660" r="10" fill="#73fbd3" opacity="0.12"/>
+    <circle cx="640" cy="700" r="6" fill="#73fbd3" opacity="1"/>
+    <circle cx="640" cy="700" r="14" fill="#73fbd3" opacity="0.12"/>
+
+    <!-- Crescent moon accent (top-right area) -->
+    <circle cx="760" cy="200" r="80" fill="url(#moonGlow)"/>
+    <circle cx="760" cy="200" r="38" fill="#e8f4ff" opacity="0.9"/>
+    <circle cx="778" cy="188" r="32" fill="#0b1d33"/>
+
+    <!-- "SS" monogram text -->
+    <text x="512" y="540" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="280" font-weight="900" fill="#73fbd3" letter-spacing="-12" opacity="0.95">SS</text>
+
+    <!-- Subtle bottom glow line -->
+    <line x1="200" y1="820" x2="824" y2="820" stroke="rgba(115,251,211,0.15)" stroke-width="2"/>
+
+    <!-- "SKYSYNC" small text below -->
+    <text x="512" y="870" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="64" font-weight="800" fill="rgba(115,251,211,0.5)" letter-spacing="16">SKYSYNC</text>
+  </g>
+</svg>

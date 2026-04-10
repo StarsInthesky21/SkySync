@@ -3,3 +3,10 @@ node_modules
 dist
 build
 *.log
+
+# Secrets - never commit real credentials
+.env
+.env.local
+.env.production
+google-services.json
+GoogleService-Info.plist

@@ -26,7 +26,7 @@ SkySync is an Android-first Expo app for social stargazing. It turns the earlier
   - notes
   - custom constellation drawings
 - room chat and a global chatroom
-- voice lounge state toggle for future conference-call integration
+- voice lounge preview for coordinating shared observing sessions while native voice stays in beta
 
 ## Project structure
 
@@ -51,5 +51,5 @@ SkySync is an Android-first Expo app for social stargazing. It turns the earlier
 ## Notes
 
 - The current social sync is mocked in memory so the app works without a backend.
-- Voice lounge and conference call behavior are UI scaffolds, not real VoIP yet.
+- Voice lounge is presented honestly as a preview and coordination surface, not a shipping native VoIP implementation yet.
 - If you want full multiplayer sync next, replace `src/services/mock/roomSyncService.ts` with Firebase Realtime Database or Firestore.

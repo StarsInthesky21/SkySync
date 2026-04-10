@@ -7,7 +7,7 @@ type Props = {
   title: string;
   messages: ChatMessage[];
   currentUsername: string;
-  onSend: (text: string) => void;
+  onSend: (text: string) => void | Promise<void>;
   placeholder?: string;
 };
 
@@ -67,8 +67,9 @@ export function ChatSection({ title, messages, currentUsername, onSend, placehol
           onSubmitEditing={handleSend}
           returnKeyType="send"
           maxLength={500}
+          accessibilityLabel={`Type a message for ${title}`}
         />
-        <Pressable style={({ pressed }) => [styles.sendBtn, pressed && styles.sendBtnPressed]} onPress={handleSend}>
+        <Pressable style={({ pressed }) => [styles.sendBtn, pressed && styles.sendBtnPressed]} onPress={handleSend} accessibilityRole="button" accessibilityLabel="Send message">
           <Text style={styles.sendText}>Send</Text>
         </Pressable>
       </View>

@@ -35,6 +35,13 @@ export type ChallengeProgress = {
 export type AppSettings = {
   voiceGuideEnabled: boolean;
   lastViewpoint: string;
+  latitude?: number;
+  longitude?: number;
+};
+
+const DEFAULT_SETTINGS: AppSettings = {
+  voiceGuideEnabled: true,
+  lastViewpoint: "earth",
 };
 
 function generateUsername(): string {
@@ -134,10 +141,16 @@ export const storage = {
   },
 
   async getSettings(): Promise<AppSettings> {
-    return getJson(KEYS.SETTINGS, { voiceGuideEnabled: true, lastViewpoint: "earth" });
+    return getJson(KEYS.SETTINGS, DEFAULT_SETTINGS);
   },
   async saveSettings(settings: AppSettings): Promise<void> {
     await setJson(KEYS.SETTINGS, settings);
+  },
+  async updateSettings(partial: Partial<AppSettings>): Promise<AppSettings> {
+    const current = await this.getSettings();
+    const next = { ...current, ...partial };
+    await setJson(KEYS.SETTINGS, next);
+    return next;
   },
 
   async clearAll(): Promise<void> {

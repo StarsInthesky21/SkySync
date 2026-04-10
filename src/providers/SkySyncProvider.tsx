@@ -2,6 +2,7 @@ import { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useSt
 import { LIVE_MODE_INTERVAL_MS, MAX_MESSAGE_LENGTH, MAX_NAME_LENGTH, MAX_USERNAME_LENGTH, MESSAGE_RATE_LIMIT_MS } from "@/constants";
 import { badges as badgeDefinitions, dailyChallenges, formatTimestamp, guidedTargets, viewpoints } from "@/data/skyData";
 import { roomSyncService, isFirebaseEnabled } from "@/services/roomSyncService";
+import { QueuedAction } from "@/services/offlineQueue";
 import { storage, UserProfile, BadgeProgress, ChallengeProgress } from "@/services/storage";
 import { useAuth } from "@/providers/AuthProvider";
 import {
@@ -14,7 +15,7 @@ import {
   getVisibleThingsTonight,
   renderSkyObjects,
 } from "@/services/skyEngine";
-import { ChatMessage, SkyRoom, SpaceNote } from "@/types/rooms";
+import { ChatMessage, RoomSkyState, SkyRoom, SpaceNote } from "@/types/rooms";
 import { Badge, DailyChallenge, GuidedTarget, MythStory, RenderedSkyObject, Viewpoint } from "@/types/sky";
 
 type SkySyncContextValue = {
@@ -54,18 +55,19 @@ type SkySyncContextValue = {
   setViewpoint: (viewpoint: Viewpoint) => void;
   selectObject: (objectId?: string) => void;
   focusObject: (objectId: string) => void;
-  toggleHighlight: (objectId: string) => void;
-  addNoteToSelectedObject: (text: string) => void;
-  createRoom: (name: string) => string;
-  joinRoom: (roomCode: string) => string;
-  sendRoomMessage: (text: string) => void;
-  sendGlobalMessage: (text: string) => void;
+  toggleHighlight: (objectId: string) => Promise<boolean>;
+  addNoteToSelectedObject: (text: string) => Promise<boolean>;
+  createRoom: (name: string) => Promise<string>;
+  joinRoom: (roomCode: string) => Promise<string>;
+  sendRoomMessage: (text: string) => Promise<boolean>;
+  sendGlobalMessage: (text: string) => Promise<boolean>;
   setCallActive: (active: boolean) => void;
   addStarToDraft: (objectId: string) => void;
   clearDraftConstellation: () => void;
-  saveDraftConstellation: (title: string) => void;
+  saveDraftConstellation: (title: string) => Promise<boolean>;
   updateUsername: (name: string) => void;
   completeChallenge: (challengeId: string) => void;
+  processQueuedAction: (action: QueuedAction) => Promise<boolean>;
 };
 
 const SkySyncContext = createContext<SkySyncContextValue | undefined>(undefined);
@@ -106,6 +108,8 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [badgeProgress, setBadgeProgress] = useState<BadgeProgress>(DEFAULT_BADGE_PROGRESS);
   const [challengeProgress, setChallengeProgress] = useState<ChallengeProgress>(DEFAULT_CHALLENGE_PROGRESS);
+  const [observerLocation, setObserverLocation] = useState<{ latitude?: number; longitude?: number }>({});
+  const settingsHydratedRef = useRef(false);
 
   // Refs for stable access in callbacks without stale closures
   const currentRoomIdRef = useRef(currentRoomId);
@@ -117,10 +121,11 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
     async function loadData() {
       try {
         // Always load from local storage first (instant)
-        const [profile, badges, challenges] = await Promise.all([
+        const [profile, badges, challenges, settings] = await Promise.all([
           storage.getUserProfile(),
           storage.getBadgeProgress(),
           storage.getChallengeProgress(),
+          storage.getSettings(),
         ]);
         if (!mounted) return;
 
@@ -136,6 +141,14 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
         } else {
           setChallengeProgress(challenges);
         }
+
+        if (viewpoints.some((item) => item.id === settings.lastViewpoint)) {
+          setViewpointState(settings.lastViewpoint as Viewpoint);
+        }
+        if (settings.latitude != null && settings.longitude != null) {
+          setObserverLocation({ latitude: settings.latitude, longitude: settings.longitude });
+        }
+        settingsHydratedRef.current = true;
 
         // If Firebase is enabled, also sync profile to Firestore
         if (isFirebaseEnabled && userId !== "local-user") {
@@ -163,6 +176,11 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
     loadData();
     return () => { mounted = false; };
   }, [userId]);
+
+  useEffect(() => {
+    if (!settingsHydratedRef.current) return;
+    void storage.updateSettings({ lastViewpoint: viewpoint });
+  }, [viewpoint]);
 
   const [roomChat, setRoomChat] = useState<ChatMessage[]>([]);
 
@@ -248,8 +266,15 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const objects = useMemo(
-    () => renderSkyObjects({ rotation, zoom, date: selectedDate, viewpoint }),
-    [rotation, zoom, selectedDate, viewpoint],
+    () => renderSkyObjects({
+      rotation,
+      zoom,
+      date: selectedDate,
+      viewpoint,
+      observerLatitude: observerLocation.latitude,
+      observerLongitude: observerLocation.longitude,
+    }),
+    [rotation, zoom, selectedDate, viewpoint, observerLocation.latitude, observerLocation.longitude],
   );
   const segments = useMemo(() => getConstellationSegments(objects), [objects]);
 
@@ -309,6 +334,73 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
   function syncRoomState(partial: Partial<SkyRoom["state"]>) {
     if (!currentRoom) return;
     roomSyncService.updateSkyState(currentRoom.id, partial);
+  }
+
+  async function processQueuedAction(action: QueuedAction): Promise<boolean> {
+    const username = userProfile?.username ?? "You";
+    const now = Date.now();
+
+    try {
+      switch (action.type) {
+        case "room_message": {
+          const roomId = typeof action.payload.roomId === "string" ? action.payload.roomId : currentRoomIdRef.current;
+          const text = typeof action.payload.text === "string" ? action.payload.text.trim() : "";
+          if (!roomId || !text) return true;
+          await Promise.resolve(roomSyncService.sendRoomMessage(roomId, {
+            id: `room-msg-${now}-${Math.random().toString(36).slice(2, 6)}`,
+            author: username,
+            text: text.slice(0, MAX_MESSAGE_LENGTH),
+            timestampLabel: formatTimestamp(now),
+            timestamp: now,
+          }));
+          return true;
+        }
+        case "global_message": {
+          const text = typeof action.payload.text === "string" ? action.payload.text.trim() : "";
+          if (!text) return true;
+          await Promise.resolve(roomSyncService.sendGlobalMessage({
+            id: `global-msg-${now}-${Math.random().toString(36).slice(2, 6)}`,
+            author: username,
+            text: text.slice(0, MAX_MESSAGE_LENGTH),
+            timestampLabel: formatTimestamp(now),
+            timestamp: now,
+          }));
+          return true;
+        }
+        case "note": {
+          const roomId = typeof action.payload.roomId === "string" ? action.payload.roomId : currentRoomIdRef.current;
+          const objectId = typeof action.payload.objectId === "string" ? action.payload.objectId : undefined;
+          const text = typeof action.payload.text === "string" ? action.payload.text.trim() : "";
+          if (!roomId || !objectId || !text) return true;
+          await Promise.resolve(roomSyncService.addNote(roomId, {
+            id: `note-${now}-${Math.random().toString(36).slice(2, 6)}`,
+            objectId,
+            author: username,
+            text: text.slice(0, 500),
+          }));
+          return true;
+        }
+        case "highlight": {
+          const roomId = typeof action.payload.roomId === "string" ? action.payload.roomId : currentRoomIdRef.current;
+          const objectId = typeof action.payload.objectId === "string" ? action.payload.objectId : undefined;
+          if (!roomId || !objectId) return true;
+          await Promise.resolve(roomSyncService.toggleHighlight(roomId, objectId));
+          return true;
+        }
+        case "sky_state": {
+          const roomId = typeof action.payload.roomId === "string" ? action.payload.roomId : currentRoomIdRef.current;
+          const partial = action.payload.partial;
+          if (!roomId || typeof partial !== "object" || partial === null) return true;
+          await Promise.resolve(roomSyncService.updateSkyState(roomId, partial as Partial<RoomSkyState>));
+          return true;
+        }
+        default:
+          return false;
+      }
+    } catch (error) {
+      console.warn("[SkySync] Failed to replay queued action:", error);
+      return false;
+    }
   }
 
   const value: SkySyncContextValue = {
@@ -375,16 +467,22 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
       syncRoomState({ rotation: nextRotation, zoom: nextZoom });
       trackDiscovery(objectId);
     },
-    toggleHighlight: (objectId) => {
-      if (!currentRoom) return;
-      roomSyncService.toggleHighlight(currentRoom.id, objectId);
-      const object = findSkyObject(objectId);
-      if (object?.kind === "satellite") {
-        trackDiscovery(objectId);
+    toggleHighlight: async (objectId) => {
+      if (!currentRoom) return false;
+      try {
+        await Promise.resolve(roomSyncService.toggleHighlight(currentRoom.id, objectId));
+        const object = findSkyObject(objectId);
+        if (object?.kind === "satellite") {
+          trackDiscovery(objectId);
+        }
+        return true;
+      } catch (error) {
+        console.warn("[SkySync] Failed to toggle highlight:", error);
+        return false;
       }
     },
-    addNoteToSelectedObject: (text) => {
-      if (!currentRoom || !selectedObjectId || !text.trim()) return;
+    addNoteToSelectedObject: async (text) => {
+      if (!currentRoom || !selectedObjectId || !text.trim()) return false;
       const trimmed = text.trim().slice(0, 500);
       const note: SpaceNote = {
         id: `note-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -392,45 +490,63 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
         author: userProfile?.username ?? "You",
         text: trimmed,
       };
-      roomSyncService.addNote(currentRoom.id, note);
+      try {
+        await Promise.resolve(roomSyncService.addNote(currentRoom.id, note));
+        return true;
+      } catch (error) {
+        console.warn("[SkySync] Failed to add note:", error);
+        return false;
+      }
     },
-    createRoom: (name) => {
+    createRoom: async (name) => {
       const trimmed = name.trim().slice(0, 40) || "Orbit Club";
-      const room = roomSyncService.createRoom(trimmed);
+      const room = await Promise.resolve(roomSyncService.createRoom(trimmed));
       setCurrentRoomId(room.id);
       return room.roomCode;
     },
-    joinRoom: (roomCode) => {
+    joinRoom: async (roomCode) => {
       const trimmed = roomCode.trim().toUpperCase();
       if (!trimmed) return "Please enter a room code";
-      const room = roomSyncService.joinRoom(trimmed);
+      const room = await Promise.resolve(roomSyncService.joinRoom(trimmed));
       if (!room) return "Room not found";
       setCurrentRoomId(room.id);
       return `Joined ${room.roomCode}`;
     },
-    sendRoomMessage: (text) => {
-      if (!currentRoom || !text.trim() || isRateLimited()) return;
+    sendRoomMessage: async (text) => {
+      if (!currentRoom || !text.trim() || isRateLimited()) return false;
       const now = Date.now();
       const trimmed = text.trim().slice(0, MAX_MESSAGE_LENGTH);
-      roomSyncService.sendRoomMessage(currentRoom.id, {
-        id: `room-msg-${now}-${Math.random().toString(36).slice(2, 6)}`,
-        author: userProfile?.username ?? "You",
-        text: trimmed,
-        timestampLabel: formatTimestamp(now),
-        timestamp: now,
-      });
+      try {
+        await Promise.resolve(roomSyncService.sendRoomMessage(currentRoom.id, {
+          id: `room-msg-${now}-${Math.random().toString(36).slice(2, 6)}`,
+          author: userProfile?.username ?? "You",
+          text: trimmed,
+          timestampLabel: formatTimestamp(now),
+          timestamp: now,
+        }));
+        return true;
+      } catch (error) {
+        console.warn("[SkySync] Failed to send room message:", error);
+        return false;
+      }
     },
-    sendGlobalMessage: (text) => {
-      if (!text.trim() || isRateLimited()) return;
+    sendGlobalMessage: async (text) => {
+      if (!text.trim() || isRateLimited()) return false;
       const now = Date.now();
       const trimmed = text.trim().slice(0, MAX_MESSAGE_LENGTH);
-      roomSyncService.sendGlobalMessage({
-        id: `global-msg-${now}-${Math.random().toString(36).slice(2, 6)}`,
-        author: userProfile?.username ?? "You",
-        text: trimmed,
-        timestampLabel: formatTimestamp(now),
-        timestamp: now,
-      });
+      try {
+        await Promise.resolve(roomSyncService.sendGlobalMessage({
+          id: `global-msg-${now}-${Math.random().toString(36).slice(2, 6)}`,
+          author: userProfile?.username ?? "You",
+          text: trimmed,
+          timestampLabel: formatTimestamp(now),
+          timestamp: now,
+        }));
+        return true;
+      } catch (error) {
+        console.warn("[SkySync] Failed to send global message:", error);
+        return false;
+      }
     },
     setCallActive: (active) => {
       syncRoomState({ callActive: active });
@@ -446,16 +562,21 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
     clearDraftConstellation: () => {
       setDraftConstellationIds([]);
     },
-    saveDraftConstellation: (title) => {
-      if (!currentRoom || draftConstellationIds.length < 2) return;
+    saveDraftConstellation: async (title) => {
+      if (!currentRoom || draftConstellationIds.length < 2) return false;
       constellationCounter += 1;
       const constellationId = `custom-${Date.now()}-${constellationCounter}`;
-      roomSyncService.addCustomConstellation(currentRoom.id, {
-        id: constellationId,
-        title: title.trim().slice(0, 40) || "Custom Pattern",
-        starIds: draftConstellationIds,
-        color: "#73fbd3",
-      });
+      try {
+        await Promise.resolve(roomSyncService.addCustomConstellation(currentRoom.id, {
+          id: constellationId,
+          title: title.trim().slice(0, 40) || "Custom Pattern",
+          starIds: draftConstellationIds,
+          color: "#73fbd3",
+        }));
+      } catch (error) {
+        console.warn("[SkySync] Failed to save constellation:", error);
+        return false;
+      }
 
       // Track constellation for badge using the same ID
       setBadgeProgress((prev) => {
@@ -465,6 +586,7 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
       });
 
       setDraftConstellationIds([]);
+      return true;
     },
     updateUsername: (name: string) => {
       const trimmed = name.trim().slice(0, 20);
@@ -498,6 +620,7 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
         return next;
       });
     },
+    processQueuedAction,
   };
 
   return <SkySyncContext.Provider value={value}>{children}</SkySyncContext.Provider>;

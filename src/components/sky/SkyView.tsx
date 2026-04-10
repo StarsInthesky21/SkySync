@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { PanResponder, StyleSheet, Text, View } from "react-native";
 import Svg from "react-native-svg";
 import { Star } from "@/components/sky/Star";
@@ -41,6 +41,28 @@ function getDistance(touches: readonly { pageX: number; pageY: number }[]) {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
+/**
+ * Performance optimization: Only render stars that are currently visible.
+ * For dim stars (magnitude > 4.5), only render them when zoomed in.
+ * This keeps the render count manageable on low-end devices.
+ */
+function useVisibleObjects(objects: RenderedSkyObject[], zoom: number) {
+  return useMemo(() => {
+    // At default zoom, skip very dim stars
+    const magLimit = zoom > 1.5 ? 7.0 : zoom > 1.2 ? 6.0 : 5.0;
+
+    return objects.filter((o) => {
+      if (!o.isVisible) return false;
+      // Always show planets, satellites, meteors, selected/highlighted
+      if (o.kind !== "star") return true;
+      // Show all named stars (not field/catalog stars)
+      if (!o.id.startsWith("field-star-") && !o.id.startsWith("hyg-")) return true;
+      // For catalog stars, filter by magnitude based on zoom level
+      return o.magnitude <= magLimit;
+    });
+  }, [objects, zoom]);
+}
+
 export function SkyView({
   objects,
   segments,
@@ -64,6 +86,9 @@ export function SkyView({
     startZoom: zoom,
     startDistance: null,
   });
+
+  const visibleObjects = useVisibleObjects(objects, zoom);
+  const visibleCount = visibleObjects.length;
 
   const panResponder = useRef(
     PanResponder.create({
@@ -94,7 +119,7 @@ export function SkyView({
       style={styles.frame}
       {...panResponder.panHandlers}
       accessibilityRole="image"
-      accessibilityLabel={`Interactive sky view showing ${objects.filter((o) => o.isVisible).length} celestial objects. Drag to rotate, pinch to zoom.`}
+      accessibilityLabel={`Interactive sky view showing ${visibleCount} celestial objects. Drag to rotate, pinch to zoom.`}
     >
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
         {segments.map((segment) => (
@@ -108,7 +133,7 @@ export function SkyView({
         ))}
       </Svg>
 
-      {objects.map((object) => (
+      {visibleObjects.map((object) => (
         <Star
           key={object.id}
           object={object}
@@ -134,12 +159,12 @@ export function SkyView({
           </View>
         </View>
         <Text style={styles.hudMeta}>
-          {viewpointLabel} | {dateLabel} | {Math.round(rotation)}deg | {zoom.toFixed(1)}x
+          {viewpointLabel} | {dateLabel} | {visibleCount} objects | {zoom.toFixed(1)}x
         </Text>
       </View>
 
       {/* Subtle instruction overlay at top */}
-      <View style={styles.instructionBadge}>
+      <View style={styles.instructionBadge} accessibilityElementsHidden>
         <Text style={styles.instructionText}>Drag to rotate | Pinch to zoom</Text>
       </View>
     </View>
@@ -148,10 +173,10 @@ export function SkyView({
 
 const styles = StyleSheet.create({
   frame: {
-    height: 440,
+    height: 480,
     borderRadius: radius.xl,
     overflow: "hidden",
-    backgroundColor: "#020814",
+    backgroundColor: "#010510",
     borderWidth: 1,
     borderColor: colors.border,
     position: "relative",

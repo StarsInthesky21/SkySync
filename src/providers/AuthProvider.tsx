@@ -12,6 +12,8 @@ type AuthContextValue = {
   isLoading: boolean;
   isFirebase: boolean;
   signOut: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
+  createAccount: (email: string, password: string) => Promise<void>;
   upgradeToEmail: (email: string, password: string) => Promise<void>;
 };
 
@@ -68,6 +70,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await authService.signOut();
       } catch (error) {
         console.warn("[SkySync Auth] Sign out failed:", error);
+      }
+    },
+    signInWithEmail: async (email: string, password: string) => {
+      if (!isFirebaseEnabled) return;
+      try {
+        const { authService } = await import("@/services/firebase/authService");
+        const signedIn = await authService.signInWithEmail(email, password);
+        setUser(signedIn);
+      } catch (error) {
+        console.warn("[SkySync Auth] Sign in failed:", error);
+        throw error;
+      }
+    },
+    createAccount: async (email: string, password: string) => {
+      if (!isFirebaseEnabled) return;
+      try {
+        const { authService } = await import("@/services/firebase/authService");
+        const created = await authService.createAccount(email, password);
+        setUser(created);
+      } catch (error) {
+        console.warn("[SkySync Auth] Create account failed:", error);
+        throw error;
       }
     },
     upgradeToEmail: async (email: string, password: string) => {

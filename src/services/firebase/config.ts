@@ -9,6 +9,9 @@ import { Platform } from "react-native";
 
 const extra = Constants.expoConfig?.extra ?? {};
 
+// Firebase config is read from app.json extra fields.
+// For production builds, populate these via eas.json env -> app.config.js.
+// NEVER commit real API keys to source control.
 const firebaseConfig = {
   apiKey: extra.firebaseApiKey ?? "",
   authDomain: extra.firebaseAuthDomain ?? "",

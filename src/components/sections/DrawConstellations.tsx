@@ -18,20 +18,21 @@ export function DrawConstellations({ drawModeEnabled, setDrawModeEnabled, onStat
       <View style={styles.header}>
         <Text style={styles.label}>Draw mode</Text>
         <Switch value={drawModeEnabled} onValueChange={(v) => { setDrawModeEnabled(v); onStatus(v ? "Tap stars to draw" : "Draw mode off"); }}
-          thumbColor={drawModeEnabled ? colors.accent : "#aaa"} trackColor={{ false: "rgba(255,255,255,0.15)", true: colors.glow }} />
+          thumbColor={drawModeEnabled ? colors.accent : "#aaa"} trackColor={{ false: "rgba(255,255,255,0.15)", true: colors.glow }}
+          accessibilityLabel="Toggle draw constellation mode" />
       </View>
-      <Text style={styles.caption}>{draftConstellationIds.length} stars selected</Text>
-      <TextInput value={titleInput} onChangeText={setTitleInput} style={styles.input} placeholder="Constellation name" placeholderTextColor={colors.textDim} maxLength={40} />
+      <Text style={styles.caption} accessibilityLiveRegion="polite">{draftConstellationIds.length} stars selected</Text>
+      <TextInput value={titleInput} onChangeText={setTitleInput} style={styles.input} placeholder="Constellation name" placeholderTextColor={colors.textDim} maxLength={40} accessibilityLabel="Name for your custom constellation" />
       <View style={styles.buttonRow}>
-        <Pressable style={({ pressed }) => [styles.secondary, pressed && styles.secondaryPressed]} onPress={clearDraftConstellation}>
+        <Pressable style={({ pressed }) => [styles.secondary, pressed && styles.secondaryPressed]} onPress={clearDraftConstellation} accessibilityRole="button" accessibilityLabel="Clear selected stars">
           <Text style={styles.secondaryText}>Clear</Text>
         </Pressable>
         <Pressable
           style={({ pressed }) => [styles.primary, draftConstellationIds.length < 2 && styles.disabled, pressed && styles.primaryPressed]}
-          onPress={() => {
+          onPress={async () => {
             if (draftConstellationIds.length < 2) { onStatus("Select at least 2 stars"); return; }
-            saveDraftConstellation(titleInput);
-            onStatus("Constellation saved!");
+            const saved = await saveDraftConstellation(titleInput);
+            onStatus(saved ? "Constellation saved!" : "Couldn't save constellation");
           }}
         >
           <Text style={styles.primaryText}>Save</Text>
