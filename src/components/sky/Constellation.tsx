@@ -16,8 +16,10 @@ export function Constellation({
       y1={`${from.y * 100}%`}
       x2={`${to.x * 100}%`}
       y2={`${to.y * 100}%`}
-      stroke={color ?? "rgba(143,188,255,0.4)"}
-      strokeWidth={1.4}
+      stroke={color ?? "rgba(158,183,214,0.22)"}
+      strokeWidth={0.8}
+      strokeLinecap="round"
+      opacity={0.42}
     />
   );
 }

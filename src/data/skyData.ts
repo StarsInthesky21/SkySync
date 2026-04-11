@@ -723,7 +723,7 @@ export const initialRooms: SkyRoom[] = [
           id: "custom-1",
           title: "Hunter Arc",
           starIds: ["betelgeuse", "rigel", "hyg-saiph"],
-          color: "#73fbd3",
+          color: "#9eb7d6",
         },
       ],
       callActive: false,

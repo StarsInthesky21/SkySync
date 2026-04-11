@@ -1,39 +1,39 @@
 export const colors = {
   // Backgrounds
-  bg: "#04111f",
-  bgRaised: "#0b1d33",
-  card: "#102746",
-  cardSoft: "#17345c",
+  bg: "#000207",
+  bgRaised: "#050b14",
+  card: "#08111f",
+  cardSoft: "#101b2b",
 
   // Text
-  text: "#eff7ff",
-  textMuted: "#9cb9d8",
-  textDim: "#6b8aab",
+  text: "#eef4fb",
+  textMuted: "#a6b8cc",
+  textDim: "#667990",
 
   // Accents
-  accent: "#73fbd3",
-  accentDark: "#45c9a5",
-  accentWarm: "#ffb15f",
-  accentDanger: "#ff6f61",
-  accentInfo: "#64b5f6",
-  accentSuccess: "#66e0a3",
+  accent: "#9eb7d6",
+  accentDark: "#6f89a8",
+  accentWarm: "#d8925f",
+  accentDanger: "#d66f63",
+  accentInfo: "#86a8d2",
+  accentSuccess: "#88bda0",
 
   // Borders & Glow
-  border: "rgba(255,255,255,0.08)",
-  borderFocus: "rgba(115,251,211,0.4)",
-  glow: "rgba(115,251,211,0.22)",
-  glowWarm: "rgba(255,177,95,0.22)",
+  border: "rgba(226,238,255,0.1)",
+  borderFocus: "rgba(158,183,214,0.38)",
+  glow: "rgba(158,183,214,0.18)",
+  glowWarm: "rgba(216,146,95,0.2)",
 
   // Elevation shadows
   shadowLight: "rgba(0,0,0,0.3)",
   shadowMedium: "rgba(0,0,0,0.5)",
 
   // Pressed states
-  pressedPrimary: "#5ce0b8",
-  pressedSecondary: "#1e4270",
+  pressedPrimary: "#b8c9df",
+  pressedSecondary: "#17263a",
 
   // Text on accent backgrounds
-  onAccent: "#05262a",
+  onAccent: "#020914",
 };
 
 // Consistent type scale
@@ -60,9 +60,9 @@ export const spacing = {
 
 // Consistent border radius
 export const radius = {
-  sm: 10,
-  md: 14,
-  lg: 18,
-  xl: 24,
+  sm: 6,
+  md: 8,
+  lg: 8,
+  xl: 8,
   pill: 999,
 };

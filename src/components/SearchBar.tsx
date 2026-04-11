@@ -31,14 +31,14 @@ export function SearchBar({ objects, onSelect }: Props) {
   return (
     <View style={styles.wrapper}>
       <View style={[styles.inputContainer, focused && styles.inputFocused]}>
-        <Text style={styles.searchIcon}>{"\u{1F50D}"}</Text>
+        <Text style={styles.searchIcon}>Search</Text>
         <TextInput
           value={query}
           onChangeText={setQuery}
           onFocus={() => setFocused(true)}
           onBlur={() => setTimeout(() => setFocused(false), 200)}
           style={styles.input}
-          placeholder="Search stars, planets, satellites..."
+          placeholder="Planets, stars, satellites"
           placeholderTextColor={colors.textDim}
           returnKeyType="search"
           autoCorrect={false}
@@ -65,11 +65,11 @@ export function SearchBar({ objects, onSelect }: Props) {
                 accessibilityLabel={`${item.name}, ${item.kind}${item.distanceFromEarth ? `, ${item.distanceFromEarth}` : ""}`}
               >
                 <View style={[styles.kindDot, { backgroundColor: item.color }]} />
-                <View style={styles.resultInfo}>
-                  <Text style={styles.resultName}>{item.name}</Text>
-                  <Text style={styles.resultKind}>{item.kind}{item.distanceFromEarth ? ` \u2022 ${item.distanceFromEarth}` : ""}</Text>
-                </View>
-                <Text style={styles.goArrow}>{"\u2192"}</Text>
+            <View style={styles.resultInfo}>
+              <Text style={styles.resultName}>{item.name}</Text>
+              <Text style={styles.resultKind}>{item.kind}{item.distanceFromEarth ? ` \u2022 ${item.distanceFromEarth}` : ""}</Text>
+            </View>
+                <Text style={styles.goArrow}>Go</Text>
               </Pressable>
             ))
           )}
@@ -88,9 +88,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderRadius: radius.md,
-    backgroundColor: colors.card,
+    backgroundColor: "rgba(4,9,16,0.72)",
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: "rgba(226,238,255,0.14)",
     paddingHorizontal: 14,
     gap: 8,
   },
@@ -102,7 +102,11 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   searchIcon: {
-    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    fontSize: fontSize.xs,
+    fontWeight: "800",
+    letterSpacing: 1,
+    textTransform: "uppercase",
   },
   input: {
     flex: 1,
@@ -124,9 +128,9 @@ const styles = StyleSheet.create({
     right: 0,
     marginTop: 4,
     borderRadius: radius.md,
-    backgroundColor: colors.card,
+    backgroundColor: "rgba(4,9,16,0.88)",
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: "rgba(226,238,255,0.14)",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,
@@ -172,7 +176,7 @@ const styles = StyleSheet.create({
   },
   goArrow: {
     color: colors.accent,
-    fontSize: fontSize.base,
-    fontWeight: "700",
+    fontSize: fontSize.xs,
+    fontWeight: "800",
   },
 });

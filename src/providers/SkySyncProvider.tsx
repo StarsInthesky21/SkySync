@@ -97,7 +97,7 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
   const [rooms, setRooms] = useState<SkyRoom[]>([]);
   const [globalChat, setGlobalChat] = useState<ChatMessage[]>([]);
   const [currentRoomId, setCurrentRoomId] = useState<string | undefined>(undefined);
-  const [selectedObjectId, setSelectedObjectId] = useState<string | undefined>("jupiter");
+  const [selectedObjectId, setSelectedObjectId] = useState<string | undefined>(undefined);
   const [selectedDate, setSelectedDateState] = useState(new Date());
   const [liveMode, setLiveMode] = useState(true);
   const [rotation, setRotationState] = useState(0);
@@ -296,7 +296,7 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
       getCustomConstellationSegments(
         objects,
         draftConstellationIds.length > 1
-          ? [{ id: "draft", title: "Draft Pattern", starIds: draftConstellationIds, color: "#ffb15f" }]
+          ? [{ id: "draft", title: "Draft Pattern", starIds: draftConstellationIds, color: "#d8925f" }]
           : [],
       ),
     [objects, draftConstellationIds],
@@ -577,7 +577,7 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
           id: constellationId,
           title: title.trim().slice(0, MAX_NAME_LENGTH) || "Custom Pattern",
           starIds: draftConstellationIds,
-          color: "#73fbd3",
+          color: "#9eb7d6",
         }));
       } catch (error) {
         console.warn("[SkySync] Failed to save constellation:", error);
