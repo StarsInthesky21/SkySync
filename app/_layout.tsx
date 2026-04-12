@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, View, Text, StyleSheet } from "react-native";
+import { ActivityIndicator, Platform, View, Text, StyleSheet } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
@@ -11,15 +11,22 @@ import { Onboarding } from "@/components/Onboarding";
 import { ToastProvider } from "@/components/Toast";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { SkySyncProvider } from "@/providers/SkySyncProvider";
-import { notificationService } from "@/services/notifications";
 import { colors, fontSize } from "@/theme/colors";
 
 // Keep splash screen visible while we check onboarding state.
-// Safety: if anything goes wrong, force-hide after 5 seconds so the app isn't stuck.
 SplashScreen.preventAutoHideAsync().catch(() => {});
-setTimeout(() => { SplashScreen.hideAsync().catch(() => {}); }, 5000);
+
+// Safety: force-hide splash after 3 seconds on Android (where it's most likely to stick),
+// 5 seconds on other platforms.
+const SPLASH_SAFETY_MS = Platform.OS === "android" ? 3000 : 5000;
+setTimeout(() => { SplashScreen.hideAsync().catch(() => {}); }, SPLASH_SAFETY_MS);
 
 const ONBOARDING_KEY = "@skysync/onboarding_complete";
+
+// Aggressively hide the splash screen — call from every path that resolves the UI state.
+function hideSplash() {
+  try { SplashScreen.hideAsync().catch(() => {}); } catch {}
+}
 
 export default function RootLayout() {
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
@@ -35,40 +42,37 @@ export default function RootLayout() {
 
     const initNotifications = async () => {
       try {
+        const { notificationService } = await import("@/services/notifications");
         await notificationService.setupNotificationHandler();
       } catch {
         // Notifications not available on this platform
       }
-
-      try {
-        await notificationService.init();
-      } catch {
-        // Notification init failed - not critical
-      }
-
-      try {
-        const expoNotifications = require("expo-notifications");
-        if (expoNotifications?.addNotificationReceivedListener) {
-          listenerSub = expoNotifications.addNotificationReceivedListener(
-            (notification: any) => {
-              try {
-                notificationService.handleNotificationReceived(notification);
-              } catch {
-                // ignore
-              }
-            },
-          );
-        }
-      } catch {
-        // expo-notifications not available
-      }
     };
 
-    // Run with a timeout guard so it never blocks the app
+    // Run with a short timeout guard so it never blocks the app
     Promise.race([
       initNotifications(),
-      new Promise((resolve) => setTimeout(resolve, 3000)),
+      new Promise((resolve) => setTimeout(resolve, 2000)),
     ]).catch(() => {});
+
+    // Set up notification listener separately
+    try {
+      const expoNotifications = require("expo-notifications");
+      if (expoNotifications?.addNotificationReceivedListener) {
+        listenerSub = expoNotifications.addNotificationReceivedListener(
+          (notification: any) => {
+            try {
+              const { notificationService } = require("@/services/notifications");
+              notificationService.handleNotificationReceived(notification);
+            } catch {
+              // ignore
+            }
+          },
+        );
+      }
+    } catch {
+      // expo-notifications not available
+    }
 
     return () => {
       try { listenerSub?.remove(); } catch {}
@@ -78,11 +82,13 @@ export default function RootLayout() {
   useEffect(() => {
     let mounted = true;
 
+    // Shorter fallback for Android (2s) — AsyncStorage is fast
+    const fallbackMs = Platform.OS === "android" ? 2000 : 4000;
     const fallbackTimer = setTimeout(() => {
       if (!mounted) return;
       setShowOnboarding((current) => current ?? true);
-      SplashScreen.hideAsync().catch(() => {});
-    }, 4000);
+      hideSplash();
+    }, fallbackMs);
 
     AsyncStorage.getItem(ONBOARDING_KEY).then((value) => {
       if (!mounted) return;
@@ -92,8 +98,7 @@ export default function RootLayout() {
       setShowOnboarding(true);
     }).finally(() => {
       clearTimeout(fallbackTimer);
-      // Hide splash screen once we know the onboarding state
-      SplashScreen.hideAsync().catch(() => {});
+      hideSplash();
     });
 
     return () => {

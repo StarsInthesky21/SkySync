@@ -140,6 +140,16 @@ export function SkyView({
   parallax,
   style,
 }: SkyViewProps) {
+  // Use refs for current values so PanResponder callbacks never read stale closures
+  const rotationRef = useRef(rotation);
+  rotationRef.current = rotation;
+  const zoomRef = useRef(zoom);
+  zoomRef.current = zoom;
+  const onRotateRef = useRef(onRotate);
+  onRotateRef.current = onRotate;
+  const onZoomRef = useRef(onZoom);
+  onZoomRef.current = onZoom;
+
   const gesture = useRef<GestureRef>({
     startRotation: rotation,
     startZoom: zoom,
@@ -191,18 +201,18 @@ export function SkyView({
     PanResponder.create({
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: (event) => {
-        gesture.current.startRotation = rotation;
-        gesture.current.startZoom = zoom;
+        gesture.current.startRotation = rotationRef.current;
+        gesture.current.startZoom = zoomRef.current;
         gesture.current.startDistance = getDistance(event.nativeEvent.touches);
       },
       onPanResponderMove: (event, gestureState) => {
         const pinchDistance = getDistance(event.nativeEvent.touches);
         if (pinchDistance && gesture.current.startDistance) {
           const nextZoom = gesture.current.startZoom * (pinchDistance / gesture.current.startDistance);
-          onZoom(nextZoom);
+          onZoomRef.current(nextZoom);
           return;
         }
-        onRotate(gesture.current.startRotation - gestureState.dx * 0.25);
+        onRotateRef.current(gesture.current.startRotation - gestureState.dx * 0.25);
       },
       onPanResponderRelease: () => {
         gesture.current.startDistance = null;

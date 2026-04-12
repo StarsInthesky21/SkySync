@@ -31,10 +31,11 @@ export function useAppState() {
 
   const username = sky.userProfile?.username ?? "Stargazer";
 
-  // Initialize analytics and notifications on mount
+  // Initialize analytics on mount.
+  // Notification init is handled in the root layout — do NOT call it again here
+  // as it can hang on Android (getExpoPushTokenAsync with no project ID).
   useEffect(() => {
     analytics.init();
-    notificationService.init();
     return () => { analytics.endSession(); };
   }, []);
 
@@ -42,12 +43,17 @@ export function useAppState() {
   useEffect(() => {
     streakService.recordActivity(sky.challengeProgress.totalXpEarned).then((s) => {
       setStreak(s);
-      notificationService.scheduleStreakReminder(s.currentStreak);
-      notificationService.scheduleChallengeReminder(
-        sky.challengeProgress.completedIds.length,
-        sky.dailyChallenges.length,
-      );
-    });
+      // Schedule notifications in background — must never block UI
+      try {
+        notificationService.scheduleStreakReminder(s.currentStreak).catch(() => {});
+        notificationService.scheduleChallengeReminder(
+          sky.challengeProgress.completedIds.length,
+          sky.dailyChallenges.length,
+        ).catch(() => {});
+      } catch {
+        // Notification scheduling not available
+      }
+    }).catch(() => {});
   }, [sky.challengeProgress.totalXpEarned, sky.challengeProgress.completedIds.length, sky.dailyChallenges.length]);
 
   // Hydrate settings

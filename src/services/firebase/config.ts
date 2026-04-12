@@ -1,11 +1,18 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth, initializeAuth, Auth } from "firebase/auth";
-//@ts-expect-error - React Native persistence is in a subpath not reflected in base types
-import { getReactNativePersistence } from "firebase/auth/react-native";
+import { getAuth, initializeAuth, browserLocalPersistence, Auth } from "firebase/auth";
 import { initializeFirestore, getFirestore, persistentLocalCache, persistentSingleTabManager, Firestore } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
+
+// Firebase v11 moved React Native persistence into the main auth module
+let getReactNativePersistence: any = null;
+try {
+  const authModule = require("firebase/auth");
+  getReactNativePersistence = authModule.getReactNativePersistence;
+} catch {
+  // Not available — will fall back to getAuth()
+}
 
 const extra = Constants.expoConfig?.extra ?? {};
 
@@ -35,7 +42,7 @@ if (hasValidConfig) {
 
     if (Platform.OS === "web") {
       auth = getAuth(app);
-    } else {
+    } else if (getReactNativePersistence) {
       try {
         auth = initializeAuth(app, {
           persistence: getReactNativePersistence(AsyncStorage),
@@ -43,6 +50,8 @@ if (hasValidConfig) {
       } catch {
         auth = getAuth(app);
       }
+    } else {
+      auth = getAuth(app);
     }
 
     try {

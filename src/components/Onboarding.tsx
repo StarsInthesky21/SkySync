@@ -113,14 +113,21 @@ export function Onboarding({ onComplete }: Props) {
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
 
   const handleRequestLocation = useCallback(async () => {
+    if (!Location) {
+      // expo-location module not available on this device/build
+      setLocationGranted(false);
+      return;
+    }
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       const granted = status === "granted";
       setLocationGranted(granted);
-      if (Platform.OS !== "web") {
-        Haptics.notificationAsync(
-          granted ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Warning,
-        );
+      if (Platform.OS !== "web" && Haptics) {
+        try {
+          Haptics.notificationAsync(
+            granted ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Warning,
+          );
+        } catch {}
       }
       if (granted) {
         const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Low });
@@ -135,7 +142,7 @@ export function Onboarding({ onComplete }: Props) {
   }, []);
 
   const handleNext = useCallback(async () => {
-    try { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+    try { if (Platform.OS !== "web" && Haptics) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
 
     // Save username if on username step
     if (STEPS[currentIndex].interactive === "username" && usernameInput.trim()) {
@@ -148,7 +155,7 @@ export function Onboarding({ onComplete }: Props) {
     if (currentIndex < STEPS.length - 1) {
       flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
     } else {
-      try { if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
+      try { if (Platform.OS !== "web" && Haptics) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
       onComplete();
     }
   }, [currentIndex, onComplete, usernameInput]);

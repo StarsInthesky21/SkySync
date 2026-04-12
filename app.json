@@ -7,11 +7,6 @@
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/icon.png",
-      "backgroundColor": "#04111f",
-      "resizeMode": "contain"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -42,6 +37,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/icon.png",
+          "imageResizeMode": "contain",
           "backgroundColor": "#04111f",
           "dark": {
             "backgroundColor": "#04111f",
@@ -66,12 +62,11 @@
     ],
     "extra": {
       "firebaseEnabled": false,
-      "firebaseApiKey": "",
-      "firebaseAuthDomain": "",
-      "firebaseProjectId": "",
-      "firebaseStorageBucket": "",
-      "firebaseMessagingSenderId": "",
-      "firebaseAppId": ""
-    }
+      "router": {},
+      "eas": {
+        "projectId": "a9d1efc6-1546-4b00-8fce-a89cc1462930"
+      }
+    },
+    "owner": "mangochess08"
   }
 }

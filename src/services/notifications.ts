@@ -181,15 +181,43 @@ async function registerForPushNotifications(): Promise<string | null> {
     return null;
   }
 
-  // Request permissions
-  const hasPermission = await requestPermissions();
+  // Request permissions with timeout to prevent hanging on Android
+  let hasPermission = false;
+  try {
+    hasPermission = await Promise.race([
+      requestPermissions(),
+      new Promise<false>((resolve) => setTimeout(() => resolve(false), 3000)),
+    ]);
+  } catch {
+    return null;
+  }
   if (!hasPermission) return null;
 
   try {
-    // Get Expo push token
-    const tokenData = await notifications.getExpoPushTokenAsync({
-      projectId: undefined, // Uses the project ID from app config
-    });
+    // Get the project ID from app config — if not set, skip token registration
+    // to avoid getExpoPushTokenAsync hanging indefinitely on Android
+    let projectId: string | undefined;
+    try {
+      const Constants = require("expo-constants");
+      projectId = Constants.default?.expoConfig?.extra?.eas?.projectId;
+    } catch {}
+
+    if (!projectId) {
+      console.warn("[SkySync Notifications] No EAS project ID configured, skipping push token registration");
+      return null;
+    }
+
+    // Get Expo push token with a timeout guard
+    const tokenData = await Promise.race([
+      notifications.getExpoPushTokenAsync({ projectId }),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+    ]);
+
+    if (!tokenData) {
+      console.warn("[SkySync Notifications] Push token request timed out");
+      return null;
+    }
+
     const token = tokenData.data;
 
     // Store locally
@@ -255,34 +283,44 @@ export const notificationService = {
     // Set up Android notification channels
     if (Platform.OS === "android") {
       try {
-        await Promise.all([
-          notifications.setNotificationChannelAsync("default", {
-            name: "SkySync",
-            importance: notifications.AndroidImportance.DEFAULT,
-            vibrationPattern: [0, 250, 250, 250],
-            lightColor: "#73fbd3",
-          }),
-          notifications.setNotificationChannelAsync("events", {
-            name: "Astronomical Events",
-            description: "Alerts for meteor showers, eclipses, and other events",
-            importance: notifications.AndroidImportance.HIGH,
-            vibrationPattern: [0, 250, 250, 250],
-            lightColor: "#73fbd3",
-          }),
-          notifications.setNotificationChannelAsync("streaks", {
-            name: "Streak Reminders",
-            description: "Daily reminders to maintain your stargazing streak",
-            importance: notifications.AndroidImportance.DEFAULT,
-            lightColor: "#ffb15f",
-          }),
+        await Promise.race([
+          Promise.all([
+            notifications.setNotificationChannelAsync("default", {
+              name: "SkySync",
+              importance: notifications.AndroidImportance.DEFAULT,
+              vibrationPattern: [0, 250, 250, 250],
+              lightColor: "#73fbd3",
+            }),
+            notifications.setNotificationChannelAsync("events", {
+              name: "Astronomical Events",
+              description: "Alerts for meteor showers, eclipses, and other events",
+              importance: notifications.AndroidImportance.HIGH,
+              vibrationPattern: [0, 250, 250, 250],
+              lightColor: "#73fbd3",
+            }),
+            notifications.setNotificationChannelAsync("streaks", {
+              name: "Streak Reminders",
+              description: "Daily reminders to maintain your stargazing streak",
+              importance: notifications.AndroidImportance.DEFAULT,
+              lightColor: "#ffb15f",
+            }),
+          ]),
+          new Promise((resolve) => setTimeout(resolve, 3000)),
         ]);
       } catch {
         // ignore
       }
     }
 
-    // Register for push notifications
-    await registerForPushNotifications();
+    // Register for push notifications (has its own internal timeouts)
+    try {
+      await Promise.race([
+        registerForPushNotifications(),
+        new Promise((resolve) => setTimeout(resolve, 5000)),
+      ]);
+    } catch {
+      // Push registration failed — non-critical
+    }
   },
 
   /**
