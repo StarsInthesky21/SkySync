@@ -55,9 +55,6 @@
   },
   "optionalDependencies": {
     "livekit-client": "^2.5.0",
-    "@livekit/react-native": "^2.5.0",
-    "@livekit/react-native-webrtc": "^125.0.0",
-    "@livekit/react-native-expo-plugin": "^1.0.0",
     "expo-gl": "~15.0.0",
     "expo-camera": "~16.0.0"
   },

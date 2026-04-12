@@ -82,8 +82,7 @@
         {
           "cameraPermission": "SkySync uses the camera for the AR sky view so you can point your phone at the sky to identify stars and planets."
         }
-      ],
-      "@livekit/react-native-expo-plugin"
+      ]
     ],
     "extra": {
       "firebaseEnabled": false,
