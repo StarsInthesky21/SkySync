@@ -64,9 +64,11 @@ jest.mock("expo-sensors", () => ({
   },
 }));
 
+// expo-gl and expo-camera are optional (dynamic require in source).
+// Use `virtual: true` so Jest mocks work even when the packages aren't installed.
 jest.mock("expo-gl", () => ({
   GLView: () => null,
-}));
+}), { virtual: true });
 
 jest.mock("expo-camera", () => ({
   CameraView: () => null,
@@ -74,7 +76,7 @@ jest.mock("expo-camera", () => ({
     requestCameraPermissionsAsync: jest.fn(() => Promise.resolve({ granted: false })),
   },
   requestCameraPermissionsAsync: jest.fn(() => Promise.resolve({ granted: false })),
-}));
+}), { virtual: true });
 
 // Silence noisy logs during tests
 const originalWarn = console.warn;
