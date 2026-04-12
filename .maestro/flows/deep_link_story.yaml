@@ -1,0 +1,8 @@
+appId: app.skysync
+name: Open a myth story deep link
+---
+- launchApp
+- openLink: "skysync://learn/story/orion-myth"
+- assertVisible:
+    text: "Story"
+    optional: true

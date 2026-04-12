@@ -7,14 +7,18 @@
  * - Session duration and retention
  * - Error rates
  *
- * Data is buffered locally and flushed periodically.
- * When a real analytics backend is connected (Mixpanel, Amplitude, PostHog),
- * swap the `send` implementation below.
+ * Events are buffered locally and flushed periodically. When
+ * `EXPO_PUBLIC_ANALYTICS_ENDPOINT` is configured (and optionally
+ * `EXPO_PUBLIC_ANALYTICS_TOKEN`), flushed batches are POSTed as JSON
+ * to that endpoint (shape compatible with PostHog `/capture` and most
+ * ingestion APIs). If no endpoint is set, events are simply discarded
+ * after buffering — no PII ever leaves the device.
  *
  * No PII is collected. User IDs are anonymous.
  */
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants from "expo-constants";
 
 const ANALYTICS_KEY = "@skysync/analytics_buffer";
 const SESSION_KEY = "@skysync/analytics_session";
@@ -73,21 +77,52 @@ async function clearBuffer(): Promise<void> {
 }
 
 // ------------------------------------------------------------------
-// Send to backend (swap this for real analytics)
+// Send to backend
 // ------------------------------------------------------------------
 
-async function sendToBackend(events: AnalyticsEvent[]): Promise<boolean> {
-  // TODO: Replace with real analytics provider
-  // Examples:
-  //   Mixpanel: mixpanel.track(event.name, event.properties)
-  //   Amplitude: amplitude.logEvent(event.name, event.properties)
-  //   PostHog: posthog.capture(event.name, event.properties)
-  //
-  // For now, log to console in development
-  if (__DEV__) {
-    console.log(`[Analytics] Flushing ${events.length} events`, events.map((e) => e.name));
+type AnalyticsConfig = {
+  endpoint?: string;
+  token?: string;
+};
+
+function readConfig(): AnalyticsConfig {
+  const extra = (Constants.expoConfig?.extra ?? {}) as Record<string, unknown>;
+  return {
+    endpoint:
+      (process.env.EXPO_PUBLIC_ANALYTICS_ENDPOINT as string | undefined) ??
+      (typeof extra.analyticsEndpoint === "string" ? extra.analyticsEndpoint : undefined),
+    token:
+      (process.env.EXPO_PUBLIC_ANALYTICS_TOKEN as string | undefined) ??
+      (typeof extra.analyticsToken === "string" ? extra.analyticsToken : undefined),
+  };
+}
+
+export async function sendToBackend(events: AnalyticsEvent[]): Promise<boolean> {
+  if (events.length === 0) return true;
+  const { endpoint, token } = readConfig();
+  if (!endpoint) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.log(
+        `[Analytics] Flushing ${events.length} events (no endpoint configured)`,
+        events.map((e) => e.name),
+      );
+    }
+    return true;
   }
-  return true;
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ batch: events }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
 }
 
 // ------------------------------------------------------------------

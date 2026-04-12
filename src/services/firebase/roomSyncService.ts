@@ -68,7 +68,10 @@ function mapChatMessage(docId: string, data: Record<string, unknown>): ChatMessa
 }
 
 // Per-room debounce to avoid losing updates when switching rooms
-const pendingUpdates = new Map<string, { timeout: ReturnType<typeof setTimeout>; partial: Partial<RoomSkyState> }>();
+const pendingUpdates = new Map<
+  string,
+  { timeout: ReturnType<typeof setTimeout>; partial: Partial<RoomSkyState> }
+>();
 
 function flushSkyState(roomId: string) {
   const entry = pendingUpdates.get(roomId);
@@ -94,42 +97,54 @@ export const roomSyncService = {
       ? query(roomsRef, where("state.participants", "array-contains", userId))
       : query(roomsRef, limit(20));
 
-    return onSnapshot(q, (snapshot) => {
-      const rooms: SkyRoom[] = snapshot.docs.map((d) =>
-        mapRoomDoc(d.id, d.data() as Record<string, unknown>)
-      );
-      listener(rooms);
-    }, (error) => {
-      console.warn("[SkySync Firebase] Rooms listener error:", error);
-    });
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        const rooms: SkyRoom[] = snapshot.docs.map((d) =>
+          mapRoomDoc(d.id, d.data() as Record<string, unknown>),
+        );
+        listener(rooms);
+      },
+      (error) => {
+        console.warn("[SkySync Firebase] Rooms listener error:", error);
+      },
+    );
   },
 
   subscribeRoomChat(roomId: string, listener: (messages: ChatMessage[]) => void): () => void {
     const chatRef = collection(db, "rooms", roomId, "chat");
     const q = query(chatRef, orderBy("timestamp", "asc"), limit(100));
 
-    return onSnapshot(q, (snapshot) => {
-      const messages: ChatMessage[] = snapshot.docs.map((d) =>
-        mapChatMessage(d.id, d.data() as Record<string, unknown>)
-      );
-      listener(messages);
-    }, (error) => {
-      console.warn("[SkySync Firebase] Chat listener error:", error);
-    });
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        const messages: ChatMessage[] = snapshot.docs.map((d) =>
+          mapChatMessage(d.id, d.data() as Record<string, unknown>),
+        );
+        listener(messages);
+      },
+      (error) => {
+        console.warn("[SkySync Firebase] Chat listener error:", error);
+      },
+    );
   },
 
   subscribeGlobalChat(listener: GlobalChatListener): () => void {
     const chatRef = collection(db, "globalChat");
     const q = query(chatRef, orderBy("timestamp", "asc"), limit(100));
 
-    return onSnapshot(q, (snapshot) => {
-      const messages: ChatMessage[] = snapshot.docs.map((d) =>
-        mapChatMessage(d.id, d.data() as Record<string, unknown>)
-      );
-      listener(messages);
-    }, (error) => {
-      console.warn("[SkySync Firebase] Global chat listener error:", error);
-    });
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        const messages: ChatMessage[] = snapshot.docs.map((d) =>
+          mapChatMessage(d.id, d.data() as Record<string, unknown>),
+        );
+        listener(messages);
+      },
+      (error) => {
+        console.warn("[SkySync Firebase] Global chat listener error:", error);
+      },
+    );
   },
 
   async createRoom(name: string): Promise<SkyRoom> {

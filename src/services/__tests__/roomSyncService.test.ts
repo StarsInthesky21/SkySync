@@ -81,7 +81,9 @@ describe("roomSyncService", () => {
     it("adds and removes highlights", () => {
       const room = roomSyncService.createRoom("Highlight Test");
       let latestRooms: SkyRoom[] = [];
-      const unsub = roomSyncService.subscribeRooms((rooms) => { latestRooms = rooms; });
+      const unsub = roomSyncService.subscribeRooms((rooms) => {
+        latestRooms = rooms;
+      });
 
       // Add highlight
       roomSyncService.toggleHighlight(room.id, "jupiter");
@@ -101,7 +103,9 @@ describe("roomSyncService", () => {
     it("adds a note to a room", () => {
       const room = roomSyncService.createRoom("Note Test");
       let latestRooms: SkyRoom[] = [];
-      const unsub = roomSyncService.subscribeRooms((rooms) => { latestRooms = rooms; });
+      const unsub = roomSyncService.subscribeRooms((rooms) => {
+        latestRooms = rooms;
+      });
 
       roomSyncService.addNote(room.id, {
         id: "test-note",
@@ -122,7 +126,9 @@ describe("roomSyncService", () => {
     it("adds a custom constellation to a room", () => {
       const room = roomSyncService.createRoom("Constellation Test");
       let latestRooms: SkyRoom[] = [];
-      const unsub = roomSyncService.subscribeRooms((rooms) => { latestRooms = rooms; });
+      const unsub = roomSyncService.subscribeRooms((rooms) => {
+        latestRooms = rooms;
+      });
 
       roomSyncService.addCustomConstellation(room.id, {
         id: "custom-test",
@@ -143,7 +149,9 @@ describe("roomSyncService", () => {
     it("adds a message to room chat", () => {
       const room = roomSyncService.createRoom("Chat Test");
       let latestRooms: SkyRoom[] = [];
-      const unsub = roomSyncService.subscribeRooms((rooms) => { latestRooms = rooms; });
+      const unsub = roomSyncService.subscribeRooms((rooms) => {
+        latestRooms = rooms;
+      });
 
       const now = Date.now();
       roomSyncService.sendRoomMessage(room.id, {
@@ -166,7 +174,9 @@ describe("roomSyncService", () => {
   describe("sendGlobalMessage", () => {
     it("adds a message to global chat", () => {
       let latestChat: any[] = [];
-      const unsub = roomSyncService.subscribeGlobalChat((msgs) => { latestChat = msgs; });
+      const unsub = roomSyncService.subscribeGlobalChat((msgs) => {
+        latestChat = msgs;
+      });
       const countBefore = latestChat.length;
 
       const now = Date.now();
@@ -189,7 +199,9 @@ describe("roomSyncService", () => {
     it("updates room sky state", () => {
       const room = roomSyncService.createRoom("State Test");
       let latestRooms: SkyRoom[] = [];
-      const unsub = roomSyncService.subscribeRooms((rooms) => { latestRooms = rooms; });
+      const unsub = roomSyncService.subscribeRooms((rooms) => {
+        latestRooms = rooms;
+      });
 
       roomSyncService.updateSkyState(room.id, { rotation: 180, zoom: 2.0 });
 

@@ -32,7 +32,9 @@ export function StoryPlayer({ story }: { story: MythStory }) {
     <View style={styles.card}>
       <View style={styles.headerRow}>
         <Text style={styles.title}>{story.title}</Text>
-        <Text style={styles.counter}>{frameIndex + 1}/{story.frames.length}</Text>
+        <Text style={styles.counter}>
+          {frameIndex + 1}/{story.frames.length}
+        </Text>
       </View>
       <Text style={styles.frame}>{story.frames[frameIndex]}</Text>
       <View style={styles.controlRow}>

@@ -49,7 +49,9 @@ export const roomSyncService = {
     // Send initial chat state
     const room = rooms.find((r) => r.id === roomId);
     listener(room?.chat ?? []);
-    return () => { roomListeners.delete(handler); };
+    return () => {
+      roomListeners.delete(handler);
+    };
   },
   subscribeGlobalChat(listener: GlobalChatListener) {
     globalChatListeners.add(listener);

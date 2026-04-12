@@ -1,18 +1,10 @@
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { Animated, Easing, Platform, Pressable, StyleSheet, Text, View } from "react-native";
-import Svg, {
-  Circle,
-  ClipPath,
-  Defs,
-  Ellipse,
-  G,
-  LinearGradient,
-  Path,
-  Rect,
-  Stop,
-} from "react-native-svg";
+import Svg, { Circle, ClipPath, Defs, Ellipse, G, LinearGradient, Path, Rect, Stop } from "react-native-svg";
 let Haptics: any = null;
-try { Haptics = require("expo-haptics"); } catch {}
+try {
+  Haptics = require("expo-haptics");
+} catch {}
 import { colors, fontSize, radius } from "@/theme/colors";
 import { RenderedSkyObject } from "@/types/sky";
 
@@ -98,12 +90,14 @@ function planetPalette(object: RenderedSkyObject) {
     saturn: { light: "#f3e5c5", mid: "#cbb37e", dark: "#51442f", atmosphere: "#e8d6a8" },
     neptune: { light: "#9fb7ff", mid: "#536faf", dark: "#152447", atmosphere: "#879ddb" },
   };
-  return palettes[object.id] ?? {
-    light: "#f6f0df",
-    mid: object.color,
-    dark: "#20242c",
-    atmosphere: object.color,
-  };
+  return (
+    palettes[object.id] ?? {
+      light: "#f6f0df",
+      mid: object.color,
+      dark: "#20242c",
+      atmosphere: object.color,
+    }
+  );
 }
 
 function PlanetTexture({ object, clipId }: { object: RenderedSkyObject; clipId: string }) {
@@ -111,9 +105,21 @@ function PlanetTexture({ object, clipId }: { object: RenderedSkyObject; clipId: 
     return (
       <G clipPath={`url(#${clipId})`}>
         <Rect x="0" y="12" width="100" height="13" fill="#e8cfaa" opacity="0.55" />
-        <Path d="M0 28 C16 24 28 33 43 28 C60 22 78 30 100 25 L100 39 C80 43 62 35 45 40 C28 45 13 38 0 42 Z" fill="#9c6642" opacity="0.48" />
-        <Path d="M0 48 C19 44 32 50 48 47 C64 43 80 48 100 45 L100 57 C78 60 64 54 47 58 C28 62 14 56 0 59 Z" fill="#f0d8b8" opacity="0.58" />
-        <Path d="M0 64 C18 60 34 68 53 63 C70 58 84 64 100 61 L100 74 C78 78 64 69 47 75 C28 81 14 72 0 76 Z" fill="#7b4b34" opacity="0.34" />
+        <Path
+          d="M0 28 C16 24 28 33 43 28 C60 22 78 30 100 25 L100 39 C80 43 62 35 45 40 C28 45 13 38 0 42 Z"
+          fill="#9c6642"
+          opacity="0.48"
+        />
+        <Path
+          d="M0 48 C19 44 32 50 48 47 C64 43 80 48 100 45 L100 57 C78 60 64 54 47 58 C28 62 14 56 0 59 Z"
+          fill="#f0d8b8"
+          opacity="0.58"
+        />
+        <Path
+          d="M0 64 C18 60 34 68 53 63 C70 58 84 64 100 61 L100 74 C78 78 64 69 47 75 C28 81 14 72 0 76 Z"
+          fill="#7b4b34"
+          opacity="0.34"
+        />
         <Ellipse cx="69" cy="58" rx="10" ry="5.6" fill="#a35a3c" opacity="0.72" />
       </G>
     );
@@ -122,8 +128,16 @@ function PlanetTexture({ object, clipId }: { object: RenderedSkyObject; clipId: 
   if (object.id === "mars") {
     return (
       <G clipPath={`url(#${clipId})`}>
-        <Path d="M8 34 C25 25 39 36 55 30 C70 24 82 31 94 25 L99 45 C82 43 69 52 52 47 C34 42 19 49 4 43 Z" fill="#6b2c23" opacity="0.42" />
-        <Path d="M4 62 C20 54 36 65 50 58 C67 49 83 59 98 54 L98 77 C77 75 65 68 48 75 C28 83 14 72 4 78 Z" fill="#51261f" opacity="0.3" />
+        <Path
+          d="M8 34 C25 25 39 36 55 30 C70 24 82 31 94 25 L99 45 C82 43 69 52 52 47 C34 42 19 49 4 43 Z"
+          fill="#6b2c23"
+          opacity="0.42"
+        />
+        <Path
+          d="M4 62 C20 54 36 65 50 58 C67 49 83 59 98 54 L98 77 C77 75 65 68 48 75 C28 83 14 72 4 78 Z"
+          fill="#51261f"
+          opacity="0.3"
+        />
         <Circle cx="30" cy="48" r="4" fill="#2d1917" opacity="0.18" />
         <Circle cx="73" cy="39" r="3" fill="#2d1917" opacity="0.16" />
         <Path d="M36 9 C45 4 56 4 64 10 C56 14 46 14 36 9 Z" fill="#f4d8c5" opacity="0.45" />
@@ -134,9 +148,21 @@ function PlanetTexture({ object, clipId }: { object: RenderedSkyObject; clipId: 
   if (object.id === "venus") {
     return (
       <G clipPath={`url(#${clipId})`}>
-        <Path d="M0 31 C18 22 35 36 52 28 C70 20 85 30 100 24 L100 39 C79 45 66 34 50 41 C31 49 17 37 0 44 Z" fill="#fff6d9" opacity="0.34" />
-        <Path d="M0 53 C19 46 34 58 52 50 C69 43 83 50 100 47 L100 63 C81 67 65 59 49 65 C30 72 16 62 0 67 Z" fill="#f7dfb4" opacity="0.4" />
-        <Path d="M10 73 C28 66 44 75 59 69 C73 63 86 70 98 66 L98 80 C79 84 65 78 47 83 C31 87 19 80 10 84 Z" fill="#b68e61" opacity="0.22" />
+        <Path
+          d="M0 31 C18 22 35 36 52 28 C70 20 85 30 100 24 L100 39 C79 45 66 34 50 41 C31 49 17 37 0 44 Z"
+          fill="#fff6d9"
+          opacity="0.34"
+        />
+        <Path
+          d="M0 53 C19 46 34 58 52 50 C69 43 83 50 100 47 L100 63 C81 67 65 59 49 65 C30 72 16 62 0 67 Z"
+          fill="#f7dfb4"
+          opacity="0.4"
+        />
+        <Path
+          d="M10 73 C28 66 44 75 59 69 C73 63 86 70 98 66 L98 80 C79 84 65 78 47 83 C31 87 19 80 10 84 Z"
+          fill="#b68e61"
+          opacity="0.22"
+        />
       </G>
     );
   }
@@ -144,8 +170,16 @@ function PlanetTexture({ object, clipId }: { object: RenderedSkyObject; clipId: 
   if (object.id === "neptune") {
     return (
       <G clipPath={`url(#${clipId})`}>
-        <Path d="M0 36 C20 31 38 39 56 35 C72 31 87 35 100 32 L100 42 C80 46 64 39 48 44 C31 49 15 42 0 47 Z" fill="#b8c8ff" opacity="0.22" />
-        <Path d="M18 59 C35 54 52 62 68 57 C82 53 92 57 100 55 L100 66 C83 68 68 63 54 68 C38 73 26 66 18 70 Z" fill="#203660" opacity="0.26" />
+        <Path
+          d="M0 36 C20 31 38 39 56 35 C72 31 87 35 100 32 L100 42 C80 46 64 39 48 44 C31 49 15 42 0 47 Z"
+          fill="#b8c8ff"
+          opacity="0.22"
+        />
+        <Path
+          d="M18 59 C35 54 52 62 68 57 C82 53 92 57 100 55 L100 66 C83 68 68 63 54 68 C38 73 26 66 18 70 Z"
+          fill="#203660"
+          opacity="0.26"
+        />
         <Ellipse cx="66" cy="38" rx="7" ry="3" fill="#18264a" opacity="0.28" />
       </G>
     );
@@ -157,15 +191,27 @@ function PlanetTexture({ object, clipId }: { object: RenderedSkyObject; clipId: 
         <Circle cx="32" cy="35" r="6" fill="#2e2d2b" opacity="0.18" />
         <Circle cx="61" cy="47" r="4" fill="#2e2d2b" opacity="0.16" />
         <Circle cx="43" cy="67" r="5" fill="#2e2d2b" opacity="0.13" />
-        <Path d="M8 58 C26 51 37 60 54 54 C70 48 84 54 96 50 L96 65 C78 68 62 61 48 67 C30 74 17 66 8 70 Z" fill="#5b554c" opacity="0.19" />
+        <Path
+          d="M8 58 C26 51 37 60 54 54 C70 48 84 54 96 50 L96 65 C78 68 62 61 48 67 C30 74 17 66 8 70 Z"
+          fill="#5b554c"
+          opacity="0.19"
+        />
       </G>
     );
   }
 
   return (
     <G clipPath={`url(#${clipId})`}>
-      <Path d="M4 42 C22 33 40 47 58 39 C74 32 88 38 98 35 L98 51 C77 55 64 48 48 54 C29 61 15 51 4 56 Z" fill="#ffffff" opacity="0.12" />
-      <Path d="M7 62 C24 56 38 66 55 60 C72 54 86 60 97 57 L97 72 C78 75 63 69 46 74 C30 79 18 70 7 75 Z" fill="#000000" opacity="0.12" />
+      <Path
+        d="M4 42 C22 33 40 47 58 39 C74 32 88 38 98 35 L98 51 C77 55 64 48 48 54 C29 61 15 51 4 56 Z"
+        fill="#ffffff"
+        opacity="0.12"
+      />
+      <Path
+        d="M7 62 C24 56 38 66 55 60 C72 54 86 60 97 57 L97 72 C78 75 63 69 46 74 C30 79 18 70 7 75 Z"
+        fill="#000000"
+        opacity="0.12"
+      />
     </G>
   );
 }
@@ -199,7 +245,16 @@ function PlanetDisc({ object, size }: { object: RenderedSkyObject; size: number 
             <Circle cx="60" cy="36" r="18" />
           </ClipPath>
         </Defs>
-        <Ellipse cx="60" cy="38" rx="53" ry="10" fill="none" stroke={`url(#${id}-ring)`} strokeWidth="4.4" transform="rotate(-12 60 38)" />
+        <Ellipse
+          cx="60"
+          cy="38"
+          rx="53"
+          ry="10"
+          fill="none"
+          stroke={`url(#${id}-ring)`}
+          strokeWidth="4.4"
+          transform="rotate(-12 60 38)"
+        />
         <Circle cx="60" cy="36" r="18" fill={`url(#${id}-body)`} />
         <G clipPath={`url(#${clipId})`}>
           <Rect x="38" y="25" width="44" height="5" fill="#f5e5bd" opacity="0.28" />
@@ -207,7 +262,16 @@ function PlanetDisc({ object, size }: { object: RenderedSkyObject; size: number 
           <Rect x="38" y="44" width="44" height="4" fill="#f1dcad" opacity="0.18" />
         </G>
         <Circle cx="60" cy="36" r="18" fill={`url(#${id}-shade)`} />
-        <Ellipse cx="60" cy="38" rx="53" ry="10" fill="none" stroke="rgba(238,231,210,0.26)" strokeWidth="1" transform="rotate(-12 60 38)" />
+        <Ellipse
+          cx="60"
+          cy="38"
+          rx="53"
+          ry="10"
+          fill="none"
+          stroke="rgba(238,231,210,0.26)"
+          strokeWidth="1"
+          transform="rotate(-12 60 38)"
+        />
       </Svg>
     );
   }
@@ -232,7 +296,14 @@ function PlanetDisc({ object, size }: { object: RenderedSkyObject; size: number 
       <Circle cx="50" cy="50" r="47" fill={`url(#${id}-body)`} />
       <PlanetTexture object={object} clipId={clipId} />
       <Circle cx="50" cy="50" r="47" fill={`url(#${id}-shade)`} />
-      <Circle cx="50" cy="50" r="47" fill="none" stroke={hexToRgba(palette.atmosphere, 0.36)} strokeWidth="1" />
+      <Circle
+        cx="50"
+        cy="50"
+        r="47"
+        fill="none"
+        stroke={hexToRgba(palette.atmosphere, 0.36)}
+        strokeWidth="1"
+      />
     </Svg>
   );
 }
@@ -271,13 +342,13 @@ function StarComponent({ object, selected, highlighted, onPress }: StarProps) {
   const twinkle = useRef(new Animated.Value(1)).current;
   const planetScale = useRef(new Animated.Value(1)).current;
   const haloScale = useRef(new Animated.Value(1)).current;
-  const metrics = useMemo(() => getVisualMetrics(object), [object.id, object.kind, object.magnitude, object.size]);
+  const metrics = useMemo(() => getVisualMetrics(object), [object]);
 
   const twinkleConfig = useMemo(() => {
     const seed = hashString(object.id);
     return {
       duration: 4200 + (seed % 2600),
-      minOpacity: 0.72 + ((seed % 19) / 100),
+      minOpacity: 0.72 + (seed % 19) / 100,
       delay: seed % 1800,
     };
   }, [object.id]);

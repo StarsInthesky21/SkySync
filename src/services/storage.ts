@@ -45,8 +45,30 @@ const DEFAULT_SETTINGS: AppSettings = {
 };
 
 function generateUsername(): string {
-  const adjectives = ["Cosmic", "Stellar", "Astral", "Lunar", "Solar", "Nebula", "Orbit", "Nova", "Quasar", "Pulsar"];
-  const nouns = ["Gazer", "Walker", "Seeker", "Pilot", "Scout", "Voyager", "Watcher", "Ranger", "Drifter", "Hunter"];
+  const adjectives = [
+    "Cosmic",
+    "Stellar",
+    "Astral",
+    "Lunar",
+    "Solar",
+    "Nebula",
+    "Orbit",
+    "Nova",
+    "Quasar",
+    "Pulsar",
+  ];
+  const nouns = [
+    "Gazer",
+    "Walker",
+    "Seeker",
+    "Pilot",
+    "Scout",
+    "Voyager",
+    "Watcher",
+    "Ranger",
+    "Drifter",
+    "Hunter",
+  ];
   const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
   const noun = nouns[Math.floor(Math.random() * nouns.length)];
   const num = Math.floor(10 + Math.random() * 90);
@@ -84,7 +106,13 @@ function hasRequiredFields(obj: Record<string, unknown>, fields: string[]): bool
   return fields.every((field) => field in obj);
 }
 
-const PROFILE_REQUIRED_FIELDS = ["username", "xp", "planetsDiscovered", "satellitesTracked", "totalStarsViewed"];
+const PROFILE_REQUIRED_FIELDS = [
+  "username",
+  "xp",
+  "planetsDiscovered",
+  "satellitesTracked",
+  "totalStarsViewed",
+];
 const BADGE_REQUIRED_FIELDS = ["planetsDiscovered", "constellationsTraced", "satellitesTracked"];
 const CHALLENGE_REQUIRED_FIELDS = ["completedIds", "lastResetDate", "totalXpEarned"];
 

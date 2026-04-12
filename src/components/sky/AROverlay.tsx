@@ -7,7 +7,9 @@ import { useEffect, useMemo, useRef } from "react";
 import { Animated, Easing, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 // Dynamic import to avoid crash if native module isn't available
 let Haptics: any = null;
-try { Haptics = require("expo-haptics"); } catch {}
+try {
+  Haptics = require("expo-haptics");
+} catch {}
 import { DeviceOrientation } from "@/hooks/useDeviceSensors";
 import { colors, fontSize, radius, spacing } from "@/theme/colors";
 import { RenderedSkyObject } from "@/types/sky";
@@ -32,7 +34,14 @@ const COMPASS_LABELS = [
   { deg: 315, label: "NW" },
 ];
 
-export function AROverlay({ orientation, objects, arActive, onToggleAr, onSelectObject, onSyncRotation }: Props) {
+export function AROverlay({
+  orientation,
+  objects,
+  arActive,
+  onToggleAr,
+  onSelectObject,
+  onSyncRotation,
+}: Props) {
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   // Pulse animation for AR button when not active
@@ -40,8 +49,18 @@ export function AROverlay({ orientation, objects, arActive, onToggleAr, onSelect
     if (arActive) return;
     const anim = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 1.08, duration: 1500, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 1, duration: 1500, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(pulseAnim, {
+          toValue: 1.08,
+          duration: 1500,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1500,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
       ]),
     );
     anim.start();
@@ -73,7 +92,9 @@ export function AROverlay({ orientation, objects, arActive, onToggleAr, onSelect
   // Haptic when object detected
   useEffect(() => {
     if (nearbyObjects.length > 0 && Platform.OS !== "web") {
-      try { Haptics?.impactAsync?.(Haptics.ImpactFeedbackStyle.Light); } catch {}
+      try {
+        Haptics?.impactAsync?.(Haptics.ImpactFeedbackStyle.Light);
+      } catch {}
     }
   }, [nearbyObjects.length]);
 
@@ -91,15 +112,25 @@ export function AROverlay({ orientation, objects, arActive, onToggleAr, onSelect
       <Pressable
         onPress={() => {
           if (Platform.OS !== "web") {
-            try { Haptics?.impactAsync?.(Haptics.ImpactFeedbackStyle.Medium); } catch {}
+            try {
+              Haptics?.impactAsync?.(Haptics.ImpactFeedbackStyle.Medium);
+            } catch {}
           }
           onToggleAr();
         }}
         accessibilityRole="button"
         accessibilityLabel={arActive ? "Disable compass mode" : "Enable compass mode"}
       >
-        <Animated.View style={[styles.arButton, arActive && styles.arButtonActive, !arActive && { transform: [{ scale: pulseAnim }] }]}>
-          <Text style={styles.arButtonText}>{arActive ? "\u{1F9ED} COMPASS ON" : "\u{1F9ED} Point at Sky"}</Text>
+        <Animated.View
+          style={[
+            styles.arButton,
+            arActive && styles.arButtonActive,
+            !arActive && { transform: [{ scale: pulseAnim }] },
+          ]}
+        >
+          <Text style={styles.arButtonText}>
+            {arActive ? "\u{1F9ED} COMPASS ON" : "\u{1F9ED} Point at Sky"}
+          </Text>
         </Animated.View>
       </Pressable>
 

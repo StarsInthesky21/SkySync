@@ -1,0 +1,6 @@
+appId: app.skysync
+---
+device:
+  platform: android
+  model: pixel_6
+  osVersion: 34

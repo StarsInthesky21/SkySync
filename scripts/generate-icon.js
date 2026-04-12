@@ -58,14 +58,14 @@ const constellationDots = constellationPoints
   .map(
     (p, i) =>
       `<circle cx="${p.x}" cy="${p.y}" r="${i === 0 || i === constellationPoints.length - 1 ? 6 : 4}" fill="#73fbd3" opacity="${i === 0 || i === constellationPoints.length - 1 ? 1 : 0.8}"/>
-    <circle cx="${p.x}" cy="${p.y}" r="${i === 0 || i === constellationPoints.length - 1 ? 14 : 10}" fill="#73fbd3" opacity="0.12"/>`
+    <circle cx="${p.x}" cy="${p.y}" r="${i === 0 || i === constellationPoints.length - 1 ? 14 : 10}" fill="#73fbd3" opacity="0.12"/>`,
   )
   .join("\n    ");
 
 const starElements = stars
   .map(
     (s) =>
-      `<circle cx="${s.x.toFixed(1)}" cy="${s.y.toFixed(1)}" r="${s.size.toFixed(1)}" fill="white" opacity="${s.opacity.toFixed(2)}"/>`
+      `<circle cx="${s.x.toFixed(1)}" cy="${s.y.toFixed(1)}" r="${s.size.toFixed(1)}" fill="white" opacity="${s.opacity.toFixed(2)}"/>`,
   )
   .join("\n    ");
 

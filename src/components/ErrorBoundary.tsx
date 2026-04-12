@@ -1,6 +1,7 @@
 import { Component, ErrorInfo, ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { colors, fontSize, radius } from "@/theme/colors";
+import { colors } from "@/theme/colors";
+import { crashReporter } from "@/services/crashReporter";
 
 type Props = {
   children: ReactNode;
@@ -21,15 +22,18 @@ export class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, errorMessage: error.message };
   }
 
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("SkySync Error Boundary caught:", error, info.componentStack);
+  override componentDidCatch(error: Error, info: ErrorInfo) {
+    void crashReporter.report(error, {
+      componentStack: info.componentStack ?? undefined,
+      fatal: true,
+    });
   }
 
   handleRestart = () => {
     this.setState({ hasError: false, errorMessage: "" });
   };
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       return (
         <View style={styles.container} accessibilityRole="alert">

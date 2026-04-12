@@ -1,6 +1,12 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth, initializeAuth, browserLocalPersistence, Auth } from "firebase/auth";
-import { initializeFirestore, getFirestore, persistentLocalCache, persistentSingleTabManager, Firestore } from "firebase/firestore";
+import { getAuth, initializeAuth, Auth } from "firebase/auth";
+import {
+  initializeFirestore,
+  getFirestore,
+  persistentLocalCache,
+  persistentSingleTabManager,
+  Firestore,
+} from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import { Platform } from "react-native";

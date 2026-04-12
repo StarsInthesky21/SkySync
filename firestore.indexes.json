@@ -3,30 +3,22 @@
     {
       "collectionGroup": "rooms",
       "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "roomCode", "order": "ASCENDING" }
-      ]
+      "fields": [{ "fieldPath": "roomCode", "order": "ASCENDING" }]
     },
     {
       "collectionGroup": "rooms",
       "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "state.participants", "arrayConfig": "CONTAINS" }
-      ]
+      "fields": [{ "fieldPath": "state.participants", "arrayConfig": "CONTAINS" }]
     },
     {
       "collectionGroup": "chat",
       "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "timestamp", "order": "ASCENDING" }
-      ]
+      "fields": [{ "fieldPath": "timestamp", "order": "ASCENDING" }]
     },
     {
       "collectionGroup": "globalChat",
       "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "timestamp", "order": "ASCENDING" }
-      ]
+      "fields": [{ "fieldPath": "timestamp", "order": "ASCENDING" }]
     }
   ],
   "fieldOverrides": []

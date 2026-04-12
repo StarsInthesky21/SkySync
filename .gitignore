@@ -12,3 +12,25 @@ tmp/
 .env.production
 google-services.json
 GoogleService-Info.plist
+
+# Release signing keystores and private keys
+credentials/*.jks
+credentials/*.keystore
+credentials/*.p8
+credentials/*.p12
+credentials/*.pem
+credentials/credentials.json
+credentials/google-services.json
+credentials/GoogleService-Info.plist
+
+# Expo / EAS local secrets
+.easignore.local
+secrets.json
+serviceAccountKey.json
+
+# Build artefacts we don't want tracked
+android/
+ios/
+*.apk
+*.aab
+*.ipa

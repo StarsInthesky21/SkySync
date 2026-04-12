@@ -17,11 +17,13 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
 
   useEffect(() => {
-    AsyncStorage.getItem(ONBOARDING_KEY).then((value) => {
-      setShowOnboarding(value !== "true");
-    }).catch(() => {
-      setShowOnboarding(true);
-    });
+    AsyncStorage.getItem(ONBOARDING_KEY)
+      .then((value) => {
+        setShowOnboarding(value !== "true");
+      })
+      .catch(() => {
+        setShowOnboarding(true);
+      });
   }, []);
 
   const handleOnboardingComplete = useCallback(async () => {
@@ -47,11 +49,7 @@ export default function App() {
           <AuthProvider>
             <SkySyncProvider>
               <StatusBar style="light" />
-              {showOnboarding ? (
-                <Onboarding onComplete={handleOnboardingComplete} />
-              ) : (
-                <SkySyncHomeScreen />
-              )}
+              {showOnboarding ? <Onboarding onComplete={handleOnboardingComplete} /> : <SkySyncHomeScreen />}
             </SkySyncProvider>
           </AuthProvider>
         </ToastProvider>

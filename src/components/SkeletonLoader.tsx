@@ -8,8 +8,18 @@ function ShimmerBlock({ width, height, style }: { width: number | string; height
   useEffect(() => {
     const anim = Animated.loop(
       Animated.sequence([
-        Animated.timing(shimmer, { toValue: 0.7, duration: 1000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-        Animated.timing(shimmer, { toValue: 0.3, duration: 1000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(shimmer, {
+          toValue: 0.7,
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(shimmer, {
+          toValue: 0.3,
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
       ]),
     );
     anim.start();
@@ -17,13 +27,7 @@ function ShimmerBlock({ width, height, style }: { width: number | string; height
   }, [shimmer]);
 
   return (
-    <Animated.View
-      style={[
-        styles.block,
-        { width: width as number, height, opacity: shimmer },
-        style,
-      ]}
-    />
+    <Animated.View style={[styles.block, { width: width as number, height, opacity: shimmer }, style]} />
   );
 }
 

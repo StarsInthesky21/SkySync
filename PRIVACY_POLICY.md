@@ -9,12 +9,14 @@ SkySync ("the App") is a social stargazing application. Your privacy is importan
 ## Data We Collect
 
 ### Data You Provide
+
 - **Username**: A randomly generated display name that you may customize. No real name is required.
 - **Chat Messages**: Messages you send in Sky Rooms and Global Chat are stored to enable the social experience.
 - **Custom Constellations**: Star patterns you create are stored within your Sky Room.
 - **Space Notes**: Notes you attach to celestial objects in shared rooms.
 
 ### Data We Collect Automatically
+
 - **Usage Statistics**: Badge progress, challenge completions, XP earned, and discovery counts are stored locally on your device.
 - **Authentication**: If Firebase is enabled, we use anonymous authentication. No personal information is required to use the app.
 
@@ -24,6 +26,7 @@ SkySync ("the App") is a social stargazing application. Your privacy is importan
 - **Cloud Storage** (optional): If Firebase is enabled, room data, chat messages, and user profiles may be synced to Google Cloud Firestore servers.
 
 ## Data We Do NOT Collect
+
 - Location data
 - Device identifiers or advertising IDs
 - Contact lists or phone numbers
@@ -43,6 +46,7 @@ SkySync does not knowingly collect personal information from children under 13. 
 ## Your Rights
 
 You can:
+
 - **Delete your data** at any time using Settings > Clear All Data
 - **Use the app offline** without any cloud data collection
 - **Choose your username** without providing real personal information

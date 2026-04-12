@@ -15,9 +15,13 @@ import {
 // Dynamic imports to avoid crash if native modules aren't linked in debug APK
 let Location: any = null;
 let Haptics: any = null;
-try { Location = require("expo-location"); } catch {}
-try { Haptics = require("expo-haptics"); } catch {}
-import { colors, fontSize, radius, spacing } from "@/theme/colors";
+try {
+  Location = require("expo-location");
+} catch {}
+try {
+  Haptics = require("expo-haptics");
+} catch {}
+import { colors, fontSize, radius } from "@/theme/colors";
 import { storage } from "@/services/storage";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -100,7 +104,12 @@ export function Onboarding({ onComplete }: Props) {
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: 0, duration: 600, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
     ]).start();
   }, [fadeAnim, slideAnim]);
 
@@ -142,7 +151,9 @@ export function Onboarding({ onComplete }: Props) {
   }, []);
 
   const handleNext = useCallback(async () => {
-    try { if (Platform.OS !== "web" && Haptics) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+    try {
+      if (Platform.OS !== "web" && Haptics) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } catch {}
 
     // Save username if on username step
     if (STEPS[currentIndex].interactive === "username" && usernameInput.trim()) {
@@ -155,69 +166,77 @@ export function Onboarding({ onComplete }: Props) {
     if (currentIndex < STEPS.length - 1) {
       flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
     } else {
-      try { if (Platform.OS !== "web" && Haptics) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
+      try {
+        if (Platform.OS !== "web" && Haptics)
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      } catch {}
       onComplete();
     }
   }, [currentIndex, onComplete, usernameInput]);
 
   const isLast = currentIndex === STEPS.length - 1;
-  const currentStep = STEPS[currentIndex];
 
-  const renderItem = useCallback(({ item }: { item: OnboardingStep }) => (
-    <View style={[styles.slide, { width: SCREEN_WIDTH }]}>
-      <View style={[styles.iconContainer, { shadowColor: item.accent }]}>
-        <Text style={styles.icon}>{item.icon}</Text>
-      </View>
-      <Text style={[styles.title, { color: item.accent }]}>{item.title}</Text>
-      <Text style={styles.body}>{item.body}</Text>
-
-      {/* Username input */}
-      {item.interactive === "username" && (
-        <View style={styles.interactiveContainer}>
-          <TextInput
-            style={styles.usernameInput}
-            value={usernameInput}
-            onChangeText={setUsernameInput}
-            placeholder="e.g. StarExplorer"
-            placeholderTextColor={colors.textDim}
-            maxLength={20}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-          {usernameInput.trim().length > 0 && (
-            <Text style={styles.usernamePreview}>
-              Hello, <Text style={{ color: colors.accent, fontWeight: "800" }}>{usernameInput.trim()}</Text>!
-            </Text>
-          )}
+  const renderItem = useCallback(
+    ({ item }: { item: OnboardingStep }) => (
+      <View style={[styles.slide, { width: SCREEN_WIDTH }]}>
+        <View style={[styles.iconContainer, { shadowColor: item.accent }]}>
+          <Text style={styles.icon}>{item.icon}</Text>
         </View>
-      )}
+        <Text style={[styles.title, { color: item.accent }]}>{item.title}</Text>
+        <Text style={styles.body}>{item.body}</Text>
 
-      {/* Location permission */}
-      {item.interactive === "location" && (
-        <View style={styles.interactiveContainer}>
-          {locationGranted === null ? (
-            <Pressable
-              style={({ pressed }) => [styles.locationBtn, pressed && { opacity: 0.85 }]}
-              onPress={handleRequestLocation}
-            >
-              <Text style={styles.locationBtnText}>Enable Location</Text>
-            </Pressable>
-          ) : locationGranted ? (
-            <View style={styles.locationStatus}>
-              <Text style={styles.locationStatusIcon}>{"\u2705"}</Text>
-              <Text style={styles.locationStatusText}>Location enabled! We'll show your personalized sky.</Text>
-            </View>
-          ) : (
-            <View style={styles.locationStatus}>
-              <Text style={styles.locationStatusText}>
-                No worries! SkySync works great without location too. You can enable it later in Settings.
+        {/* Username input */}
+        {item.interactive === "username" && (
+          <View style={styles.interactiveContainer}>
+            <TextInput
+              style={styles.usernameInput}
+              value={usernameInput}
+              onChangeText={setUsernameInput}
+              placeholder="e.g. StarExplorer"
+              placeholderTextColor={colors.textDim}
+              maxLength={20}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            {usernameInput.trim().length > 0 && (
+              <Text style={styles.usernamePreview}>
+                Hello, <Text style={{ color: colors.accent, fontWeight: "800" }}>{usernameInput.trim()}</Text>
+                !
               </Text>
-            </View>
-          )}
-        </View>
-      )}
-    </View>
-  ), [usernameInput, locationGranted, handleRequestLocation]);
+            )}
+          </View>
+        )}
+
+        {/* Location permission */}
+        {item.interactive === "location" && (
+          <View style={styles.interactiveContainer}>
+            {locationGranted === null ? (
+              <Pressable
+                style={({ pressed }) => [styles.locationBtn, pressed && { opacity: 0.85 }]}
+                onPress={handleRequestLocation}
+              >
+                <Text style={styles.locationBtnText}>Enable Location</Text>
+              </Pressable>
+            ) : locationGranted ? (
+              <View style={styles.locationStatus}>
+                <Text style={styles.locationStatusIcon}>{"\u2705"}</Text>
+                <Text style={styles.locationStatusText}>
+                  Location enabled! We'll show your personalized sky.
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.locationStatus}>
+                <Text style={styles.locationStatusText}>
+                  No worries! SkySync works great without location too. You can enable it later in Settings.
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+      </View>
+    ),
+    [usernameInput, locationGranted, handleRequestLocation],
+  );
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
@@ -239,7 +258,10 @@ export function Onboarding({ onComplete }: Props) {
         {STEPS.map((step, i) => (
           <View
             key={step.id}
-            style={[styles.dot, i === currentIndex && { backgroundColor: STEPS[currentIndex].accent, width: 24 }]}
+            style={[
+              styles.dot,
+              i === currentIndex && { backgroundColor: STEPS[currentIndex].accent, width: 24 },
+            ]}
           />
         ))}
       </View>
@@ -252,7 +274,11 @@ export function Onboarding({ onComplete }: Props) {
           </Pressable>
         )}
         <Pressable
-          style={({ pressed }) => [styles.nextBtn, { backgroundColor: STEPS[currentIndex].accent }, pressed && { opacity: 0.85 }]}
+          style={({ pressed }) => [
+            styles.nextBtn,
+            { backgroundColor: STEPS[currentIndex].accent },
+            pressed && { opacity: 0.85 },
+          ]}
           onPress={handleNext}
         >
           <Text style={styles.nextText}>{isLast ? "Get Started" : "Next"}</Text>

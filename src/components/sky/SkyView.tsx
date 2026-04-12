@@ -1,14 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import {
-  Animated,
-  Easing,
-  PanResponder,
-  StyleProp,
-  StyleSheet,
-  Text,
-  View,
-  ViewStyle,
-} from "react-native";
+import { Animated, Easing, PanResponder, StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
 import Svg, { Circle, Defs, Ellipse, G, RadialGradient, Rect, Stop } from "react-native-svg";
 import { Star } from "@/components/sky/Star";
 import { Constellation } from "@/components/sky/Constellation";
@@ -242,7 +233,13 @@ export function SkyView({
           },
         ]}
       >
-        <Svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" style={StyleSheet.absoluteFillObject}>
+        <Svg
+          width="100%"
+          height="100%"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          style={StyleSheet.absoluteFillObject}
+        >
           <Defs>
             <RadialGradient id="space-blue" cx="30%" cy="24%" r="80%">
               <Stop offset="0%" stopColor="#0d1a2d" stopOpacity="0.82" />

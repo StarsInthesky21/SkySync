@@ -1,12 +1,5 @@
 import { useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useAuth } from "@/providers/AuthProvider";
 import { colors, fontSize, radius, spacing } from "@/theme/colors";
 
@@ -74,7 +67,10 @@ export function AuthUpgradeCard({ onOpenAuth }: Props) {
           keyboardType="email-address"
           textContentType="emailAddress"
           value={email}
-          onChangeText={(t) => { setEmail(t); setError(null); }}
+          onChangeText={(t) => {
+            setEmail(t);
+            setError(null);
+          }}
           editable={!loading}
         />
         <TextInput
@@ -84,7 +80,10 @@ export function AuthUpgradeCard({ onOpenAuth }: Props) {
           secureTextEntry
           textContentType="newPassword"
           value={password}
-          onChangeText={(t) => { setPassword(t); setError(null); }}
+          onChangeText={(t) => {
+            setPassword(t);
+            setError(null);
+          }}
           onSubmitEditing={handleUpgrade}
           editable={!loading}
         />

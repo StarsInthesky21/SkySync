@@ -7,11 +7,16 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { crashReporter } from "@/services/crashReporter";
 import { Onboarding } from "@/components/Onboarding";
 import { ToastProvider } from "@/components/Toast";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { SkySyncProvider } from "@/providers/SkySyncProvider";
+import { VoiceProvider } from "@/providers/VoiceProvider";
 import { colors, fontSize } from "@/theme/colors";
+
+// Install global crash reporter once per process.
+crashReporter.install();
 
 // Keep splash screen visible while we check onboarding state.
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -19,13 +24,17 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 // Safety: force-hide splash after 3 seconds on Android (where it's most likely to stick),
 // 5 seconds on other platforms.
 const SPLASH_SAFETY_MS = Platform.OS === "android" ? 3000 : 5000;
-setTimeout(() => { SplashScreen.hideAsync().catch(() => {}); }, SPLASH_SAFETY_MS);
+setTimeout(() => {
+  SplashScreen.hideAsync().catch(() => {});
+}, SPLASH_SAFETY_MS);
 
 const ONBOARDING_KEY = "@skysync/onboarding_complete";
 
 // Aggressively hide the splash screen — call from every path that resolves the UI state.
 function hideSplash() {
-  try { SplashScreen.hideAsync().catch(() => {}); } catch {}
+  try {
+    SplashScreen.hideAsync().catch(() => {});
+  } catch {}
 }
 
 export default function RootLayout() {
@@ -50,32 +59,29 @@ export default function RootLayout() {
     };
 
     // Run with a short timeout guard so it never blocks the app
-    Promise.race([
-      initNotifications(),
-      new Promise((resolve) => setTimeout(resolve, 2000)),
-    ]).catch(() => {});
+    Promise.race([initNotifications(), new Promise((resolve) => setTimeout(resolve, 2000))]).catch(() => {});
 
     // Set up notification listener separately
     try {
       const expoNotifications = require("expo-notifications");
       if (expoNotifications?.addNotificationReceivedListener) {
-        listenerSub = expoNotifications.addNotificationReceivedListener(
-          (notification: any) => {
-            try {
-              const { notificationService } = require("@/services/notifications");
-              notificationService.handleNotificationReceived(notification);
-            } catch {
-              // ignore
-            }
-          },
-        );
+        listenerSub = expoNotifications.addNotificationReceivedListener((notification: any) => {
+          try {
+            const { notificationService } = require("@/services/notifications");
+            notificationService.handleNotificationReceived(notification);
+          } catch {
+            // ignore
+          }
+        });
       }
     } catch {
       // expo-notifications not available
     }
 
     return () => {
-      try { listenerSub?.remove(); } catch {}
+      try {
+        listenerSub?.remove();
+      } catch {}
     };
   }, []);
 
@@ -90,16 +96,19 @@ export default function RootLayout() {
       hideSplash();
     }, fallbackMs);
 
-    AsyncStorage.getItem(ONBOARDING_KEY).then((value) => {
-      if (!mounted) return;
-      setShowOnboarding(value !== "true");
-    }).catch(() => {
-      if (!mounted) return;
-      setShowOnboarding(true);
-    }).finally(() => {
-      clearTimeout(fallbackTimer);
-      hideSplash();
-    });
+    AsyncStorage.getItem(ONBOARDING_KEY)
+      .then((value) => {
+        if (!mounted) return;
+        setShowOnboarding(value !== "true");
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setShowOnboarding(true);
+      })
+      .finally(() => {
+        clearTimeout(fallbackTimer);
+        hideSplash();
+      });
 
     return () => {
       mounted = false;
@@ -131,8 +140,10 @@ export default function RootLayout() {
             <ToastProvider>
               <AuthProvider>
                 <SkySyncProvider>
-                  <StatusBar style="light" />
-                  <Onboarding onComplete={handleOnboardingComplete} />
+                  <VoiceProvider>
+                    <StatusBar style="light" />
+                    <Onboarding onComplete={handleOnboardingComplete} />
+                  </VoiceProvider>
                 </SkySyncProvider>
               </AuthProvider>
             </ToastProvider>
@@ -149,17 +160,44 @@ export default function RootLayout() {
           <ToastProvider>
             <AuthProvider>
               <SkySyncProvider>
-                <StatusBar style="light" />
-                <Stack
-                  screenOptions={{
-                    headerShown: false,
-                    contentStyle: { backgroundColor: colors.bg },
-                    animation: "fade",
-                  }}
-                >
-                  <Stack.Screen name="(tabs)" options={{ animation: "none" }} />
-                  <Stack.Screen name="settings" options={{ presentation: "modal", animation: "slide_from_bottom" }} />
-                </Stack>
+                <VoiceProvider>
+                  <StatusBar style="light" />
+                  <Stack
+                    screenOptions={{
+                      headerShown: false,
+                      contentStyle: { backgroundColor: colors.bg },
+                      animation: "fade",
+                    }}
+                  >
+                    <Stack.Screen name="(tabs)" options={{ animation: "none" }} />
+                    <Stack.Screen
+                      name="settings"
+                      options={{ presentation: "modal", animation: "slide_from_bottom" }}
+                    />
+                    <Stack.Screen name="object/[id]" options={{ animation: "slide_from_right" }} />
+                    <Stack.Screen name="constellation/[id]" options={{ animation: "slide_from_right" }} />
+                    <Stack.Screen
+                      name="room/create"
+                      options={{ presentation: "modal", animation: "slide_from_bottom" }}
+                    />
+                    <Stack.Screen
+                      name="room/join"
+                      options={{ presentation: "modal", animation: "slide_from_bottom" }}
+                    />
+                    <Stack.Screen name="room/[code]" options={{ animation: "slide_from_right" }} />
+                    <Stack.Screen
+                      name="ar"
+                      options={{ animation: "fade", contentStyle: { backgroundColor: "#000" } }}
+                    />
+                    <Stack.Screen
+                      name="search"
+                      options={{ presentation: "modal", animation: "slide_from_bottom" }}
+                    />
+                    <Stack.Screen name="notifications" options={{ animation: "slide_from_right" }} />
+                    <Stack.Screen name="settings/observing" options={{ animation: "slide_from_right" }} />
+                    <Stack.Screen name="learn/story/[id]" options={{ animation: "slide_from_right" }} />
+                  </Stack>
+                </VoiceProvider>
               </SkySyncProvider>
             </AuthProvider>
           </ToastProvider>

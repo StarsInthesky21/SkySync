@@ -1,6 +1,6 @@
-import { memo, useCallback } from "react";
+import { memo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { colors, fontSize, radius, spacing } from "@/theme/colors";
+import { colors, fontSize, radius } from "@/theme/colors";
 
 export type TabId = "sky" | "explore" | "social" | "learn" | "profile";
 

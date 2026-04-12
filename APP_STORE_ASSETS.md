@@ -3,19 +3,24 @@
 ## App Store Connect Metadata
 
 ### Name
+
 SkySync - Social Stargazing
 
 ### Subtitle
+
 Explore the Night Sky Together
 
 ### Category
+
 Primary: Education
 Secondary: Reference
 
 ### Age Rating
+
 4+ (No objectionable content)
 
 ### Description
+
 Explore the night sky like never before. SkySync is a social stargazing app that transforms your phone into a window to the cosmos.
 
 **Point & Discover**
@@ -43,9 +48,11 @@ Real-time planetary positions, moon phases, sunrise/sunset times, ISS tracking, 
 All core features work without internet. Your progress syncs when you reconnect.
 
 ### Keywords
+
 stargazing,astronomy,night sky,constellation,mythology,social,planets,stars,telescope,moon,ISS,compass,education,space,cosmos
 
 ### What's New (v1.2.0)
+
 - Compass mode: point your phone at the sky to identify stars
 - 500+ real stars from the HYG astronomical database
 - 5-tab navigation for a cleaner, faster experience
@@ -60,6 +67,7 @@ stargazing,astronomy,night sky,constellation,mythology,social,planets,stars,tele
 ## Screenshot Requirements
 
 ### iPhone 6.7" (1290 x 2796)
+
 1. **Sky View** - Show the interactive sky map with twinkling stars, constellation lines, and the HUD showing "LIVE" mode
 2. **Object Detail** - Show the detail modal for Jupiter with mythology, facts, and the 3D preview
 3. **Compass Mode** - Show the AR overlay with compass strip, heading readout, and "pointing at sky" indicator
@@ -70,12 +78,15 @@ stargazing,astronomy,night sky,constellation,mythology,social,planets,stars,tele
 8. **Profile** - Show the profile card with streak, level, stats grid, and XP progress bar
 
 ### iPhone 6.5" (1242 x 2688)
+
 Same as 6.7" (scale down)
 
 ### iPad 12.9" (2048 x 2732)
+
 Same content, landscape orientation showing the wider sky view
 
 ### Android
+
 - Phone: 1080 x 1920 (same content as iPhone)
 - Feature graphic: 1024 x 500 (starfield background with SkySync logo and tagline)
 
@@ -94,13 +105,17 @@ Same content, landscape orientation showing the wider sky view
 **25-30s:** Pull back to show the full app. Text: "SkySync - Explore the Night Sky Together. Download free."
 
 ## Promotional Text
+
 Discover 500+ real stars with compass-guided stargazing. Create rooms to stargaze with friends worldwide.
 
 ## Support URL
+
 https://github.com/skysync-app/support
 
 ## Marketing URL
+
 https://skysync.app
 
 ## Privacy Policy URL
+
 https://skysync.app/privacy

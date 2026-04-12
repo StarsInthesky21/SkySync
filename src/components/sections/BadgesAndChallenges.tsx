@@ -1,8 +1,8 @@
 import { memo, useCallback } from "react";
-import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSkySync } from "@/providers/SkySyncProvider";
 import { colors, fontSize, radius, spacing } from "@/theme/colors";
-import { Badge, DailyChallenge } from "@/types/sky";
+import { Badge } from "@/types/sky";
 
 type Props = {
   onStatus: (msg: string) => void;
@@ -48,7 +48,10 @@ export function BadgesAndChallenges({ onStatus }: Props) {
               {!done && challenge.objectId && (
                 <Pressable
                   style={({ pressed }) => [styles.goChip, pressed && styles.goChipPressed]}
-                  onPress={() => { focusObject(challenge.objectId!); onStatus(`Go find: ${challenge.title}`); }}
+                  onPress={() => {
+                    focusObject(challenge.objectId!);
+                    onStatus(`Go find: ${challenge.title}`);
+                  }}
                 >
                   <Text style={styles.goText}>Go</Text>
                 </Pressable>
@@ -65,25 +68,55 @@ export function BadgesAndChallenges({ onStatus }: Props) {
 }
 
 const styles = StyleSheet.create({
-  card: { borderRadius: radius.xl, padding: spacing.lg, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 6 },
+  card: {
+    borderRadius: radius.xl,
+    padding: spacing.lg,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
+  },
   badgeRow: { gap: 10, paddingVertical: 4 },
   miniCard: { width: 180, borderRadius: radius.lg, padding: 14, backgroundColor: colors.cardSoft },
-  miniCardDone: { backgroundColor: "rgba(115,251,211,0.08)", borderWidth: 1, borderColor: "rgba(115,251,211,0.2)" },
+  miniCardDone: {
+    backgroundColor: "rgba(115,251,211,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(115,251,211,0.2)",
+  },
   miniTitle: { color: colors.text, fontWeight: "700", fontSize: fontSize.sm },
   miniBody: { color: colors.textDim, lineHeight: 18, marginTop: 6, fontSize: fontSize.xs },
   miniMeta: { color: colors.accentWarm, marginTop: 8, fontWeight: "700", fontSize: fontSize.xs },
   miniMetaDone: { color: colors.accent },
   listItem: { borderRadius: radius.lg, padding: 14, backgroundColor: colors.cardSoft, marginTop: 8 },
-  listItemDone: { backgroundColor: "rgba(115,251,211,0.06)", borderWidth: 1, borderColor: "rgba(115,251,211,0.15)" },
+  listItemDone: {
+    backgroundColor: "rgba(115,251,211,0.06)",
+    borderWidth: 1,
+    borderColor: "rgba(115,251,211,0.15)",
+  },
   listTitle: { color: colors.text, fontWeight: "700", fontSize: fontSize.sm },
   listTitleDone: { color: colors.accent },
   listBody: { color: colors.textDim, lineHeight: 19, marginTop: 4, fontSize: fontSize.xs },
   challengeRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   dot: { width: 10, height: 10, borderRadius: radius.pill, borderWidth: 2, borderColor: colors.textDim },
   dotDone: { backgroundColor: colors.accent, borderColor: colors.accent },
-  goChip: { borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 5, backgroundColor: "rgba(255,255,255,0.08)" },
+  goChip: {
+    borderRadius: radius.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    backgroundColor: "rgba(255,255,255,0.08)",
+  },
   goChipPressed: { opacity: 0.7 },
   goText: { color: colors.accent, fontWeight: "700", fontSize: fontSize.xs },
-  xpBar: { borderRadius: radius.sm, padding: 10, marginTop: 10, backgroundColor: "rgba(255,177,95,0.08)", alignItems: "center" },
+  xpBar: {
+    borderRadius: radius.sm,
+    padding: 10,
+    marginTop: 10,
+    backgroundColor: "rgba(255,177,95,0.08)",
+    alignItems: "center",
+  },
   xpText: { color: colors.accentWarm, fontWeight: "800", fontSize: fontSize.sm },
 });

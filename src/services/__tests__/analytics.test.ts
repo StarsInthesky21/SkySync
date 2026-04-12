@@ -1,4 +1,9 @@
-import { analytics } from "../analytics";
+jest.mock("expo-constants", () => ({
+  __esModule: true,
+  default: { expoConfig: { extra: {} } },
+}));
+
+import { analytics, sendToBackend, AnalyticsEvent } from "../analytics";
 
 // Mock AsyncStorage
 const mockStore: Record<string, string> = {};
@@ -6,8 +11,14 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
   __esModule: true,
   default: {
     getItem: jest.fn((key: string) => Promise.resolve(mockStore[key] ?? null)),
-    setItem: jest.fn((key: string, value: string) => { mockStore[key] = value; return Promise.resolve(); }),
-    removeItem: jest.fn((key: string) => { delete mockStore[key]; return Promise.resolve(); }),
+    setItem: jest.fn((key: string, value: string) => {
+      mockStore[key] = value;
+      return Promise.resolve();
+    }),
+    removeItem: jest.fn((key: string) => {
+      delete mockStore[key];
+      return Promise.resolve();
+    }),
   },
 }));
 
@@ -70,7 +81,10 @@ describe("analytics", () => {
     it("includes screen name in event", async () => {
       await analytics.screenView("Profile");
       const buffer = JSON.parse(mockStore["@skysync/analytics_buffer"]);
-      const screenEvent = buffer.find((e: { name: string; properties: { screen: string } }) => e.name === "screen_view" && e.properties.screen === "Profile");
+      const screenEvent = buffer.find(
+        (e: { name: string; properties: { screen: string } }) =>
+          e.name === "screen_view" && e.properties.screen === "Profile",
+      );
       expect(screenEvent).toBeDefined();
     });
   });
@@ -122,6 +136,54 @@ describe("analytics", () => {
       await analytics.endSession();
       // Session should be null after ending
       expect(analytics.getSessionSummary()).toBeNull();
+    });
+  });
+
+  describe("sendToBackend (HTTP dispatch)", () => {
+    const originalFetch = global.fetch;
+    const ENV_KEYS = ["EXPO_PUBLIC_ANALYTICS_ENDPOINT", "EXPO_PUBLIC_ANALYTICS_TOKEN"] as const;
+
+    afterEach(() => {
+      for (const k of ENV_KEYS) delete process.env[k];
+      global.fetch = originalFetch;
+    });
+
+    const sampleEvents: AnalyticsEvent[] = [
+      { name: "session_start", properties: {}, timestamp: 1, sessionId: "s-1" },
+      { name: "screen_view", properties: { screen: "Sky" }, timestamp: 2, sessionId: "s-1" },
+    ];
+
+    it("returns true and no-ops with zero events", async () => {
+      expect(await sendToBackend([])).toBe(true);
+    });
+
+    it("posts batch to configured endpoint with bearer token", async () => {
+      process.env.EXPO_PUBLIC_ANALYTICS_ENDPOINT = "https://events.example.com/capture";
+      process.env.EXPO_PUBLIC_ANALYTICS_TOKEN = "abc";
+      const fetchMock = jest.fn().mockResolvedValue({ ok: true });
+      global.fetch = fetchMock as unknown as typeof fetch;
+
+      const ok = await sendToBackend(sampleEvents);
+      expect(ok).toBe(true);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      const [url, init] = fetchMock.mock.calls[0];
+      expect(url).toBe("https://events.example.com/capture");
+      expect(init.headers.Authorization).toBe("Bearer abc");
+      const body = JSON.parse(init.body);
+      expect(body.batch).toHaveLength(2);
+      expect(body.batch[1].name).toBe("screen_view");
+    });
+
+    it("returns false when the endpoint rejects the request", async () => {
+      process.env.EXPO_PUBLIC_ANALYTICS_ENDPOINT = "https://events.example.com/capture";
+      global.fetch = jest.fn().mockResolvedValue({ ok: false }) as unknown as typeof fetch;
+      expect(await sendToBackend(sampleEvents)).toBe(false);
+    });
+
+    it("swallows network failures and returns false", async () => {
+      process.env.EXPO_PUBLIC_ANALYTICS_ENDPOINT = "https://events.example.com/capture";
+      global.fetch = jest.fn().mockRejectedValue(new Error("offline")) as unknown as typeof fetch;
+      expect(await sendToBackend(sampleEvents)).toBe(false);
     });
   });
 

@@ -7,32 +7,57 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "channel": "development",
+      "android": {
+        "gradleCommand": ":app:assembleDebug",
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
+      },
       "env": {
-        "FIREBASE_ENABLED": "false"
+        "FIREBASE_ENABLED": "true"
       }
     },
     "preview": {
       "distribution": "internal",
+      "channel": "preview",
       "android": {
         "buildType": "apk"
       },
+      "ios": {
+        "simulator": false
+      },
       "env": {
-        "FIREBASE_ENABLED": "false"
+        "FIREBASE_ENABLED": "true"
       }
     },
     "production": {
+      "autoIncrement": true,
+      "channel": "production",
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "credentialsSource": "remote"
+      },
+      "ios": {
+        "credentialsSource": "remote"
       },
       "env": {
-        "FIREBASE_ENABLED": "false"
+        "FIREBASE_ENABLED": "true"
       }
     }
   },
   "submit": {
     "production": {
-      "ios": {},
-      "android": {}
+      "ios": {
+        "ascAppId": "REPLACE_WITH_APP_STORE_CONNECT_ID",
+        "appleTeamId": "REPLACE_WITH_APPLE_TEAM_ID"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./credentials/play-service-account.json",
+        "track": "internal",
+        "releaseStatus": "draft"
+      }
     }
   }
 }

@@ -27,9 +27,7 @@ const useFirebase = configEnabled && hasCredentials;
 // Dynamic import based on config flag
 // When useFirebase is true, use real Firestore backend
 // When false, use in-memory mock for development/testing
-const serviceModule = useFirebase
-  ? require("./firebase/roomSyncService")
-  : require("./mock/roomSyncService");
+const serviceModule = useFirebase ? require("./firebase/roomSyncService") : require("./mock/roomSyncService");
 
 export const roomSyncService = serviceModule.roomSyncService as RoomSyncService;
 

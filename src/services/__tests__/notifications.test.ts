@@ -5,8 +5,14 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
   __esModule: true,
   default: {
     getItem: jest.fn((key: string) => Promise.resolve(mockStore[key] ?? null)),
-    setItem: jest.fn((key: string, value: string) => { mockStore[key] = value; return Promise.resolve(); }),
-    removeItem: jest.fn((key: string) => { delete mockStore[key]; return Promise.resolve(); }),
+    setItem: jest.fn((key: string, value: string) => {
+      mockStore[key] = value;
+      return Promise.resolve();
+    }),
+    removeItem: jest.fn((key: string) => {
+      delete mockStore[key];
+      return Promise.resolve();
+    }),
   },
 }));
 
@@ -100,9 +106,11 @@ describe("notificationService", () => {
     });
 
     it("handles events gracefully without expo-notifications", async () => {
-      await expect(notificationService.scheduleEventAlerts([
-        { title: "Perseids", date: "2026-08-12", description: "Up to 100 meteors per hour" },
-      ])).resolves.not.toThrow();
+      await expect(
+        notificationService.scheduleEventAlerts([
+          { title: "Perseids", date: "2026-08-12", description: "Up to 100 meteors per hour" },
+        ]),
+      ).resolves.not.toThrow();
     });
   });
 

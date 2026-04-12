@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { astronomyApi, AstroEvent, ISSPosition, MoonPhase, PlanetPosition, SunMoonTimes } from "@/services/astronomyApi";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  astronomyApi,
+  AstroEvent,
+  ISSPosition,
+  MoonPhase,
+  PlanetPosition,
+  SunMoonTimes,
+} from "@/services/astronomyApi";
 import { useToast } from "@/components/Toast";
 import { colors, fontSize, radius, spacing } from "@/theme/colors";
 
@@ -79,7 +86,9 @@ export function AstronomyPanel({ selectedDate, onFocusPlanet }: Props) {
             <Text style={styles.moonEmoji}>{moonPhase.emoji}</Text>
             <View style={{ flex: 1 }}>
               <Text style={styles.cardTitle}>{moonPhase.phase}</Text>
-              <Text style={styles.cardSub}>{moonPhase.illumination}% illuminated | Age: {moonPhase.age} days</Text>
+              <Text style={styles.cardSub}>
+                {moonPhase.illumination}% illuminated | Age: {moonPhase.age} days
+              </Text>
             </View>
           </View>
           <View style={styles.moonDetails}>
@@ -106,8 +115,12 @@ export function AstronomyPanel({ selectedDate, onFocusPlanet }: Props) {
             <TimeBox icon={"\u{1F318}"} label="Moonset" value={sunMoon.moonset} />
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoText}>{"\u2600\uFE0F"} Day: {sunMoon.dayLength}</Text>
-            <Text style={styles.infoText}>{"\u{1F4F8}"} Golden Hour: {sunMoon.goldenHour}</Text>
+            <Text style={styles.infoText}>
+              {"\u2600\uFE0F"} Day: {sunMoon.dayLength}
+            </Text>
+            <Text style={styles.infoText}>
+              {"\u{1F4F8}"} Golden Hour: {sunMoon.goldenHour}
+            </Text>
           </View>
         </View>
       )}
@@ -131,18 +144,26 @@ export function AstronomyPanel({ selectedDate, onFocusPlanet }: Props) {
       {/* Planet Positions */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Planet Positions (Live)</Text>
-        <Text style={styles.cardSub}>Computed from orbital mechanics for {selectedDate.toISOString().slice(0, 10)}</Text>
+        <Text style={styles.cardSub}>
+          Computed from orbital mechanics for {selectedDate.toISOString().slice(0, 10)}
+        </Text>
         {planets.map((planet) => (
           <Pressable
             key={planet.name}
             style={({ pressed }) => [styles.planetRow, pressed && { opacity: 0.7 }]}
             onPress={() => onFocusPlanet?.(planet.name.toLowerCase())}
           >
-            <View style={[styles.visibilityDot, { backgroundColor: planet.isVisible ? colors.accentSuccess : colors.textDim }]} />
+            <View
+              style={[
+                styles.visibilityDot,
+                { backgroundColor: planet.isVisible ? colors.accentSuccess : colors.textDim },
+              ]}
+            />
             <View style={{ flex: 1 }}>
               <Text style={styles.planetName}>{planet.name}</Text>
               <Text style={styles.planetInfo}>
-                RA: {planet.rightAscension}\u00B0 | Dec: {planet.declination}\u00B0 | in {planet.constellation}
+                RA: {planet.rightAscension}\u00B0 | Dec: {planet.declination}\u00B0 | in{" "}
+                {planet.constellation}
               </Text>
             </View>
             <View style={styles.planetRight}>
@@ -165,7 +186,12 @@ export function AstronomyPanel({ selectedDate, onFocusPlanet }: Props) {
               <View style={{ flex: 1 }}>
                 <View style={styles.eventHeader}>
                   <Text style={styles.eventTitle}>{event.title}</Text>
-                  <View style={[styles.importanceBadge, { backgroundColor: `${IMPORTANCE_COLORS[event.importance]}20` }]}>
+                  <View
+                    style={[
+                      styles.importanceBadge,
+                      { backgroundColor: `${IMPORTANCE_COLORS[event.importance]}20` },
+                    ]}
+                  >
                     <Text style={[styles.importanceText, { color: IMPORTANCE_COLORS[event.importance] }]}>
                       {event.importance}
                     </Text>
@@ -180,7 +206,10 @@ export function AstronomyPanel({ selectedDate, onFocusPlanet }: Props) {
       </View>
 
       {/* Refresh */}
-      <Pressable style={({ pressed }) => [styles.refreshBtn, pressed && { opacity: 0.85 }]} onPress={loadData}>
+      <Pressable
+        style={({ pressed }) => [styles.refreshBtn, pressed && { opacity: 0.85 }]}
+        onPress={loadData}
+      >
         <Text style={styles.refreshText}>{"\u{1F504}"} Refresh Astronomy Data</Text>
       </Pressable>
     </View>
@@ -200,9 +229,16 @@ function TimeBox({ icon, label, value }: { icon: string; label: string; value: s
 const styles = StyleSheet.create({
   container: { gap: 12 },
   card: {
-    borderRadius: radius.xl, padding: spacing.lg, backgroundColor: colors.card,
-    borderWidth: 1, borderColor: colors.border,
-    shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 6,
+    borderRadius: radius.xl,
+    padding: spacing.lg,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
   },
   issCard: { borderColor: "rgba(100,181,246,0.2)" },
   loadingText: { color: colors.textDim, fontSize: fontSize.sm, textAlign: "center", fontStyle: "italic" },
@@ -212,12 +248,25 @@ const styles = StyleSheet.create({
   moonRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   moonEmoji: { fontSize: 44 },
   moonDetails: { flexDirection: "row", gap: 12, marginTop: 12 },
-  moonDetail: { flex: 1, borderRadius: radius.md, padding: 10, backgroundColor: "rgba(255,255,255,0.03)", alignItems: "center" },
+  moonDetail: {
+    flex: 1,
+    borderRadius: radius.md,
+    padding: 10,
+    backgroundColor: "rgba(255,255,255,0.03)",
+    alignItems: "center",
+  },
   detailLabel: { color: colors.textDim, fontSize: fontSize.xs, fontWeight: "600" },
   detailValue: { color: colors.text, fontSize: fontSize.sm, fontWeight: "700", marginTop: 4 },
   // Sun/Moon times
   timesGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
-  timeBox: { flex: 1, minWidth: "42%", borderRadius: radius.md, padding: 10, backgroundColor: "rgba(255,255,255,0.03)", alignItems: "center" },
+  timeBox: {
+    flex: 1,
+    minWidth: "42%",
+    borderRadius: radius.md,
+    padding: 10,
+    backgroundColor: "rgba(255,255,255,0.03)",
+    alignItems: "center",
+  },
   timeIcon: { fontSize: 18 },
   timeLabel: { color: colors.textDim, fontSize: fontSize.xs, marginTop: 4 },
   timeValue: { color: colors.text, fontSize: fontSize.base, fontWeight: "800", marginTop: 2 },
@@ -225,11 +274,23 @@ const styles = StyleSheet.create({
   infoText: { color: colors.textDim, fontSize: fontSize.xs },
   // ISS
   issHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  liveDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.accentSuccess, shadowColor: colors.accentSuccess, shadowOpacity: 0.8, shadowRadius: 6 },
+  liveDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.accentSuccess,
+    shadowColor: colors.accentSuccess,
+    shadowOpacity: 0.8,
+    shadowRadius: 6,
+  },
   // Planets
   planetRow: {
-    flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10,
-    borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.04)",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.04)",
   },
   visibilityDot: { width: 8, height: 8, borderRadius: 4 },
   planetName: { color: colors.text, fontSize: fontSize.sm, fontWeight: "700" },
@@ -239,8 +300,11 @@ const styles = StyleSheet.create({
   distText: { color: colors.textDim, fontSize: 10, marginTop: 2 },
   // Events
   eventRow: {
-    flexDirection: "row", gap: 10, paddingVertical: 10,
-    borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.04)",
+    flexDirection: "row",
+    gap: 10,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.04)",
   },
   eventIcon: { fontSize: 20, marginTop: 2 },
   eventHeader: { flexDirection: "row", alignItems: "center", gap: 8 },
@@ -249,8 +313,19 @@ const styles = StyleSheet.create({
   importanceText: { fontSize: 10, fontWeight: "700", textTransform: "uppercase" },
   eventDate: { color: colors.accentWarm, fontSize: fontSize.xs, fontWeight: "600", marginTop: 2 },
   eventDesc: { color: colors.textDim, fontSize: fontSize.xs, lineHeight: 17, marginTop: 4 },
-  emptyText: { color: colors.textDim, fontSize: fontSize.xs, fontStyle: "italic", textAlign: "center", paddingVertical: 12 },
+  emptyText: {
+    color: colors.textDim,
+    fontSize: fontSize.xs,
+    fontStyle: "italic",
+    textAlign: "center",
+    paddingVertical: 12,
+  },
   // Refresh
-  refreshBtn: { borderRadius: radius.xl, padding: 14, backgroundColor: colors.cardSoft, alignItems: "center" },
+  refreshBtn: {
+    borderRadius: radius.xl,
+    padding: 14,
+    backgroundColor: colors.cardSoft,
+    alignItems: "center",
+  },
   refreshText: { color: colors.text, fontWeight: "700", fontSize: fontSize.sm },
 });

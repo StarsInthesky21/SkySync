@@ -15,7 +15,15 @@ type Props = {
   setVoiceGuideEnabled: (v: boolean) => void;
 };
 
-function SettingRow({ label, value, onToggle }: { label: string; value: boolean; onToggle: (v: boolean) => void }) {
+function SettingRow({
+  label,
+  value,
+  onToggle,
+}: {
+  label: string;
+  value: boolean;
+  onToggle: (v: boolean) => void;
+}) {
   return (
     <View style={styles.settingRow}>
       <Text style={styles.settingLabel}>{label}</Text>
@@ -29,7 +37,15 @@ function SettingRow({ label, value, onToggle }: { label: string; value: boolean;
   );
 }
 
-function SettingLink({ label, subtitle, onPress }: { label: string; subtitle?: string; onPress: () => void }) {
+function SettingLink({
+  label,
+  subtitle,
+  onPress,
+}: {
+  label: string;
+  subtitle?: string;
+  onPress: () => void;
+}) {
   return (
     <Pressable style={({ pressed }) => [styles.settingLink, pressed && { opacity: 0.7 }]} onPress={onPress}>
       <View style={{ flex: 1 }}>
@@ -87,7 +103,10 @@ export function SettingsScreen({ onClose, voiceGuideEnabled, setVoiceGuideEnable
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <Text style={styles.title}>Settings</Text>
-          <Pressable style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]} onPress={onClose}>
+          <Pressable
+            style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]}
+            onPress={onClose}
+          >
             <Text style={styles.closeBtnText}>Done</Text>
           </Pressable>
         </View>
@@ -101,15 +120,32 @@ export function SettingsScreen({ onClose, voiceGuideEnabled, setVoiceGuideEnable
             <View style={{ flex: 1 }}>
               <Text style={styles.profileName}>{userProfile?.username ?? "Stargazer"}</Text>
               <Text style={styles.profileStat}>
-                {userProfile?.xp ?? 0} XP | Joined {userProfile?.joinedAt ? new Date(userProfile.joinedAt).toLocaleDateString() : "today"}
+                {userProfile?.xp ?? 0} XP | Joined{" "}
+                {userProfile?.joinedAt ? new Date(userProfile.joinedAt).toLocaleDateString() : "today"}
               </Text>
             </View>
           </View>
           <View style={styles.statGrid}>
-            <StatBox label="Planets" value={userProfile?.planetsDiscovered.length ?? 0} color={colors.accentWarm} />
-            <StatBox label="Stars Viewed" value={userProfile?.totalStarsViewed ?? 0} color={colors.accentInfo} />
-            <StatBox label="Satellites" value={userProfile?.satellitesTracked.length ?? 0} color={colors.accent} />
-            <StatBox label="Challenges" value={userProfile?.challengesCompleted.length ?? 0} color={colors.accentSuccess} />
+            <StatBox
+              label="Planets"
+              value={userProfile?.planetsDiscovered.length ?? 0}
+              color={colors.accentWarm}
+            />
+            <StatBox
+              label="Stars Viewed"
+              value={userProfile?.totalStarsViewed ?? 0}
+              color={colors.accentInfo}
+            />
+            <StatBox
+              label="Satellites"
+              value={userProfile?.satellitesTracked.length ?? 0}
+              color={colors.accent}
+            />
+            <StatBox
+              label="Challenges"
+              value={userProfile?.challengesCompleted.length ?? 0}
+              color={colors.accentSuccess}
+            />
           </View>
         </View>
 
@@ -121,11 +157,29 @@ export function SettingsScreen({ onClose, voiceGuideEnabled, setVoiceGuideEnable
         {notifPrefs && (
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>Notifications</Text>
-            <SettingRow label="Streak Reminders" value={notifPrefs.streakReminders} onToggle={(v) => updateNotifPref("streakReminders", v)} />
-            <SettingRow label="Astronomical Event Alerts" value={notifPrefs.eventAlerts} onToggle={(v) => updateNotifPref("eventAlerts", v)} />
-            <SettingRow label="Challenge Reminders" value={notifPrefs.challengeReminders} onToggle={(v) => updateNotifPref("challengeReminders", v)} />
-            <SettingRow label="Room Activity" value={notifPrefs.roomActivity} onToggle={(v) => updateNotifPref("roomActivity", v)} />
-            <Text style={styles.settingSub}>Quiet hours: {notifPrefs.quietHoursStart}:00 - {notifPrefs.quietHoursEnd}:00</Text>
+            <SettingRow
+              label="Streak Reminders"
+              value={notifPrefs.streakReminders}
+              onToggle={(v) => updateNotifPref("streakReminders", v)}
+            />
+            <SettingRow
+              label="Astronomical Event Alerts"
+              value={notifPrefs.eventAlerts}
+              onToggle={(v) => updateNotifPref("eventAlerts", v)}
+            />
+            <SettingRow
+              label="Challenge Reminders"
+              value={notifPrefs.challengeReminders}
+              onToggle={(v) => updateNotifPref("challengeReminders", v)}
+            />
+            <SettingRow
+              label="Room Activity"
+              value={notifPrefs.roomActivity}
+              onToggle={(v) => updateNotifPref("roomActivity", v)}
+            />
+            <Text style={styles.settingSub}>
+              Quiet hours: {notifPrefs.quietHoursStart}:00 - {notifPrefs.quietHoursEnd}:00
+            </Text>
           </View>
         )}
 
@@ -134,29 +188,57 @@ export function SettingsScreen({ onClose, voiceGuideEnabled, setVoiceGuideEnable
           <Text style={styles.accountInfo}>
             {isFirebase ? `Firebase: ${user?.email ?? "Anonymous"}` : "Local mode (offline)"}
           </Text>
-          <SettingLink label="Clear All Data" subtitle="Reset profile, badges, and progress" onPress={handleClearData} />
+          <SettingLink
+            label="Clear All Data"
+            subtitle="Reset profile, badges, and progress"
+            onPress={handleClearData}
+          />
         </View>
 
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>About</Text>
-          <SettingLink label="Privacy Policy" subtitle="How we handle your data" onPress={() => setActiveLegalDoc("privacy")} />
-          <SettingLink label="Terms of Service" subtitle="Rules for using SkySync" onPress={() => setActiveLegalDoc("terms")} />
-          <SettingLink label="Rate SkySync" subtitle="Wire store review links before release" onPress={() => toast.show("Add your real App Store and Play Store review links before launch.", "info")} />
+          <SettingLink
+            label="Privacy Policy"
+            subtitle="How we handle your data"
+            onPress={() => setActiveLegalDoc("privacy")}
+          />
+          <SettingLink
+            label="Terms of Service"
+            subtitle="Rules for using SkySync"
+            onPress={() => setActiveLegalDoc("terms")}
+          />
+          <SettingLink
+            label="Rate SkySync"
+            subtitle="Wire store review links before release"
+            onPress={() =>
+              toast.show("Add your real App Store and Play Store review links before launch.", "info")
+            }
+          />
           <View style={styles.versionRow}>
             <Text style={styles.versionText}>SkySync v1.1.0</Text>
-            <Text style={styles.versionSub}>Release candidate settings and legal docs are now available in-app.</Text>
+            <Text style={styles.versionSub}>
+              Release candidate settings and legal docs are now available in-app.
+            </Text>
           </View>
         </View>
       </ScrollView>
 
-      <Modal visible={Boolean(legalDocument)} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setActiveLegalDoc(null)}>
+      <Modal
+        visible={Boolean(legalDocument)}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setActiveLegalDoc(null)}
+      >
         <View style={styles.legalScreen}>
           <View style={styles.header}>
             <View>
               <Text style={styles.title}>{legalDocument?.title}</Text>
               <Text style={styles.settingSub}>Last updated {legalDocument?.updated}</Text>
             </View>
-            <Pressable style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]} onPress={() => setActiveLegalDoc(null)}>
+            <Pressable
+              style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]}
+              onPress={() => setActiveLegalDoc(null)}
+            >
               <Text style={styles.closeBtnText}>Done</Text>
             </Pressable>
           </View>
@@ -165,7 +247,9 @@ export function SettingsScreen({ onClose, voiceGuideEnabled, setVoiceGuideEnable
               <View key={section.heading} style={styles.legalSection}>
                 <Text style={styles.legalHeading}>{section.heading}</Text>
                 {section.body.map((paragraph, index) => (
-                  <Text key={`${section.heading}-${index}`} style={styles.legalBody}>{paragraph}</Text>
+                  <Text key={`${section.heading}-${index}`} style={styles.legalBody}>
+                    {paragraph}
+                  </Text>
                 ))}
               </View>
             ))}
@@ -190,35 +274,65 @@ const styles = StyleSheet.create({
   content: { padding: spacing.lg, paddingBottom: 48, gap: 14 },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
   title: { color: colors.text, fontSize: fontSize.xl, fontWeight: "800" },
-  closeBtn: { borderRadius: radius.pill, paddingHorizontal: 16, paddingVertical: 8, backgroundColor: colors.accent },
+  closeBtn: {
+    borderRadius: radius.pill,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: colors.accent,
+  },
   closeBtnText: { color: colors.onAccent, fontWeight: "800", fontSize: fontSize.sm },
   card: {
-    borderRadius: radius.xl, padding: spacing.lg, backgroundColor: colors.card,
-    borderWidth: 1, borderColor: colors.border,
-    shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 6,
+    borderRadius: radius.xl,
+    padding: spacing.lg,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
   },
   sectionTitle: { color: colors.text, fontSize: fontSize.md, fontWeight: "800", marginBottom: 12 },
   profileRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 16 },
-  avatar: { width: 52, height: 52, borderRadius: radius.pill, backgroundColor: colors.accent, alignItems: "center", justifyContent: "center" },
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: radius.pill,
+    backgroundColor: colors.accent,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   avatarText: { color: colors.onAccent, fontSize: fontSize.lg, fontWeight: "800" },
   profileName: { color: colors.text, fontSize: fontSize.base, fontWeight: "800" },
   profileStat: { color: colors.textDim, fontSize: fontSize.xs, marginTop: 2 },
   statGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   statBox: {
-    flex: 1, minWidth: "45%", borderRadius: radius.md, padding: 12,
-    backgroundColor: "rgba(255,255,255,0.03)", alignItems: "center",
+    flex: 1,
+    minWidth: "45%",
+    borderRadius: radius.md,
+    padding: 12,
+    backgroundColor: "rgba(255,255,255,0.03)",
+    alignItems: "center",
   },
   statValue: { fontSize: fontSize.xl, fontWeight: "800" },
   statLabel: { color: colors.textDim, fontSize: fontSize.xs, marginTop: 4 },
   settingRow: {
-    flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-    paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.04)",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.04)",
   },
   settingLabel: { color: colors.text, fontSize: fontSize.sm, fontWeight: "600" },
   settingSub: { color: colors.textDim, fontSize: fontSize.xs, marginTop: 2 },
   settingLink: {
-    flexDirection: "row", alignItems: "center", paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.04)",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.04)",
   },
   arrow: { color: colors.textDim, fontSize: fontSize.xl },
   accountInfo: { color: colors.textDim, fontSize: fontSize.xs, marginBottom: 8 },

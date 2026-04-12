@@ -40,7 +40,12 @@ function ToastItem({ toast, onDismiss }: { toast: ToastMessage; onDismiss: (id: 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(opacity, { toValue: 1, duration: 250, useNativeDriver: true }),
-      Animated.timing(translateY, { toValue: 0, duration: 250, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 250,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
     ]).start();
 
     const timer = setTimeout(() => {
@@ -54,10 +59,17 @@ function ToastItem({ toast, onDismiss }: { toast: ToastMessage; onDismiss: (id: 
   }, [opacity, translateY, toast.id, onDismiss]);
 
   return (
-    <Animated.View style={[styles.toast, { backgroundColor: scheme.bg, borderColor: scheme.border, opacity, transform: [{ translateY }] }]}>
+    <Animated.View
+      style={[
+        styles.toast,
+        { backgroundColor: scheme.bg, borderColor: scheme.border, opacity, transform: [{ translateY }] },
+      ]}
+    >
       <Pressable style={styles.toastInner} onPress={() => onDismiss(toast.id)} accessibilityRole="alert">
         <Text style={[styles.toastIcon, { color: scheme.text }]}>{TOAST_ICONS[toast.type]}</Text>
-        <Text style={[styles.toastText, { color: scheme.text }]} numberOfLines={2}>{toast.text}</Text>
+        <Text style={[styles.toastText, { color: scheme.text }]} numberOfLines={2}>
+          {toast.text}
+        </Text>
       </Pressable>
     </Animated.View>
   );

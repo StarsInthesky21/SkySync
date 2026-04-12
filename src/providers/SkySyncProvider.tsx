@@ -1,6 +1,27 @@
-import { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { LIVE_MODE_INTERVAL_MS, MAX_MESSAGE_LENGTH, MAX_NAME_LENGTH, MAX_USERNAME_LENGTH, MESSAGE_RATE_LIMIT_MS } from "@/constants";
-import { badges as badgeDefinitions, dailyChallenges, formatTimestamp, guidedTargets, viewpoints } from "@/data/skyData";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
+import {
+  LIVE_MODE_INTERVAL_MS,
+  MAX_MESSAGE_LENGTH,
+  MAX_NAME_LENGTH,
+  MAX_USERNAME_LENGTH,
+  MESSAGE_RATE_LIMIT_MS,
+} from "@/constants";
+import {
+  badges as badgeDefinitions,
+  dailyChallenges,
+  formatTimestamp,
+  guidedTargets,
+  viewpoints,
+} from "@/data/skyData";
 import { roomSyncService, isFirebaseEnabled } from "@/services/roomSyncService";
 import { QueuedAction } from "@/services/offlineQueue";
 import { storage, UserProfile, BadgeProgress, ChallengeProgress } from "@/services/storage";
@@ -15,6 +36,9 @@ import {
   getVisibleThingsTonight,
   renderSkyObjects,
 } from "@/services/skyEngine";
+import { buildLiveCatalog } from "@/services/astronomy/liveCatalog";
+import { fetchTles } from "@/services/astronomy/satelliteTracking";
+import { SkyObject } from "@/types/sky";
 import { ChatMessage, RoomSkyState, SkyRoom, SpaceNote } from "@/types/rooms";
 import { Badge, DailyChallenge, GuidedTarget, MythStory, RenderedSkyObject, Viewpoint } from "@/types/sky";
 
@@ -45,6 +69,7 @@ type SkySyncContextValue = {
   draftConstellationIds: string[];
   availableViewpoints: typeof viewpoints;
   isLoading: boolean;
+  observerLocation: { latitude?: number; longitude?: number };
   userProfile: UserProfile | null;
   badgeProgress: BadgeProgress;
   challengeProgress: ChallengeProgress;
@@ -135,7 +160,11 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
         // Reset daily challenges if day changed
         const today = new Date().toISOString().slice(0, 10);
         if (challenges.lastResetDate !== today) {
-          const reset: ChallengeProgress = { completedIds: [], lastResetDate: today, totalXpEarned: challenges.totalXpEarned };
+          const reset: ChallengeProgress = {
+            completedIds: [],
+            lastResetDate: today,
+            totalXpEarned: challenges.totalXpEarned,
+          };
           setChallengeProgress(reset);
           storage.saveChallengeProgress(reset);
         } else {
@@ -180,7 +209,10 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
       if (mounted) setIsLoading(false);
     }, 6000);
 
-    return () => { mounted = false; clearTimeout(safetyTimeout); };
+    return () => {
+      mounted = false;
+      clearTimeout(safetyTimeout);
+    };
   }, [userId]);
 
   useEffect(() => {
@@ -220,7 +252,7 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
     setRotationState(currentRoom.state.rotation);
     setZoomState(currentRoom.state.zoom);
     setSelectedDateState(new Date(currentRoom.state.dateIso));
-  }, [currentRoom?.id]);
+  }, [currentRoom]);
 
   // Live mode timer using ref to avoid stale closure on currentRoom
   useEffect(() => {
@@ -271,16 +303,51 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const [liveCatalog, setLiveCatalog] = useState<SkyObject[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchTles().catch(() => []);
+    buildLiveCatalog({
+      date: selectedDate,
+      observer:
+        observerLocation.latitude !== undefined && observerLocation.longitude !== undefined
+          ? { latitudeDeg: observerLocation.latitude, longitudeDeg: observerLocation.longitude }
+          : undefined,
+    })
+      .then((cat) => {
+        if (!cancelled) setLiveCatalog(cat);
+      })
+      .catch(() => {
+        if (!cancelled) setLiveCatalog(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedDate, observerLocation.latitude, observerLocation.longitude]);
+
   const objects = useMemo(
-    () => renderSkyObjects({
+    () =>
+      renderSkyObjects(
+        {
+          rotation,
+          zoom,
+          date: selectedDate,
+          viewpoint,
+          observerLatitude: observerLocation.latitude,
+          observerLongitude: observerLocation.longitude,
+        },
+        liveCatalog ?? undefined,
+      ),
+    [
       rotation,
       zoom,
-      date: selectedDate,
+      selectedDate,
       viewpoint,
-      observerLatitude: observerLocation.latitude,
-      observerLongitude: observerLocation.longitude,
-    }),
-    [rotation, zoom, selectedDate, viewpoint, observerLocation.latitude, observerLocation.longitude],
+      observerLocation.latitude,
+      observerLocation.longitude,
+      liveCatalog,
+    ],
   );
   const segments = useMemo(() => getConstellationSegments(objects), [objects]);
 
@@ -308,7 +375,9 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
   }, [selectedObject?.id]);
   const visibleTonight = useMemo(() => getVisibleThingsTonight(objects), [objects]);
   const highlightedIds = currentRoom?.state.highlightedObjectIds ?? [];
-  const selectedObjectNotes = (currentRoom?.state.notes ?? []).filter((note) => note.objectId === selectedObjectId);
+  const selectedObjectNotes = (currentRoom?.state.notes ?? []).filter(
+    (note) => note.objectId === selectedObjectId,
+  );
 
   // Build live badge data with real progress
   const liveBadges: Badge[] = useMemo(() => {
@@ -349,52 +418,62 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
     try {
       switch (action.type) {
         case "room_message": {
-          const roomId = typeof action.payload.roomId === "string" ? action.payload.roomId : currentRoomIdRef.current;
+          const roomId =
+            typeof action.payload.roomId === "string" ? action.payload.roomId : currentRoomIdRef.current;
           const text = typeof action.payload.text === "string" ? action.payload.text.trim() : "";
           if (!roomId || !text) return true;
-          await Promise.resolve(roomSyncService.sendRoomMessage(roomId, {
-            id: `room-msg-${now}-${Math.random().toString(36).slice(2, 6)}`,
-            author: username,
-            text: text.slice(0, MAX_MESSAGE_LENGTH),
-            timestampLabel: formatTimestamp(now),
-            timestamp: now,
-          }));
+          await Promise.resolve(
+            roomSyncService.sendRoomMessage(roomId, {
+              id: `room-msg-${now}-${Math.random().toString(36).slice(2, 6)}`,
+              author: username,
+              text: text.slice(0, MAX_MESSAGE_LENGTH),
+              timestampLabel: formatTimestamp(now),
+              timestamp: now,
+            }),
+          );
           return true;
         }
         case "global_message": {
           const text = typeof action.payload.text === "string" ? action.payload.text.trim() : "";
           if (!text) return true;
-          await Promise.resolve(roomSyncService.sendGlobalMessage({
-            id: `global-msg-${now}-${Math.random().toString(36).slice(2, 6)}`,
-            author: username,
-            text: text.slice(0, MAX_MESSAGE_LENGTH),
-            timestampLabel: formatTimestamp(now),
-            timestamp: now,
-          }));
+          await Promise.resolve(
+            roomSyncService.sendGlobalMessage({
+              id: `global-msg-${now}-${Math.random().toString(36).slice(2, 6)}`,
+              author: username,
+              text: text.slice(0, MAX_MESSAGE_LENGTH),
+              timestampLabel: formatTimestamp(now),
+              timestamp: now,
+            }),
+          );
           return true;
         }
         case "note": {
-          const roomId = typeof action.payload.roomId === "string" ? action.payload.roomId : currentRoomIdRef.current;
+          const roomId =
+            typeof action.payload.roomId === "string" ? action.payload.roomId : currentRoomIdRef.current;
           const objectId = typeof action.payload.objectId === "string" ? action.payload.objectId : undefined;
           const text = typeof action.payload.text === "string" ? action.payload.text.trim() : "";
           if (!roomId || !objectId || !text) return true;
-          await Promise.resolve(roomSyncService.addNote(roomId, {
-            id: `note-${now}-${Math.random().toString(36).slice(2, 6)}`,
-            objectId,
-            author: username,
-            text: text.slice(0, 500),
-          }));
+          await Promise.resolve(
+            roomSyncService.addNote(roomId, {
+              id: `note-${now}-${Math.random().toString(36).slice(2, 6)}`,
+              objectId,
+              author: username,
+              text: text.slice(0, 500),
+            }),
+          );
           return true;
         }
         case "highlight": {
-          const roomId = typeof action.payload.roomId === "string" ? action.payload.roomId : currentRoomIdRef.current;
+          const roomId =
+            typeof action.payload.roomId === "string" ? action.payload.roomId : currentRoomIdRef.current;
           const objectId = typeof action.payload.objectId === "string" ? action.payload.objectId : undefined;
           if (!roomId || !objectId) return true;
           await Promise.resolve(roomSyncService.toggleHighlight(roomId, objectId));
           return true;
         }
         case "sky_state": {
-          const roomId = typeof action.payload.roomId === "string" ? action.payload.roomId : currentRoomIdRef.current;
+          const roomId =
+            typeof action.payload.roomId === "string" ? action.payload.roomId : currentRoomIdRef.current;
           const partial = action.payload.partial;
           if (!roomId || typeof partial !== "object" || partial === null) return true;
           await Promise.resolve(roomSyncService.updateSkyState(roomId, partial as Partial<RoomSkyState>));
@@ -436,6 +515,7 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
     draftConstellationIds,
     availableViewpoints: viewpoints,
     isLoading,
+    observerLocation,
     userProfile,
     badgeProgress,
     challengeProgress,
@@ -523,13 +603,15 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
       const now = Date.now();
       const trimmed = text.trim().slice(0, MAX_MESSAGE_LENGTH);
       try {
-        await Promise.resolve(roomSyncService.sendRoomMessage(currentRoom.id, {
-          id: `room-msg-${now}-${Math.random().toString(36).slice(2, 6)}`,
-          author: userProfile?.username ?? "You",
-          text: trimmed,
-          timestampLabel: formatTimestamp(now),
-          timestamp: now,
-        }));
+        await Promise.resolve(
+          roomSyncService.sendRoomMessage(currentRoom.id, {
+            id: `room-msg-${now}-${Math.random().toString(36).slice(2, 6)}`,
+            author: userProfile?.username ?? "You",
+            text: trimmed,
+            timestampLabel: formatTimestamp(now),
+            timestamp: now,
+          }),
+        );
         return true;
       } catch (error) {
         console.warn("[SkySync] Failed to send room message:", error);
@@ -541,13 +623,15 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
       const now = Date.now();
       const trimmed = text.trim().slice(0, MAX_MESSAGE_LENGTH);
       try {
-        await Promise.resolve(roomSyncService.sendGlobalMessage({
-          id: `global-msg-${now}-${Math.random().toString(36).slice(2, 6)}`,
-          author: userProfile?.username ?? "You",
-          text: trimmed,
-          timestampLabel: formatTimestamp(now),
-          timestamp: now,
-        }));
+        await Promise.resolve(
+          roomSyncService.sendGlobalMessage({
+            id: `global-msg-${now}-${Math.random().toString(36).slice(2, 6)}`,
+            author: userProfile?.username ?? "You",
+            text: trimmed,
+            timestampLabel: formatTimestamp(now),
+            timestamp: now,
+          }),
+        );
         return true;
       } catch (error) {
         console.warn("[SkySync] Failed to send global message:", error);
@@ -573,12 +657,14 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
       constellationCounter += 1;
       const constellationId = `custom-${Date.now()}-${constellationCounter}`;
       try {
-        await Promise.resolve(roomSyncService.addCustomConstellation(currentRoom.id, {
-          id: constellationId,
-          title: title.trim().slice(0, MAX_NAME_LENGTH) || "Custom Pattern",
-          starIds: draftConstellationIds,
-          color: "#9eb7d6",
-        }));
+        await Promise.resolve(
+          roomSyncService.addCustomConstellation(currentRoom.id, {
+            id: constellationId,
+            title: title.trim().slice(0, MAX_NAME_LENGTH) || "Custom Pattern",
+            starIds: draftConstellationIds,
+            color: "#9eb7d6",
+          }),
+        );
       } catch (error) {
         console.warn("[SkySync] Failed to save constellation:", error);
         return false;
@@ -618,7 +704,11 @@ export function SkySyncProvider({ children }: { children: ReactNode }) {
 
         setUserProfile((profile) => {
           if (!profile) return profile;
-          const updated = { ...profile, xp: profile.xp + xp, challengesCompleted: [...profile.challengesCompleted, challengeId] };
+          const updated = {
+            ...profile,
+            xp: profile.xp + xp,
+            challengesCompleted: [...profile.challengesCompleted, challengeId],
+          };
           storage.saveUserProfile(updated);
           return updated;
         });

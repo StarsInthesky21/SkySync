@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { colors, fontSize, radius, spacing } from "@/theme/colors";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { colors, fontSize, radius } from "@/theme/colors";
 import { RenderedSkyObject } from "@/types/sky";
 
 type Props = {
@@ -16,15 +16,23 @@ export function SearchBar({ objects, onSelect }: Props) {
     if (!query.trim()) return [];
     const lower = query.toLowerCase();
     return objects
-      .filter((o) => o.name.toLowerCase().includes(lower) || o.kind.toLowerCase().includes(lower) || (o.constellationId ?? "").toLowerCase().includes(lower))
+      .filter(
+        (o) =>
+          o.name.toLowerCase().includes(lower) ||
+          o.kind.toLowerCase().includes(lower) ||
+          (o.constellationId ?? "").toLowerCase().includes(lower),
+      )
       .slice(0, 8);
   }, [query, objects]);
 
-  const handleSelect = useCallback((objectId: string) => {
-    onSelect(objectId);
-    setQuery("");
-    setFocused(false);
-  }, [onSelect]);
+  const handleSelect = useCallback(
+    (objectId: string) => {
+      onSelect(objectId);
+      setQuery("");
+      setFocused(false);
+    },
+    [onSelect],
+  );
 
   const showResults = focused && query.trim().length > 0;
 
@@ -46,7 +54,14 @@ export function SearchBar({ objects, onSelect }: Props) {
           accessibilityHint="Type to search for stars, planets, or satellites"
         />
         {query.length > 0 && (
-          <Pressable onPress={() => { setQuery(""); }} style={styles.clearBtn} accessibilityRole="button" accessibilityLabel="Clear search">
+          <Pressable
+            onPress={() => {
+              setQuery("");
+            }}
+            style={styles.clearBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Clear search"
+          >
             <Text style={styles.clearText}>{"\u2715"}</Text>
           </Pressable>
         )}
@@ -65,10 +80,13 @@ export function SearchBar({ objects, onSelect }: Props) {
                 accessibilityLabel={`${item.name}, ${item.kind}${item.distanceFromEarth ? `, ${item.distanceFromEarth}` : ""}`}
               >
                 <View style={[styles.kindDot, { backgroundColor: item.color }]} />
-            <View style={styles.resultInfo}>
-              <Text style={styles.resultName}>{item.name}</Text>
-              <Text style={styles.resultKind}>{item.kind}{item.distanceFromEarth ? ` \u2022 ${item.distanceFromEarth}` : ""}</Text>
-            </View>
+                <View style={styles.resultInfo}>
+                  <Text style={styles.resultName}>{item.name}</Text>
+                  <Text style={styles.resultKind}>
+                    {item.kind}
+                    {item.distanceFromEarth ? ` \u2022 ${item.distanceFromEarth}` : ""}
+                  </Text>
+                </View>
                 <Text style={styles.goArrow}>Go</Text>
               </Pressable>
             ))

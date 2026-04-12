@@ -23,13 +23,18 @@ const mockObject: RenderedSkyObject = {
 
 const invisibleObject: RenderedSkyObject = { ...mockObject, id: "invisible", isVisible: false };
 
-const planetObject: RenderedSkyObject = { ...mockObject, id: "planet-test", name: "Test Planet", kind: "planet" };
+const planetObject: RenderedSkyObject = {
+  ...mockObject,
+  id: "planet-test",
+  name: "Test Planet",
+  kind: "planet",
+};
 
 describe("Star component", () => {
   it("renders visible star", () => {
     const onPress = jest.fn();
     const { getByRole } = render(
-      <Star object={mockObject} selected={false} highlighted={false} onPress={onPress} />
+      <Star object={mockObject} selected={false} highlighted={false} onPress={onPress} />,
     );
     expect(getByRole("button")).toBeTruthy();
   });
@@ -37,7 +42,7 @@ describe("Star component", () => {
   it("does not render invisible star", () => {
     const onPress = jest.fn();
     const { queryByRole } = render(
-      <Star object={invisibleObject} selected={false} highlighted={false} onPress={onPress} />
+      <Star object={invisibleObject} selected={false} highlighted={false} onPress={onPress} />,
     );
     expect(queryByRole("button")).toBeNull();
   });
@@ -45,7 +50,7 @@ describe("Star component", () => {
   it("calls onPress with object id when tapped", () => {
     const onPress = jest.fn();
     const { getByRole } = render(
-      <Star object={mockObject} selected={false} highlighted={false} onPress={onPress} />
+      <Star object={mockObject} selected={false} highlighted={false} onPress={onPress} />,
     );
     fireEvent.press(getByRole("button"));
     expect(onPress).toHaveBeenCalledWith("test-star");
@@ -54,7 +59,7 @@ describe("Star component", () => {
   it("includes planet kind in accessibility label", () => {
     const onPress = jest.fn();
     const { getByLabelText } = render(
-      <Star object={planetObject} selected={false} highlighted={false} onPress={onPress} />
+      <Star object={planetObject} selected={false} highlighted={false} onPress={onPress} />,
     );
     expect(getByLabelText(/Test Planet, planet/)).toBeTruthy();
   });
@@ -62,7 +67,7 @@ describe("Star component", () => {
   it("includes selected in accessibility label when selected", () => {
     const onPress = jest.fn();
     const { getByLabelText } = render(
-      <Star object={mockObject} selected={true} highlighted={false} onPress={onPress} />
+      <Star object={mockObject} selected={true} highlighted={false} onPress={onPress} />,
     );
     expect(getByLabelText(/Test Star, star, selected/)).toBeTruthy();
   });
@@ -70,7 +75,7 @@ describe("Star component", () => {
   it("does not include selected for unselected stars", () => {
     const onPress = jest.fn();
     const { getByLabelText } = render(
-      <Star object={mockObject} selected={false} highlighted={false} onPress={onPress} />
+      <Star object={mockObject} selected={false} highlighted={false} onPress={onPress} />,
     );
     const label = getByLabelText(/Test Star, star/);
     expect(label.props.accessibilityLabel).not.toContain("selected");
@@ -79,7 +84,7 @@ describe("Star component", () => {
   it("includes accessibility label", () => {
     const onPress = jest.fn();
     const { getByLabelText } = render(
-      <Star object={mockObject} selected={true} highlighted={true} onPress={onPress} />
+      <Star object={mockObject} selected={true} highlighted={true} onPress={onPress} />,
     );
     expect(getByLabelText(/Test Star, star, selected, highlighted/)).toBeTruthy();
   });

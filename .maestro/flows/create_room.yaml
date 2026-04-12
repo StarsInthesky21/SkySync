@@ -1,0 +1,17 @@
+appId: app.skysync
+name: Create a sky room
+---
+- launchApp
+- tapOn:
+    text: "Social"
+    optional: true
+- tapOn:
+    text: "New room"
+    optional: true
+- inputText: "Orion Watch"
+- tapOn:
+    text: "Create room"
+- assertVisible:
+    text: "Code"
+- assertVisible:
+    text: "Voice Lounge"

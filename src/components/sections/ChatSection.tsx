@@ -13,8 +13,13 @@ type Props = {
 
 const ChatBubble = memo(function ChatBubble({ message, isOwn }: { message: ChatMessage; isOwn: boolean }) {
   return (
-    <View style={[styles.bubble, isOwn && styles.bubbleOwn]} accessibilityLabel={`${message.author} said: ${message.text}`}>
-      <Text style={styles.author}>{message.author} <Text style={styles.time}>{message.timestampLabel}</Text></Text>
+    <View
+      style={[styles.bubble, isOwn && styles.bubbleOwn]}
+      accessibilityLabel={`${message.author} said: ${message.text}`}
+    >
+      <Text style={styles.author}>
+        {message.author} <Text style={styles.time}>{message.timestampLabel}</Text>
+      </Text>
       <Text style={styles.text}>{message.text}</Text>
     </View>
   );
@@ -36,9 +41,12 @@ export function ChatSection({ title, messages, currentUsername, onSend, placehol
     setInput("");
   }, [input, onSend]);
 
-  const renderItem = useCallback(({ item }: { item: ChatMessage }) => (
-    <ChatBubble message={item} isOwn={item.author === currentUsername} />
-  ), [currentUsername]);
+  const renderItem = useCallback(
+    ({ item }: { item: ChatMessage }) => (
+      <ChatBubble message={item} isOwn={item.author === currentUsername} />
+    ),
+    [currentUsername],
+  );
 
   const keyExtractor = useCallback((item: ChatMessage) => item.id, []);
 
@@ -69,7 +77,12 @@ export function ChatSection({ title, messages, currentUsername, onSend, placehol
           maxLength={500}
           accessibilityLabel={`Type a message for ${title}`}
         />
-        <Pressable style={({ pressed }) => [styles.sendBtn, pressed && styles.sendBtnPressed]} onPress={handleSend} accessibilityRole="button" accessibilityLabel="Send message">
+        <Pressable
+          style={({ pressed }) => [styles.sendBtn, pressed && styles.sendBtnPressed]}
+          onPress={handleSend}
+          accessibilityRole="button"
+          accessibilityLabel="Send message"
+        >
           <Text style={styles.sendText}>Send</Text>
         </Pressable>
       </View>
@@ -78,18 +91,51 @@ export function ChatSection({ title, messages, currentUsername, onSend, placehol
 }
 
 const styles = StyleSheet.create({
-  card: { borderRadius: radius.xl, padding: spacing.lg, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 6 },
+  card: {
+    borderRadius: radius.xl,
+    padding: spacing.lg,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
+  },
   title: { color: colors.text, fontSize: fontSize.md, fontWeight: "800", marginBottom: 4 },
   empty: { color: colors.textDim, fontStyle: "italic", fontSize: fontSize.xs, marginTop: 4 },
   list: { maxHeight: 280 },
-  bubble: { borderRadius: radius.lg, padding: 10, backgroundColor: "rgba(255,255,255,0.04)", marginTop: 6, borderLeftWidth: 3, borderLeftColor: colors.accentWarm },
+  bubble: {
+    borderRadius: radius.lg,
+    padding: 10,
+    backgroundColor: "rgba(255,255,255,0.04)",
+    marginTop: 6,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.accentWarm,
+  },
   bubbleOwn: { borderLeftColor: colors.accent, backgroundColor: "rgba(115,251,211,0.04)" },
   author: { color: colors.accentWarm, fontWeight: "700", fontSize: fontSize.xs },
   time: { color: colors.textDim, fontWeight: "400" },
   text: { color: colors.text, marginTop: 3, lineHeight: 19, fontSize: fontSize.sm },
   inputRow: { flexDirection: "row", gap: 8, marginTop: 8, alignItems: "center" },
-  input: { flex: 1, borderRadius: radius.md, backgroundColor: "rgba(255,255,255,0.03)", borderWidth: 1, borderColor: colors.border, paddingHorizontal: 12, paddingVertical: 10, color: colors.text, fontSize: fontSize.sm },
-  sendBtn: { borderRadius: radius.md, paddingHorizontal: 16, paddingVertical: 10, backgroundColor: colors.accent },
+  input: {
+    flex: 1,
+    borderRadius: radius.md,
+    backgroundColor: "rgba(255,255,255,0.03)",
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: colors.text,
+    fontSize: fontSize.sm,
+  },
+  sendBtn: {
+    borderRadius: radius.md,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: colors.accent,
+  },
   sendBtnPressed: { backgroundColor: colors.pressedPrimary },
   sendText: { color: colors.onAccent, fontWeight: "800", fontSize: fontSize.sm },
 });

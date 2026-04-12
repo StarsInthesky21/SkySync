@@ -18,7 +18,9 @@ import {
   View,
 } from "react-native";
 let Speech: any = null;
-try { Speech = require("expo-speech"); } catch {}
+try {
+  Speech = require("expo-speech");
+} catch {}
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SectionErrorBoundary } from "@/components/SectionErrorBoundary";
 import { ObjectPreview3D } from "@/components/sky/ObjectPreview3D";
@@ -35,7 +37,6 @@ import { VoiceLounge } from "@/components/sections/VoiceLounge";
 import { SearchBar } from "@/components/SearchBar";
 import { TabBar, TabId } from "@/components/TabBar";
 import { SettingsScreen } from "@/components/SettingsScreen";
-import { ProfileSkeleton, CardSkeleton, SkyViewSkeleton } from "@/components/SkeletonLoader";
 import { AstronomyPanel } from "@/components/sections/AstronomyPanel";
 import { useToast } from "@/components/Toast";
 import { useSelectedObjectDetails, useSkySync } from "@/providers/SkySyncProvider";
@@ -50,13 +51,39 @@ import { Viewpoint, GuidedTarget } from "@/types/sky";
 
 export function SkySyncHomeScreen() {
   const {
-    objects, segments, customSegments, draftSegments, visibleTonight, guidedTargets,
-    dailyChallenges, currentRoom, roomChat, globalChat,
-    selectedDate, liveMode, rotation, zoom, viewpoint, highlightedIds,
-    selectedObjectNotes, availableViewpoints, isLoading, userProfile, challengeProgress,
-    setRotation, setZoom, setViewpoint, selectObject, focusObject, toggleHighlight,
-    addNoteToSelectedObject, sendRoomMessage, sendGlobalMessage, addStarToDraft,
-    completeChallenge, processQueuedAction,
+    objects,
+    segments,
+    customSegments,
+    draftSegments,
+    visibleTonight,
+    guidedTargets,
+    dailyChallenges,
+    currentRoom,
+    roomChat,
+    globalChat,
+    selectedDate,
+    liveMode,
+    rotation,
+    zoom,
+    viewpoint,
+    highlightedIds,
+    selectedObjectNotes,
+    availableViewpoints,
+    isLoading,
+    userProfile,
+    challengeProgress,
+    setRotation,
+    setZoom,
+    setViewpoint,
+    selectObject,
+    focusObject,
+    toggleHighlight,
+    addNoteToSelectedObject,
+    sendRoomMessage,
+    sendGlobalMessage,
+    addStarToDraft,
+    completeChallenge,
+    processQueuedAction,
   } = useSkySync();
   const { object: selectedObject, constellationName, story } = useSelectedObjectDetails();
   const network = useNetworkStatus();
@@ -80,8 +107,18 @@ export function SkySyncHomeScreen() {
     if (!isLoading) return;
     const anim = Animated.loop(
       Animated.sequence([
-        Animated.timing(loadingPulse, { toValue: 1, duration: 1200, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-        Animated.timing(loadingPulse, { toValue: 0.6, duration: 1200, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(loadingPulse, {
+          toValue: 1,
+          duration: 1200,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(loadingPulse, {
+          toValue: 0.6,
+          duration: 1200,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
       ]),
     );
     anim.start();
@@ -92,7 +129,9 @@ export function SkySyncHomeScreen() {
   useEffect(() => {
     analytics.init();
     notificationService.init();
-    return () => { analytics.endSession(); };
+    return () => {
+      analytics.endSession();
+    };
   }, []);
 
   // Track tab changes
@@ -114,13 +153,16 @@ export function SkySyncHomeScreen() {
 
   useEffect(() => {
     let mounted = true;
-    storage.getSettings().then((settings) => {
-      if (!mounted) return;
-      setVoiceGuideEnabled(settings.voiceGuideEnabled);
-      settingsHydratedRef.current = true;
-    }).catch(() => {
-      settingsHydratedRef.current = true;
-    });
+    storage
+      .getSettings()
+      .then((settings) => {
+        if (!mounted) return;
+        setVoiceGuideEnabled(settings.voiceGuideEnabled);
+        settingsHydratedRef.current = true;
+      })
+      .catch(() => {
+        settingsHydratedRef.current = true;
+      });
 
     return () => {
       mounted = false;
@@ -165,17 +207,28 @@ export function SkySyncHomeScreen() {
   const formatTime = (d: Date) => d.toISOString().slice(11, 16);
 
   // Toast-based status messages
-  const setStatusMessage = useCallback((msg: string) => {
-    if (msg.toLowerCase().includes("error") || msg.toLowerCase().includes("invalid") || msg.toLowerCase().includes("failed")) {
-      toast.show(msg, "error");
-    } else if (msg.toLowerCase().includes("completed") || msg.toLowerCase().includes("saved") || msg.toLowerCase().includes("created")) {
-      toast.show(msg, "success");
-    } else if (msg.toLowerCase().includes("warning") || msg.toLowerCase().includes("offline")) {
-      toast.show(msg, "warning");
-    } else {
-      toast.show(msg, "info");
-    }
-  }, [toast]);
+  const setStatusMessage = useCallback(
+    (msg: string) => {
+      if (
+        msg.toLowerCase().includes("error") ||
+        msg.toLowerCase().includes("invalid") ||
+        msg.toLowerCase().includes("failed")
+      ) {
+        toast.show(msg, "error");
+      } else if (
+        msg.toLowerCase().includes("completed") ||
+        msg.toLowerCase().includes("saved") ||
+        msg.toLowerCase().includes("created")
+      ) {
+        toast.show(msg, "success");
+      } else if (msg.toLowerCase().includes("warning") || msg.toLowerCase().includes("offline")) {
+        toast.show(msg, "warning");
+      } else {
+        toast.show(msg, "info");
+      }
+    },
+    [toast],
+  );
 
   const stopVoiceGuide = useCallback(() => {
     if (typeof Speech?.stop === "function") {
@@ -183,13 +236,16 @@ export function SkySyncHomeScreen() {
     }
   }, []);
 
-  const speakSelectedObject = useCallback((text: string) => {
-    if (typeof Speech?.speak !== "function") {
-      return;
-    }
-    stopVoiceGuide();
-    Speech.speak(text, { rate: 0.95, pitch: 1.0 });
-  }, [stopVoiceGuide]);
+  const speakSelectedObject = useCallback(
+    (text: string) => {
+      if (typeof Speech?.speak !== "function") {
+        return;
+      }
+      stopVoiceGuide();
+      Speech.speak(text, { rate: 0.95, pitch: 1.0 });
+    },
+    [stopVoiceGuide],
+  );
 
   // Voice guide
   useEffect(() => {
@@ -198,7 +254,7 @@ export function SkySyncHomeScreen() {
       `${selectedObject.name}. ${selectedObject.distanceFromEarth} from Earth. ${selectedObject.mythologyStory}. ${selectedObject.scientificFacts[0]}`,
     );
     return stopVoiceGuide;
-  }, [selectedObject?.id, speakSelectedObject, stopVoiceGuide, voiceGuideEnabled]);
+  }, [selectedObject, speakSelectedObject, stopVoiceGuide, voiceGuideEnabled]);
 
   // Challenge auto-completion
   const challengeRef = useRef(challengeProgress);
@@ -213,7 +269,7 @@ export function SkySyncHomeScreen() {
         toast.show(`Challenge completed: ${c.title} (+${c.xpValue} XP)`, "success");
       }
     }
-  }, [selectedObject?.id, completeChallenge, dailyChallenges, toast]);
+  }, [selectedObject, completeChallenge, dailyChallenges, toast]);
 
   useEffect(() => {
     if (!story || !selectedObject) return;
@@ -224,18 +280,21 @@ export function SkySyncHomeScreen() {
         toast.show(`Challenge completed: ${c.title} (+${c.xpValue} XP)`, "success");
       }
     }
-  }, [story?.id, selectedObject?.id, completeChallenge, dailyChallenges, toast]);
+  }, [story, selectedObject, completeChallenge, dailyChallenges, toast]);
 
-  const handleSelectObject = useCallback((objectId: string) => {
-    if (drawModeEnabled) {
-      addStarToDraft(objectId);
-      toast.show("Added star to draft pattern", "info");
-      return;
-    }
-    selectObject(objectId);
-    const obj = objects.find((o) => o.id === objectId);
-    if (obj) analytics.objectDiscovered(objectId, obj.kind, obj.name);
-  }, [drawModeEnabled, addStarToDraft, selectObject, toast, objects]);
+  const handleSelectObject = useCallback(
+    (objectId: string) => {
+      if (drawModeEnabled) {
+        addStarToDraft(objectId);
+        toast.show("Added star to draft pattern", "info");
+        return;
+      }
+      selectObject(objectId);
+      const obj = objects.find((o) => o.id === objectId);
+      if (obj) analytics.objectDiscovered(objectId, obj.kind, obj.name);
+    },
+    [drawModeEnabled, addStarToDraft, selectObject, toast, objects],
+  );
 
   const handleAddNote = useCallback(async () => {
     if (!noteInput.trim()) return;
@@ -262,39 +321,45 @@ export function SkySyncHomeScreen() {
     toast.show("Note saved", "success");
   }, [noteInput, currentRoom, selectedObject, network.isConnected, addNoteToSelectedObject, toast]);
 
-  const handleSendRoom = useCallback(async (text: string) => {
-    if (!currentRoom) {
-      toast.show("Join a room to chat", "warning");
-      return;
-    }
-    if (!network.isConnected) {
-      await offlineQueue.enqueue({ type: "room_message", payload: { roomId: currentRoom.id, text } });
-      toast.show("Message queued (offline)", "warning");
-      setPendingQueueCount((c) => c + 1);
-      return;
-    }
-    const sent = await sendRoomMessage(text);
-    if (!sent) {
-      toast.show("Couldn't send room message", "error");
-      return;
-    }
-    analytics.messageSent("room");
-  }, [currentRoom, sendRoomMessage, network.isConnected, toast]);
+  const handleSendRoom = useCallback(
+    async (text: string) => {
+      if (!currentRoom) {
+        toast.show("Join a room to chat", "warning");
+        return;
+      }
+      if (!network.isConnected) {
+        await offlineQueue.enqueue({ type: "room_message", payload: { roomId: currentRoom.id, text } });
+        toast.show("Message queued (offline)", "warning");
+        setPendingQueueCount((c) => c + 1);
+        return;
+      }
+      const sent = await sendRoomMessage(text);
+      if (!sent) {
+        toast.show("Couldn't send room message", "error");
+        return;
+      }
+      analytics.messageSent("room");
+    },
+    [currentRoom, sendRoomMessage, network.isConnected, toast],
+  );
 
-  const handleSendGlobal = useCallback(async (text: string) => {
-    if (!network.isConnected) {
-      await offlineQueue.enqueue({ type: "global_message", payload: { text } });
-      toast.show("Message queued (offline)", "warning");
-      setPendingQueueCount((c) => c + 1);
-      return;
-    }
-    const sent = await sendGlobalMessage(text);
-    if (!sent) {
-      toast.show("Couldn't send global message", "error");
-      return;
-    }
-    analytics.messageSent("global");
-  }, [sendGlobalMessage, network.isConnected, toast]);
+  const handleSendGlobal = useCallback(
+    async (text: string) => {
+      if (!network.isConnected) {
+        await offlineQueue.enqueue({ type: "global_message", payload: { text } });
+        toast.show("Message queued (offline)", "warning");
+        setPendingQueueCount((c) => c + 1);
+        return;
+      }
+      const sent = await sendGlobalMessage(text);
+      if (!sent) {
+        toast.show("Couldn't send global message", "error");
+        return;
+      }
+      analytics.messageSent("global");
+    },
+    [sendGlobalMessage, network.isConnected, toast],
+  );
 
   const handleShare = useCallback(async () => {
     try {
@@ -309,10 +374,13 @@ export function SkySyncHomeScreen() {
     }
   }, [selectedObject, currentRoom]);
 
-  const handleSearchSelect = useCallback((objectId: string) => {
-    focusObject(objectId);
-    toast.show(`Focused on ${objects.find((o) => o.id === objectId)?.name ?? objectId}`, "info");
-  }, [focusObject, objects, toast]);
+  const handleSearchSelect = useCallback(
+    (objectId: string) => {
+      focusObject(objectId);
+      toast.show(`Focused on ${objects.find((o) => o.id === objectId)?.name ?? objectId}`, "info");
+    },
+    [focusObject, objects, toast],
+  );
 
   const handleToggleHighlight = useCallback(async () => {
     if (!selectedObject) return;
@@ -345,16 +413,22 @@ export function SkySyncHomeScreen() {
   }, [challengeProgress.totalXpEarned]);
 
   // Guided targets render
-  const renderGuided = useCallback(({ item }: { item: GuidedTarget }) => (
-    <Pressable
-      style={({ pressed }) => [styles.listItem, pressed && styles.listItemPressed]}
-      onPress={() => { focusObject(item.objectId); toast.show(`Centered on ${item.title}`, "info"); }}
-      accessibilityRole="button"
-    >
-      <Text style={styles.listTitle}>{item.title}</Text>
-      <Text style={styles.listBody}>{item.subtitle}</Text>
-    </Pressable>
-  ), [focusObject, toast]);
+  const renderGuided = useCallback(
+    ({ item }: { item: GuidedTarget }) => (
+      <Pressable
+        style={({ pressed }) => [styles.listItem, pressed && styles.listItemPressed]}
+        onPress={() => {
+          focusObject(item.objectId);
+          toast.show(`Centered on ${item.title}`, "info");
+        }}
+        accessibilityRole="button"
+      >
+        <Text style={styles.listTitle}>{item.title}</Text>
+        <Text style={styles.listBody}>{item.subtitle}</Text>
+      </Pressable>
+    ),
+    [focusObject, toast],
+  );
 
   if (isLoading) {
     return (
@@ -390,7 +464,9 @@ export function SkySyncHomeScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         onScrollBeginDrag={Keyboard.dismiss}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.accent} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.accent} />
+        }
       >
         {!network.isConnected && (
           <View style={styles.offlineBanner} accessibilityRole="alert">
@@ -417,7 +493,9 @@ export function SkySyncHomeScreen() {
                 <View style={styles.heroActions}>
                   {streak && streak.currentStreak > 0 && (
                     <View style={[styles.pill, styles.pillStreak]}>
-                      <Text style={styles.pillText}>{"\u{1F525}"} {streak.currentStreak}</Text>
+                      <Text style={styles.pillText}>
+                        {"\u{1F525}"} {streak.currentStreak}
+                      </Text>
                     </View>
                   )}
                   <Pressable
@@ -431,10 +509,16 @@ export function SkySyncHomeScreen() {
                 </View>
               </View>
               <View style={styles.pillRow}>
-                <View style={styles.pill}><Text style={styles.pillText}>{currentRoom?.roomCode ?? "SOLO"}</Text></View>
-                <View style={[styles.pill, liveMode && styles.pillLive]}><Text style={styles.pillText}>{liveMode ? "LIVE" : "TIME TRAVEL"}</Text></View>
+                <View style={styles.pill}>
+                  <Text style={styles.pillText}>{currentRoom?.roomCode ?? "SOLO"}</Text>
+                </View>
+                <View style={[styles.pill, liveMode && styles.pillLive]}>
+                  <Text style={styles.pillText}>{liveMode ? "LIVE" : "TIME TRAVEL"}</Text>
+                </View>
                 {streak && (
-                  <View style={styles.pill}><Text style={styles.pillText}>Lv. {streak.level}</Text></View>
+                  <View style={styles.pill}>
+                    <Text style={styles.pillText}>Lv. {streak.level}</Text>
+                  </View>
                 )}
               </View>
             </View>
@@ -445,31 +529,65 @@ export function SkySyncHomeScreen() {
             {/* Viewpoints */}
             <View style={styles.chipRow} accessibilityRole="radiogroup">
               {availableViewpoints.map((item) => (
-                <Pressable key={item.id} onPress={() => { setViewpoint(item.id as Viewpoint); toast.show(`Viewing from ${item.label}`, "info"); }}
-                  style={({ pressed }) => [styles.chip, viewpoint === item.id && styles.chipActive, pressed && styles.chipPressed]}
-                  accessibilityRole="radio" accessibilityState={{ selected: viewpoint === item.id }}>
-                  <Text style={[styles.chipText, viewpoint === item.id && styles.chipTextActive]}>{item.label}</Text>
+                <Pressable
+                  key={item.id}
+                  onPress={() => {
+                    setViewpoint(item.id as Viewpoint);
+                    toast.show(`Viewing from ${item.label}`, "info");
+                  }}
+                  style={({ pressed }) => [
+                    styles.chip,
+                    viewpoint === item.id && styles.chipActive,
+                    pressed && styles.chipPressed,
+                  ]}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: viewpoint === item.id }}
+                >
+                  <Text style={[styles.chipText, viewpoint === item.id && styles.chipTextActive]}>
+                    {item.label}
+                  </Text>
                 </Pressable>
               ))}
             </View>
 
             {/* Sky View */}
             <SectionErrorBoundary section="Sky Viewer">
-              <SkyView objects={objects} segments={segments} customSegments={customSegments} draftSegments={draftSegments}
-                selectedObjectId={selectedObject?.id} highlightedIds={highlightedIds} roomCode={currentRoom?.roomCode}
-                liveMode={liveMode} viewpointLabel={viewpoint.toUpperCase()} dateLabel={`${formatDate(selectedDate)} ${formatTime(selectedDate)}`}
-                callActive={false} rotation={rotation} zoom={zoom} onSelectObject={handleSelectObject}
-                onRotate={setRotation} onZoom={setZoom} />
+              <SkyView
+                objects={objects}
+                segments={segments}
+                customSegments={customSegments}
+                draftSegments={draftSegments}
+                selectedObjectId={selectedObject?.id}
+                highlightedIds={highlightedIds}
+                roomCode={currentRoom?.roomCode}
+                liveMode={liveMode}
+                viewpointLabel={viewpoint.toUpperCase()}
+                dateLabel={`${formatDate(selectedDate)} ${formatTime(selectedDate)}`}
+                callActive={false}
+                rotation={rotation}
+                zoom={zoom}
+                onSelectObject={handleSelectObject}
+                onRotate={setRotation}
+                onZoom={setZoom}
+              />
             </SectionErrorBoundary>
 
             {/* Time Controls */}
             <SectionErrorBoundary section="Time Controls">
-              <TimeControls voiceGuideEnabled={voiceGuideEnabled} setVoiceGuideEnabled={setVoiceGuideEnabled} onStatus={setStatusMessage} />
+              <TimeControls
+                voiceGuideEnabled={voiceGuideEnabled}
+                setVoiceGuideEnabled={setVoiceGuideEnabled}
+                onStatus={setStatusMessage}
+              />
             </SectionErrorBoundary>
 
             {/* Draw Constellations */}
             <SectionErrorBoundary section="Draw">
-              <DrawConstellations drawModeEnabled={drawModeEnabled} setDrawModeEnabled={setDrawModeEnabled} onStatus={setStatusMessage} />
+              <DrawConstellations
+                drawModeEnabled={drawModeEnabled}
+                setDrawModeEnabled={setDrawModeEnabled}
+                onStatus={setStatusMessage}
+              />
             </SectionErrorBoundary>
           </>
         )}
@@ -488,20 +606,31 @@ export function SkySyncHomeScreen() {
             <SectionHeader title="Tonight's Highlights" subtitle="Tap to center on recommended objects" />
             <SectionErrorBoundary section="Guided Mode">
               <View style={styles.card}>
-                <FlatList data={guidedTargets} renderItem={renderGuided} keyExtractor={(i) => i.id} scrollEnabled={false} />
+                <FlatList
+                  data={guidedTargets}
+                  renderItem={renderGuided}
+                  keyExtractor={(i) => i.id}
+                  scrollEnabled={false}
+                />
               </View>
             </SectionErrorBoundary>
 
-            <SectionHeader title="Live Astronomy Data" subtitle="Real-time planetary positions, moon phase, and upcoming events" />
+            <SectionHeader
+              title="Live Astronomy Data"
+              subtitle="Real-time planetary positions, moon phase, and upcoming events"
+            />
             <SectionErrorBoundary section="Astronomy">
-              <AstronomyPanel selectedDate={selectedDate} onFocusPlanet={(name) => {
-                const obj = objects.find((o) => o.name.toLowerCase() === name);
-                if (obj) {
-                  focusObject(obj.id);
-                  setActiveTab("sky");
-                  toast.show(`Focused on ${obj.name}`, "info");
-                }
-              }} />
+              <AstronomyPanel
+                selectedDate={selectedDate}
+                onFocusPlanet={(name) => {
+                  const obj = objects.find((o) => o.name.toLowerCase() === name);
+                  if (obj) {
+                    focusObject(obj.id);
+                    setActiveTab("sky");
+                    toast.show(`Focused on ${obj.name}`, "info");
+                  }
+                }}
+              />
             </SectionErrorBoundary>
           </>
         )}
@@ -517,10 +646,14 @@ export function SkySyncHomeScreen() {
               <Text style={styles.tabHeaderSub}>Stargaze with friends in real-time</Text>
             </View>
 
-            <SectionErrorBoundary section="Rooms"><RoomSection onStatus={setStatusMessage} /></SectionErrorBoundary>
+            <SectionErrorBoundary section="Rooms">
+              <RoomSection onStatus={setStatusMessage} />
+            </SectionErrorBoundary>
 
             <SectionHeader title="Voice Lounge" subtitle="Coordinate shared observing sessions" />
-            <SectionErrorBoundary section="Voice Lounge"><VoiceLounge onStatus={setStatusMessage} /></SectionErrorBoundary>
+            <SectionErrorBoundary section="Voice Lounge">
+              <VoiceLounge onStatus={setStatusMessage} />
+            </SectionErrorBoundary>
 
             <SectionHeader title="Room Chat" />
             <SectionErrorBoundary section="Room Chat">
@@ -528,10 +661,18 @@ export function SkySyncHomeScreen() {
                 <View style={styles.emptyState}>
                   <Text style={styles.emptyIcon}>{"\u{1F4AC}"}</Text>
                   <Text style={styles.emptyTitle}>No room messages yet</Text>
-                  <Text style={styles.emptyBody}>Join or create a Sky Room to start chatting with fellow stargazers.</Text>
+                  <Text style={styles.emptyBody}>
+                    Join or create a Sky Room to start chatting with fellow stargazers.
+                  </Text>
                 </View>
               ) : (
-                <ChatSection title="Room Chat" messages={roomChat} currentUsername={username} onSend={handleSendRoom} placeholder="Message room..." />
+                <ChatSection
+                  title="Room Chat"
+                  messages={roomChat}
+                  currentUsername={username}
+                  onSend={handleSendRoom}
+                  placeholder="Message room..."
+                />
               )}
             </SectionErrorBoundary>
 
@@ -541,10 +682,18 @@ export function SkySyncHomeScreen() {
                 <View style={styles.emptyState}>
                   <Text style={styles.emptyIcon}>{"\u{1F30D}"}</Text>
                   <Text style={styles.emptyTitle}>Global chat is quiet</Text>
-                  <Text style={styles.emptyBody}>Be the first to say hello to stargazers around the world!</Text>
+                  <Text style={styles.emptyBody}>
+                    Be the first to say hello to stargazers around the world!
+                  </Text>
                 </View>
               ) : (
-                <ChatSection title="Global Chat" messages={globalChat} currentUsername={username} onSend={handleSendGlobal} placeholder="Say something..." />
+                <ChatSection
+                  title="Global Chat"
+                  messages={globalChat}
+                  currentUsername={username}
+                  onSend={handleSendGlobal}
+                  placeholder="Say something..."
+                />
               )}
             </SectionErrorBoundary>
           </>
@@ -561,13 +710,21 @@ export function SkySyncHomeScreen() {
               <Text style={styles.tabHeaderSub}>Daily challenges and astronomy knowledge</Text>
             </View>
 
-            <SectionHeader title="Daily Challenges" subtitle={`${challengeProgress.completedIds.length}/${dailyChallenges.length} completed today`} />
-            <SectionErrorBoundary section="Badges"><BadgesAndChallenges onStatus={setStatusMessage} /></SectionErrorBoundary>
+            <SectionHeader
+              title="Daily Challenges"
+              subtitle={`${challengeProgress.completedIds.length}/${dailyChallenges.length} completed today`}
+            />
+            <SectionErrorBoundary section="Badges">
+              <BadgesAndChallenges onStatus={setStatusMessage} />
+            </SectionErrorBoundary>
 
             {/* Featured Object of the Day */}
             {visibleTonight.length > 0 && (
               <>
-                <SectionHeader title="Featured Tonight" subtitle="Tap to learn about tonight's visible objects" />
+                <SectionHeader
+                  title="Featured Tonight"
+                  subtitle="Tap to learn about tonight's visible objects"
+                />
                 <View style={styles.featuredGrid}>
                   {visibleTonight.slice(0, 6).map((obj) => (
                     <Pressable
@@ -578,7 +735,9 @@ export function SkySyncHomeScreen() {
                         analytics.objectDiscovered(obj.id, obj.kind, obj.name);
                       }}
                     >
-                      <View style={[styles.featuredDot, { backgroundColor: obj.color, shadowColor: obj.color }]} />
+                      <View
+                        style={[styles.featuredDot, { backgroundColor: obj.color, shadowColor: obj.color }]}
+                      />
                       <Text style={styles.featuredName}>{obj.name}</Text>
                       <Text style={styles.featuredKind}>{obj.kind}</Text>
                     </Pressable>
@@ -588,19 +747,31 @@ export function SkySyncHomeScreen() {
             )}
 
             {/* Quick astronomy facts */}
-            <SectionHeader title="Did You Know?" subtitle="Tap any object in the sky to discover its mythology and science" />
+            <SectionHeader
+              title="Did You Know?"
+              subtitle="Tap any object in the sky to discover its mythology and science"
+            />
             <View style={styles.card}>
               <View style={styles.factCard}>
                 <Text style={styles.factEmoji}>{"\u{1F30C}"}</Text>
-                <Text style={styles.factText}>The light from Betelgeuse left the star 548 years ago. You're seeing it as it was during the Renaissance.</Text>
+                <Text style={styles.factText}>
+                  The light from Betelgeuse left the star 548 years ago. You're seeing it as it was during the
+                  Renaissance.
+                </Text>
               </View>
               <View style={styles.factCard}>
                 <Text style={styles.factEmoji}>{"\u{1F6F0}\uFE0F"}</Text>
-                <Text style={styles.factText}>The ISS orbits Earth every 92 minutes at 28,000 km/h. You can often see it with the naked eye!</Text>
+                <Text style={styles.factText}>
+                  The ISS orbits Earth every 92 minutes at 28,000 km/h. You can often see it with the naked
+                  eye!
+                </Text>
               </View>
               <View style={styles.factCard}>
                 <Text style={styles.factEmoji}>{"\u{1FA90}"}</Text>
-                <Text style={styles.factText}>Saturn's rings are mostly made of ice chunks ranging from tiny grains to pieces the size of a house.</Text>
+                <Text style={styles.factText}>
+                  Saturn's rings are mostly made of ice chunks ranging from tiny grains to pieces the size of
+                  a house.
+                </Text>
               </View>
             </View>
           </>
@@ -611,7 +782,9 @@ export function SkySyncHomeScreen() {
         {/* ============================================================ */}
         {activeTab === "profile" && (
           <>
-            <SectionErrorBoundary section="Profile"><ProfileCard onStatus={setStatusMessage} /></SectionErrorBoundary>
+            <SectionErrorBoundary section="Profile">
+              <ProfileCard onStatus={setStatusMessage} />
+            </SectionErrorBoundary>
 
             {/* Streak & Level Card */}
             {streak && <StreakCard streak={streak} />}
@@ -623,21 +796,31 @@ export function SkySyncHomeScreen() {
                 <Text style={styles.statLabel}>Planets Found</Text>
               </View>
               <View style={styles.statBox}>
-                <Text style={[styles.statNumber, { color: colors.accentWarm }]}>{userProfile?.totalStarsViewed ?? 0}</Text>
+                <Text style={[styles.statNumber, { color: colors.accentWarm }]}>
+                  {userProfile?.totalStarsViewed ?? 0}
+                </Text>
                 <Text style={styles.statLabel}>Stars Viewed</Text>
               </View>
               <View style={styles.statBox}>
-                <Text style={[styles.statNumber, { color: colors.accentInfo }]}>{challengeProgress.completedIds.length}</Text>
+                <Text style={[styles.statNumber, { color: colors.accentInfo }]}>
+                  {challengeProgress.completedIds.length}
+                </Text>
                 <Text style={styles.statLabel}>Challenges</Text>
               </View>
             </View>
 
             {/* Share Button */}
-            <Pressable style={({ pressed }) => [styles.shareBtn, pressed && { opacity: 0.85 }]} onPress={handleShare}>
+            <Pressable
+              style={({ pressed }) => [styles.shareBtn, pressed && { opacity: 0.85 }]}
+              onPress={handleShare}
+            >
               <Text style={styles.shareBtnText}>{"\u{1F4E4}"} Share SkySync</Text>
             </Pressable>
 
-            <Pressable style={({ pressed }) => [styles.settingsCard, pressed && { opacity: 0.85 }]} onPress={() => setShowSettings(true)}>
+            <Pressable
+              style={({ pressed }) => [styles.settingsCard, pressed && { opacity: 0.85 }]}
+              onPress={() => setShowSettings(true)}
+            >
               <Text style={styles.settingsCardText}>{"\u2699"} Open Settings</Text>
             </Pressable>
           </>
@@ -652,40 +835,77 @@ export function SkySyncHomeScreen() {
       />
 
       {/* Object Detail Modal */}
-      <Modal visible={Boolean(selectedObject)} transparent animationType="slide"
-        onRequestClose={() => { stopVoiceGuide(); selectObject(undefined); }} accessibilityViewIsModal>
+      <Modal
+        visible={Boolean(selectedObject)}
+        transparent
+        animationType="slide"
+        onRequestClose={() => {
+          stopVoiceGuide();
+          selectObject(undefined);
+        }}
+        accessibilityViewIsModal
+      >
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-          <Pressable style={styles.backdrop} onPress={() => { stopVoiceGuide(); selectObject(undefined); }}>
+          <Pressable
+            style={styles.backdrop}
+            onPress={() => {
+              stopVoiceGuide();
+              selectObject(undefined);
+            }}
+          >
             <View style={styles.modalSheet}>
               <Pressable onPress={() => {}} style={{ flex: 1 }}>
                 <ScrollView contentContainerStyle={styles.modalContent} showsVerticalScrollIndicator={false}>
                   <View style={styles.modalHandle} />
                   <View style={styles.modalHeader}>
-                    <Pressable style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]}
-                      onPress={() => { stopVoiceGuide(); selectObject(undefined); }}>
+                    <Pressable
+                      style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]}
+                      onPress={() => {
+                        stopVoiceGuide();
+                        selectObject(undefined);
+                      }}
+                    >
                       <Text style={styles.closeBtnText}>Close</Text>
                     </Pressable>
-                    <Pressable style={({ pressed }) => [styles.shareChip, pressed && { opacity: 0.7 }]} onPress={handleShare}>
+                    <Pressable
+                      style={({ pressed }) => [styles.shareChip, pressed && { opacity: 0.7 }]}
+                      onPress={handleShare}
+                    >
                       <Text style={styles.shareChipText}>{"\u{1F4E4}"} Share</Text>
                     </Pressable>
                   </View>
 
                   <Text style={styles.modalTitle}>{selectedObject?.name}</Text>
                   <Text style={styles.modalMeta}>
-                    {selectedObject?.kind}{constellationName ? ` | ${constellationName}` : ""}{selectedObject?.distanceFromEarth ? ` | ${selectedObject.distanceFromEarth}` : ""}
+                    {selectedObject?.kind}
+                    {constellationName ? ` | ${constellationName}` : ""}
+                    {selectedObject?.distanceFromEarth ? ` | ${selectedObject.distanceFromEarth}` : ""}
                   </Text>
                   <Text style={styles.modalBody}>{selectedObject?.description}</Text>
 
-                  <ObjectPreview3D color={selectedObject?.color ?? colors.accent} title={selectedObject?.previewTitle}
-                    description={selectedObject?.previewDescription} kind={selectedObject?.kind} />
+                  <ObjectPreview3D
+                    color={selectedObject?.color ?? colors.accent}
+                    title={selectedObject?.previewTitle}
+                    description={selectedObject?.previewDescription}
+                    kind={selectedObject?.kind}
+                  />
 
                   <Text style={styles.modalSection}>Mythology</Text>
                   <Text style={styles.modalBody}>{selectedObject?.mythologyStory}</Text>
 
                   <Text style={styles.modalSection}>Scientific Facts</Text>
-                  {selectedObject?.scientificFacts.map((f, i) => <Text key={`f-${i}`} style={styles.fact}>- {f}</Text>)}
+                  {selectedObject?.scientificFacts.map((f, i) => (
+                    <Text key={`f-${i}`} style={styles.fact}>
+                      - {f}
+                    </Text>
+                  ))}
 
-                  {story && (<><Text style={styles.modalSection}>Animated Story</Text><StoryPlayer story={story} /></>)}
+                  {story && (
+                    <>
+                      <Text style={styles.modalSection}>Animated Story</Text>
+                      <StoryPlayer story={story} />
+                    </>
+                  )}
 
                   <Text style={styles.modalSection}>Shared Notes</Text>
                   {selectedObjectNotes.length === 0 ? (
@@ -701,27 +921,52 @@ export function SkySyncHomeScreen() {
                     ))
                   )}
 
-                  <TextInput value={noteInput} onChangeText={setNoteInput} style={styles.input} placeholder="Add a note..." placeholderTextColor={colors.textDim} maxLength={500} />
+                  <TextInput
+                    value={noteInput}
+                    onChangeText={setNoteInput}
+                    style={styles.input}
+                    placeholder="Add a note..."
+                    placeholderTextColor={colors.textDim}
+                    maxLength={500}
+                  />
 
                   <View style={styles.btnRow}>
-                    <Pressable style={({ pressed }) => [styles.secondaryBtn, pressed && styles.secondaryPressed]}
-                      onPress={handleToggleHighlight}>
-                      <Text style={styles.secondaryText}>{selectedObject && highlightedIds.includes(selectedObject.id) ? "Unhighlight" : "Highlight"}</Text>
+                    <Pressable
+                      style={({ pressed }) => [styles.secondaryBtn, pressed && styles.secondaryPressed]}
+                      onPress={handleToggleHighlight}
+                    >
+                      <Text style={styles.secondaryText}>
+                        {selectedObject && highlightedIds.includes(selectedObject.id)
+                          ? "Unhighlight"
+                          : "Highlight"}
+                      </Text>
                     </Pressable>
-                    <Pressable style={({ pressed }) => [styles.secondaryBtn, pressed && styles.secondaryPressed]}
+                    <Pressable
+                      style={({ pressed }) => [styles.secondaryBtn, pressed && styles.secondaryPressed]}
                       onPress={() => {
                         if (!selectedObject) return;
-                        speakSelectedObject(`${selectedObject.name}. ${selectedObject.distanceFromEarth}. ${selectedObject.scientificFacts.join(" ")}`);
-                      }}>
+                        speakSelectedObject(
+                          `${selectedObject.name}. ${selectedObject.distanceFromEarth}. ${selectedObject.scientificFacts.join(" ")}`,
+                        );
+                      }}
+                    >
                       <Text style={styles.secondaryText}>Speak</Text>
                     </Pressable>
                   </View>
                   <View style={styles.btnRow}>
-                    <Pressable style={({ pressed }) => [styles.secondaryBtn, pressed && styles.secondaryPressed]} onPress={handleAddNote}>
+                    <Pressable
+                      style={({ pressed }) => [styles.secondaryBtn, pressed && styles.secondaryPressed]}
+                      onPress={handleAddNote}
+                    >
                       <Text style={styles.secondaryText}>Save Note</Text>
                     </Pressable>
-                    <Pressable style={({ pressed }) => [styles.primaryBtn, pressed && styles.primaryPressed]}
-                      onPress={() => { if (selectedObject) focusObject(selectedObject.id); selectObject(undefined); }}>
+                    <Pressable
+                      style={({ pressed }) => [styles.primaryBtn, pressed && styles.primaryPressed]}
+                      onPress={() => {
+                        if (selectedObject) focusObject(selectedObject.id);
+                        selectObject(undefined);
+                      }}
+                    >
                       <Text style={styles.primaryText}>Zoom Focus</Text>
                     </Pressable>
                   </View>
@@ -737,7 +982,10 @@ export function SkySyncHomeScreen() {
 
 function StreakCard({ streak }: { streak: StreakData }) {
   const totalXpForLevel = Math.floor(100 * (1 + (streak.level - 1) * 0.5));
-  const xpProgress = totalXpForLevel > 0 ? Math.max(5, Math.min(100, ((totalXpForLevel - streak.xpToNextLevel) / totalXpForLevel) * 100)) : 100;
+  const xpProgress =
+    totalXpForLevel > 0
+      ? Math.max(5, Math.min(100, ((totalXpForLevel - streak.xpToNextLevel) / totalXpForLevel) * 100))
+      : 100;
   const widthPercent = `${Math.round(xpProgress)}%`;
 
   return (
@@ -764,7 +1012,9 @@ function StreakCard({ streak }: { streak: StreakData }) {
       <View style={styles.xpBar}>
         <View style={[styles.xpFill, { width: widthPercent as `${number}%` }]} />
       </View>
-      <Text style={styles.xpLabel}>{streak.xpToNextLevel} XP to Level {streak.level + 1}</Text>
+      <Text style={styles.xpLabel}>
+        {streak.xpToNextLevel} XP to Level {streak.level + 1}
+      </Text>
     </View>
   );
 }
@@ -775,28 +1025,69 @@ const styles = StyleSheet.create({
   loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", gap: 20 },
   loadingBrand: { color: colors.accent, fontSize: fontSize.hero, fontWeight: "800", letterSpacing: 2 },
   loadingSubtext: { color: colors.textDim, fontSize: fontSize.sm },
-  offlineBanner: { borderRadius: radius.sm, padding: 10, backgroundColor: "rgba(255,111,97,0.12)", alignItems: "center", flexDirection: "row", justifyContent: "center", gap: 6 },
+  offlineBanner: {
+    borderRadius: radius.sm,
+    padding: 10,
+    backgroundColor: "rgba(255,111,97,0.12)",
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 6,
+  },
   offlineText: { color: colors.accentDanger, fontWeight: "700", fontSize: fontSize.xs },
   // Compact hero for sky tab
-  heroCompact: { borderRadius: radius.xl, padding: spacing.lg, backgroundColor: colors.bgRaised, borderWidth: 1, borderColor: colors.border },
+  heroCompact: {
+    borderRadius: radius.xl,
+    padding: spacing.lg,
+    backgroundColor: colors.bgRaised,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
   heroTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   heroActions: { flexDirection: "row", alignItems: "center", gap: 8 },
-  brand: { color: colors.accent, fontSize: fontSize.sm, fontWeight: "800", letterSpacing: 2, textTransform: "uppercase" },
+  brand: {
+    color: colors.accent,
+    fontSize: fontSize.sm,
+    fontWeight: "800",
+    letterSpacing: 2,
+    textTransform: "uppercase",
+  },
   heroSubCompact: { color: colors.textMuted, marginTop: 4, fontSize: fontSize.xs, lineHeight: 18 },
   settingsBtn: { padding: 8, borderRadius: radius.pill, backgroundColor: "rgba(255,255,255,0.06)" },
   settingsIcon: { fontSize: 20 },
   pillRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
-  pill: { borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: "rgba(255,255,255,0.06)" },
+  pill: {
+    borderRadius: radius.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: "rgba(255,255,255,0.06)",
+  },
   pillLive: { backgroundColor: "rgba(115,251,211,0.12)" },
   pillStreak: { backgroundColor: "rgba(255,177,95,0.12)" },
   pillText: { color: colors.text, fontWeight: "700", fontSize: fontSize.xs },
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: { borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: colors.cardSoft },
+  chip: {
+    borderRadius: radius.pill,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    backgroundColor: colors.cardSoft,
+  },
   chipActive: { backgroundColor: colors.accent },
   chipPressed: { opacity: 0.7 },
   chipText: { color: colors.text, fontWeight: "700", fontSize: fontSize.sm },
   chipTextActive: { color: colors.onAccent },
-  card: { borderRadius: radius.xl, padding: spacing.lg, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 6 },
+  card: {
+    borderRadius: radius.xl,
+    padding: spacing.lg,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
+  },
   listItem: { borderRadius: radius.lg, padding: 14, backgroundColor: colors.cardSoft, marginTop: 8 },
   listItemPressed: { backgroundColor: colors.pressedSecondary },
   listTitle: { color: colors.text, fontWeight: "700", fontSize: fontSize.sm },
@@ -808,64 +1099,187 @@ const styles = StyleSheet.create({
   tabHeaderSub: { color: colors.textDim, fontSize: fontSize.sm, textAlign: "center" },
   // Featured grid (Learn tab)
   featuredGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  featuredCard: { flex: 1, minWidth: "28%", borderRadius: radius.lg, padding: 14, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, alignItems: "center", gap: 8 },
+  featuredCard: {
+    flex: 1,
+    minWidth: "28%",
+    borderRadius: radius.lg,
+    padding: 14,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+    gap: 8,
+  },
   featuredDot: { width: 24, height: 24, borderRadius: 12, shadowOpacity: 0.6, shadowRadius: 8, elevation: 4 },
   featuredName: { color: colors.text, fontSize: fontSize.sm, fontWeight: "700", textAlign: "center" },
   featuredKind: { color: colors.textDim, fontSize: fontSize.xs, textTransform: "capitalize" },
   // Facts (Learn tab)
-  factCard: { flexDirection: "row", alignItems: "flex-start", gap: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.04)" },
+  factCard: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.04)",
+  },
   factEmoji: { fontSize: 24 },
   factText: { color: colors.textMuted, fontSize: fontSize.sm, lineHeight: 20, flex: 1 },
   // Stats row (Profile tab)
   statsRow: { flexDirection: "row", gap: 10 },
-  statBox: { flex: 1, borderRadius: radius.lg, padding: 16, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, alignItems: "center", gap: 4 },
+  statBox: {
+    flex: 1,
+    borderRadius: radius.lg,
+    padding: 16,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+    gap: 4,
+  },
   statNumber: { color: colors.accent, fontSize: fontSize.xl, fontWeight: "800" },
   statLabel: { color: colors.textDim, fontSize: fontSize.xs },
   // Empty states
-  emptyState: { borderRadius: radius.xl, padding: spacing.xl, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, alignItems: "center", gap: 8 },
+  emptyState: {
+    borderRadius: radius.xl,
+    padding: spacing.xl,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+    gap: 8,
+  },
   emptyIcon: { fontSize: 36, marginBottom: 4 },
   emptyTitle: { color: colors.text, fontSize: fontSize.base, fontWeight: "800" },
-  emptyBody: { color: colors.textDim, fontSize: fontSize.sm, textAlign: "center", lineHeight: 20, maxWidth: 280 },
-  emptyNotes: { padding: 12, borderRadius: radius.md, backgroundColor: "rgba(255,255,255,0.02)", marginTop: 4 },
+  emptyBody: {
+    color: colors.textDim,
+    fontSize: fontSize.sm,
+    textAlign: "center",
+    lineHeight: 20,
+    maxWidth: 280,
+  },
+  emptyNotes: {
+    padding: 12,
+    borderRadius: radius.md,
+    backgroundColor: "rgba(255,255,255,0.02)",
+    marginTop: 4,
+  },
   emptyNotesText: { color: colors.textDim, fontStyle: "italic", fontSize: fontSize.xs, textAlign: "center" },
   // Streak
   streakTitle: { color: colors.text, fontSize: fontSize.md, fontWeight: "800", marginBottom: 12 },
   streakGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  streakItem: { flex: 1, minWidth: "42%", alignItems: "center", padding: 12, borderRadius: radius.md, backgroundColor: "rgba(255,255,255,0.03)" },
+  streakItem: {
+    flex: 1,
+    minWidth: "42%",
+    alignItems: "center",
+    padding: 12,
+    borderRadius: radius.md,
+    backgroundColor: "rgba(255,255,255,0.03)",
+  },
   streakValue: { color: colors.accent, fontSize: fontSize.xl, fontWeight: "800" },
   streakLabel: { color: colors.textDim, fontSize: fontSize.xs, marginTop: 4 },
-  xpBar: { height: 6, borderRadius: radius.pill, backgroundColor: "rgba(255,255,255,0.06)", marginTop: 16, overflow: "hidden" },
+  xpBar: {
+    height: 6,
+    borderRadius: radius.pill,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    marginTop: 16,
+    overflow: "hidden",
+  },
   xpFill: { height: "100%", borderRadius: radius.pill, backgroundColor: colors.accent },
   xpLabel: { color: colors.textDim, fontSize: fontSize.xs, marginTop: 6, textAlign: "center" },
   // Share
   shareBtn: { borderRadius: radius.xl, padding: 16, backgroundColor: colors.accent, alignItems: "center" },
   shareBtnText: { color: colors.onAccent, fontWeight: "800", fontSize: fontSize.base },
-  settingsCard: { borderRadius: radius.xl, padding: 16, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, alignItems: "center" },
+  settingsCard: {
+    borderRadius: radius.xl,
+    padding: 16,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+  },
   settingsCardText: { color: colors.text, fontWeight: "700", fontSize: fontSize.base },
   // Modal
   backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
-  modalSheet: { maxHeight: "92%", backgroundColor: colors.card, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, borderWidth: 1, borderColor: colors.border },
+  modalSheet: {
+    maxHeight: "92%",
+    backgroundColor: colors.card,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
   modalContent: { padding: spacing.xl, paddingBottom: 40 },
-  modalHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.2)", alignSelf: "center", marginBottom: 12 },
-  modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
-  closeBtn: { borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 6, backgroundColor: "rgba(255,255,255,0.06)" },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignSelf: "center",
+    marginBottom: 12,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  closeBtn: {
+    borderRadius: radius.pill,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    backgroundColor: "rgba(255,255,255,0.06)",
+  },
   closeBtnText: { color: colors.textMuted, fontWeight: "700", fontSize: fontSize.xs },
-  shareChip: { borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: "rgba(255,255,255,0.06)" },
+  shareChip: {
+    borderRadius: radius.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: "rgba(255,255,255,0.06)",
+  },
   shareChipText: { color: colors.textMuted, fontWeight: "700", fontSize: fontSize.xs },
   modalTitle: { color: colors.text, fontSize: fontSize.xl, fontWeight: "800" },
   modalMeta: { color: colors.accentWarm, marginTop: 6, textTransform: "capitalize", fontSize: fontSize.sm },
   modalBody: { color: colors.textMuted, lineHeight: 22, marginTop: 10, fontSize: fontSize.sm },
   modalSection: { color: colors.text, fontWeight: "800", marginTop: 18, fontSize: fontSize.base },
   fact: { color: colors.textMuted, marginTop: 6, lineHeight: 20, fontSize: fontSize.sm },
-  noteCard: { borderRadius: radius.md, padding: 10, backgroundColor: "rgba(255,255,255,0.04)", marginTop: 8, borderLeftWidth: 3, borderLeftColor: colors.accentWarm },
+  noteCard: {
+    borderRadius: radius.md,
+    padding: 10,
+    backgroundColor: "rgba(255,255,255,0.04)",
+    marginTop: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.accentWarm,
+  },
   noteAuthor: { color: colors.accentWarm, fontWeight: "700", fontSize: fontSize.xs },
   noteText: { color: colors.text, marginTop: 3, lineHeight: 19, fontSize: fontSize.sm },
-  input: { borderRadius: radius.md, backgroundColor: "rgba(255,255,255,0.03)", borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, paddingVertical: 11, color: colors.text, fontSize: fontSize.sm, marginTop: 8 },
+  input: {
+    borderRadius: radius.md,
+    backgroundColor: "rgba(255,255,255,0.03)",
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    color: colors.text,
+    fontSize: fontSize.sm,
+    marginTop: 8,
+  },
   btnRow: { flexDirection: "row", gap: 8, marginTop: 10 },
-  primaryBtn: { flex: 1, borderRadius: radius.md, paddingVertical: 12, backgroundColor: colors.accent, alignItems: "center" },
+  primaryBtn: {
+    flex: 1,
+    borderRadius: radius.md,
+    paddingVertical: 12,
+    backgroundColor: colors.accent,
+    alignItems: "center",
+  },
   primaryPressed: { backgroundColor: colors.pressedPrimary },
   primaryText: { color: colors.onAccent, fontWeight: "800", fontSize: fontSize.sm },
-  secondaryBtn: { flex: 1, borderRadius: radius.md, paddingVertical: 12, backgroundColor: colors.cardSoft, alignItems: "center" },
+  secondaryBtn: {
+    flex: 1,
+    borderRadius: radius.md,
+    paddingVertical: 12,
+    backgroundColor: colors.cardSoft,
+    alignItems: "center",
+  },
   secondaryPressed: { backgroundColor: colors.pressedSecondary },
   secondaryText: { color: colors.text, fontWeight: "700", fontSize: fontSize.sm },
 });

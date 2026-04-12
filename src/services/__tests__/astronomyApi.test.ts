@@ -8,8 +8,14 @@ jest.mock("@react-native-async-storage/async-storage", () => {
     __esModule: true,
     default: {
       getItem: jest.fn((key: string) => Promise.resolve(store[key] ?? null)),
-      setItem: jest.fn((key: string, value: string) => { store[key] = value; return Promise.resolve(); }),
-      removeItem: jest.fn((key: string) => { delete store[key]; return Promise.resolve(); }),
+      setItem: jest.fn((key: string, value: string) => {
+        store[key] = value;
+        return Promise.resolve();
+      }),
+      removeItem: jest.fn((key: string) => {
+        delete store[key];
+        return Promise.resolve();
+      }),
     },
   };
 });
@@ -18,11 +24,12 @@ jest.mock("@react-native-async-storage/async-storage", () => {
 const mockFetch = jest.fn(() =>
   Promise.resolve({
     ok: true,
-    json: () => Promise.resolve({
-      iss_position: { latitude: "51.5074", longitude: "-0.1278" },
-      timestamp: Math.floor(Date.now() / 1000),
-      message: "success",
-    }),
+    json: () =>
+      Promise.resolve({
+        iss_position: { latitude: "51.5074", longitude: "-0.1278" },
+        timestamp: Math.floor(Date.now() / 1000),
+        message: "success",
+      }),
   }),
 );
 (globalThis as any).fetch = mockFetch;
@@ -124,8 +131,14 @@ describe("astronomyApi", () => {
 
     it("returns known phase names", () => {
       const validPhases = [
-        "New Moon", "Waxing Crescent", "First Quarter", "Waxing Gibbous",
-        "Full Moon", "Waning Gibbous", "Last Quarter", "Waning Crescent",
+        "New Moon",
+        "Waxing Crescent",
+        "First Quarter",
+        "Waxing Gibbous",
+        "Full Moon",
+        "Waning Gibbous",
+        "Last Quarter",
+        "Waning Crescent",
       ];
       const phase = astronomyApi.getMoonPhase();
       expect(validPhases).toContain(phase.phase);
@@ -201,7 +214,9 @@ describe("astronomyApi", () => {
         expect(event.title).toBeTruthy();
         expect(event.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
         expect(event.description).toBeTruthy();
-        expect(["meteor_shower", "eclipse", "conjunction", "opposition", "equinox", "solstice"]).toContain(event.type);
+        expect(["meteor_shower", "eclipse", "conjunction", "opposition", "equinox", "solstice"]).toContain(
+          event.type,
+        );
         expect(["high", "medium", "low"]).toContain(event.importance);
       }
     });

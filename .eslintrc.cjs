@@ -1,0 +1,48 @@
+/** @type {import("eslint").Linter.Config} */
+module.exports = {
+  root: true,
+  parser: "@typescript-eslint/parser",
+  parserOptions: {
+    ecmaVersion: 2022,
+    sourceType: "module",
+    ecmaFeatures: { jsx: true },
+  },
+  env: {
+    es2022: true,
+    node: true,
+    jest: true,
+  },
+  plugins: ["@typescript-eslint", "react", "react-hooks"],
+  extends: [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
+  ],
+  settings: { react: { version: "detect" } },
+  rules: {
+    "react/react-in-jsx-scope": "off",
+    "react/prop-types": "off",
+    "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-require-imports": "off",
+    "@typescript-eslint/no-var-requires": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "react/no-unescaped-entities": "off",
+    "react/no-children-prop": "off",
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "error",
+    "no-console": ["error", { allow: ["warn", "error"] }],
+    "no-empty": ["error", { allowEmptyCatch: true }],
+  },
+  ignorePatterns: [
+    "node_modules/",
+    ".expo/",
+    "dist/",
+    "android/",
+    "ios/",
+    "*.config.js",
+    "babel.config.js",
+    "scripts/",
+  ],
+};

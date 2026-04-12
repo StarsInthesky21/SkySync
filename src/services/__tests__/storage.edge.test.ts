@@ -6,9 +6,18 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
   __esModule: true,
   default: {
     getItem: jest.fn((key: string) => Promise.resolve(store[key] ?? null)),
-    setItem: jest.fn((key: string, value: string) => { store[key] = value; return Promise.resolve(); }),
-    removeItem: jest.fn((key: string) => { delete store[key]; return Promise.resolve(); }),
-    multiRemove: jest.fn((keys: string[]) => { for (const k of keys) delete store[k]; return Promise.resolve(); }),
+    setItem: jest.fn((key: string, value: string) => {
+      store[key] = value;
+      return Promise.resolve();
+    }),
+    removeItem: jest.fn((key: string) => {
+      delete store[key];
+      return Promise.resolve();
+    }),
+    multiRemove: jest.fn((keys: string[]) => {
+      for (const k of keys) delete store[k];
+      return Promise.resolve();
+    }),
   },
 }));
 

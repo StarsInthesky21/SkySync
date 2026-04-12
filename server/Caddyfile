@@ -1,0 +1,11 @@
+# Reverse-proxy LiveKit's WebSocket/HTTP control plane over TLS.
+# Caddy auto-provisions Let's Encrypt certs for {$LIVEKIT_DOMAIN}.
+{$LIVEKIT_DOMAIN} {
+    reverse_proxy livekit:7880
+    encode gzip
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options nosniff
+        Referrer-Policy no-referrer
+    }
+}

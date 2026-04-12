@@ -1,15 +1,19 @@
 # SkySync - App Store Listing
 
 ## App Name
+
 SkySync - Social Stargazing
 
 ## Subtitle
+
 Explore the Night Sky Together
 
 ## Category
+
 Education / Reference
 
 ## Age Rating
+
 4+ (No objectionable content)
 
 ## Description
@@ -43,9 +47,11 @@ Your profile, badges, and progress are saved locally. Stargaze anywhere, anytime
 ---
 
 ## Keywords
+
 stargazing, astronomy, night sky, stars, planets, constellations, satellites, mythology, social, education, space, science, sky map
 
 ## What's New in Version 1.1.0
+
 - Added onboarding experience for new users
 - New search bar to find any celestial object instantly
 - Toast notifications for better feedback
@@ -58,6 +64,7 @@ stargazing, astronomy, night sky, stars, planets, constellations, satellites, my
 - Performance optimizations
 
 ## Screenshots Needed
+
 1. Hero sky view with constellation lines visible
 2. Object detail modal showing Jupiter with mythology
 3. Sky Room with chat and highlighted objects
@@ -68,4 +75,5 @@ stargazing, astronomy, night sky, stars, planets, constellations, satellites, my
 8. Draw constellations mode
 
 ## App Preview Video Script
+
 "Explore the night sky together with SkySync. Discover 100+ celestial objects, travel through time, create Sky Rooms with friends, and earn badges as you unlock the universe."

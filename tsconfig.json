@@ -2,14 +2,14 @@
   "extends": "./node_modules/expo/tsconfig.base.json",
   "compilerOptions": {
     "strict": true,
-    "types": [
-      "jest"
-    ],
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["jest", "node"],
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"]
     }
-  }
+  },
+  "exclude": ["node_modules", "functions", "android", "ios", "dist", ".expo"]
 }

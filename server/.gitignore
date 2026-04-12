@@ -1,0 +1,5 @@
+.env
+*.key
+*.pem
+caddy_data/
+caddy_config/

@@ -4,7 +4,9 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 let Speech: any = null;
-try { Speech = require("expo-speech"); } catch {}
+try {
+  Speech = require("expo-speech");
+} catch {}
 import { Share } from "react-native";
 import { useSkySync, useSelectedObjectDetails } from "@/providers/SkySyncProvider";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
@@ -36,37 +38,50 @@ export function useAppState() {
   // as it can hang on Android (getExpoPushTokenAsync with no project ID).
   useEffect(() => {
     analytics.init();
-    return () => { analytics.endSession(); };
+    return () => {
+      analytics.endSession();
+    };
   }, []);
 
   // Load streak on mount and schedule notifications
   useEffect(() => {
-    streakService.recordActivity(sky.challengeProgress.totalXpEarned).then((s) => {
-      setStreak(s);
-      // Schedule notifications in background — must never block UI
-      try {
-        notificationService.scheduleStreakReminder(s.currentStreak).catch(() => {});
-        notificationService.scheduleChallengeReminder(
-          sky.challengeProgress.completedIds.length,
-          sky.dailyChallenges.length,
-        ).catch(() => {});
-      } catch {
-        // Notification scheduling not available
-      }
-    }).catch(() => {});
-  }, [sky.challengeProgress.totalXpEarned, sky.challengeProgress.completedIds.length, sky.dailyChallenges.length]);
+    streakService
+      .recordActivity(sky.challengeProgress.totalXpEarned)
+      .then((s) => {
+        setStreak(s);
+        // Schedule notifications in background — must never block UI
+        try {
+          notificationService.scheduleStreakReminder(s.currentStreak).catch(() => {});
+          notificationService
+            .scheduleChallengeReminder(sky.challengeProgress.completedIds.length, sky.dailyChallenges.length)
+            .catch(() => {});
+        } catch {
+          // Notification scheduling not available
+        }
+      })
+      .catch(() => {});
+  }, [
+    sky.challengeProgress.totalXpEarned,
+    sky.challengeProgress.completedIds.length,
+    sky.dailyChallenges.length,
+  ]);
 
   // Hydrate settings
   useEffect(() => {
     let mounted = true;
-    storage.getSettings().then((settings) => {
-      if (!mounted) return;
-      setVoiceGuideEnabled(settings.voiceGuideEnabled);
-      settingsHydratedRef.current = true;
-    }).catch(() => {
-      settingsHydratedRef.current = true;
-    });
-    return () => { mounted = false; };
+    storage
+      .getSettings()
+      .then((settings) => {
+        if (!mounted) return;
+        setVoiceGuideEnabled(settings.voiceGuideEnabled);
+        settingsHydratedRef.current = true;
+      })
+      .catch(() => {
+        settingsHydratedRef.current = true;
+      });
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -95,7 +110,9 @@ export function useAppState() {
         toast.show(`${remaining} queued action${remaining > 1 ? "s" : ""} still pending`, "warning");
       }
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [network.isConnected, pendingQueueCount, sky.processQueuedAction, toast]);
 
   // Voice guide
@@ -108,8 +125,12 @@ export function useAppState() {
         { rate: 0.95, pitch: 1.0 },
       );
     } catch {}
-    return () => { try { Speech?.stop(); } catch {} };
-  }, [details.object?.id, voiceGuideEnabled]);
+    return () => {
+      try {
+        Speech?.stop();
+      } catch {}
+    };
+  }, [details.object, voiceGuideEnabled]);
 
   // Challenge auto-completion
   const challengeRef = useRef(sky.challengeProgress);
@@ -124,7 +145,7 @@ export function useAppState() {
         toast.show(`Challenge completed: ${c.title} (+${c.xpValue} XP)`, "success");
       }
     }
-  }, [details.object?.id, sky.completeChallenge, sky.dailyChallenges, toast]);
+  }, [details.object, sky, toast]);
 
   useEffect(() => {
     if (!details.story || !details.object) return;
@@ -135,31 +156,45 @@ export function useAppState() {
         toast.show(`Challenge completed: ${c.title} (+${c.xpValue} XP)`, "success");
       }
     }
-  }, [details.story?.id, details.object?.id, sky.completeChallenge, sky.dailyChallenges, toast]);
+  }, [details.story, details.object, sky, toast]);
 
   // Toast-based status messages
-  const setStatusMessage = useCallback((msg: string) => {
-    if (msg.toLowerCase().includes("error") || msg.toLowerCase().includes("invalid") || msg.toLowerCase().includes("failed")) {
-      toast.show(msg, "error");
-    } else if (msg.toLowerCase().includes("completed") || msg.toLowerCase().includes("saved") || msg.toLowerCase().includes("created")) {
-      toast.show(msg, "success");
-    } else if (msg.toLowerCase().includes("warning") || msg.toLowerCase().includes("offline")) {
-      toast.show(msg, "warning");
-    } else {
-      toast.show(msg, "info");
-    }
-  }, [toast]);
+  const setStatusMessage = useCallback(
+    (msg: string) => {
+      if (
+        msg.toLowerCase().includes("error") ||
+        msg.toLowerCase().includes("invalid") ||
+        msg.toLowerCase().includes("failed")
+      ) {
+        toast.show(msg, "error");
+      } else if (
+        msg.toLowerCase().includes("completed") ||
+        msg.toLowerCase().includes("saved") ||
+        msg.toLowerCase().includes("created")
+      ) {
+        toast.show(msg, "success");
+      } else if (msg.toLowerCase().includes("warning") || msg.toLowerCase().includes("offline")) {
+        toast.show(msg, "warning");
+      } else {
+        toast.show(msg, "info");
+      }
+    },
+    [toast],
+  );
 
-  const handleSelectObject = useCallback((objectId: string) => {
-    if (drawModeEnabled) {
-      sky.addStarToDraft(objectId);
-      toast.show("Added star to draft pattern", "info");
-      return;
-    }
-    sky.selectObject(objectId);
-    const obj = sky.objects.find((o) => o.id === objectId);
-    if (obj) analytics.objectDiscovered(objectId, obj.kind, obj.name);
-  }, [drawModeEnabled, sky.addStarToDraft, sky.selectObject, toast, sky.objects]);
+  const handleSelectObject = useCallback(
+    (objectId: string) => {
+      if (drawModeEnabled) {
+        sky.addStarToDraft(objectId);
+        toast.show("Added star to draft pattern", "info");
+        return;
+      }
+      sky.selectObject(objectId);
+      const obj = sky.objects.find((o) => o.id === objectId);
+      if (obj) analytics.objectDiscovered(objectId, obj.kind, obj.name);
+    },
+    [drawModeEnabled, sky, toast],
+  );
 
   const handleAddNote = useCallback(async () => {
     if (!noteInput.trim()) return;
@@ -184,41 +219,47 @@ export function useAppState() {
     }
     setNoteInput("");
     toast.show("Note saved", "success");
-  }, [noteInput, sky.currentRoom, details.object, network.isConnected, sky.addNoteToSelectedObject, toast]);
+  }, [noteInput, sky, details.object, network.isConnected, toast]);
 
-  const handleSendRoom = useCallback(async (text: string) => {
-    if (!sky.currentRoom) {
-      toast.show("Join a room to chat", "warning");
-      return;
-    }
-    if (!network.isConnected) {
-      await offlineQueue.enqueue({ type: "room_message", payload: { roomId: sky.currentRoom.id, text } });
-      toast.show("Message queued (offline)", "warning");
-      setPendingQueueCount((c) => c + 1);
-      return;
-    }
-    const sent = await sky.sendRoomMessage(text);
-    if (!sent) {
-      toast.show("Couldn't send room message", "error");
-      return;
-    }
-    analytics.messageSent("room");
-  }, [sky.currentRoom, sky.sendRoomMessage, network.isConnected, toast]);
+  const handleSendRoom = useCallback(
+    async (text: string) => {
+      if (!sky.currentRoom) {
+        toast.show("Join a room to chat", "warning");
+        return;
+      }
+      if (!network.isConnected) {
+        await offlineQueue.enqueue({ type: "room_message", payload: { roomId: sky.currentRoom.id, text } });
+        toast.show("Message queued (offline)", "warning");
+        setPendingQueueCount((c) => c + 1);
+        return;
+      }
+      const sent = await sky.sendRoomMessage(text);
+      if (!sent) {
+        toast.show("Couldn't send room message", "error");
+        return;
+      }
+      analytics.messageSent("room");
+    },
+    [sky, network.isConnected, toast],
+  );
 
-  const handleSendGlobal = useCallback(async (text: string) => {
-    if (!network.isConnected) {
-      await offlineQueue.enqueue({ type: "global_message", payload: { text } });
-      toast.show("Message queued (offline)", "warning");
-      setPendingQueueCount((c) => c + 1);
-      return;
-    }
-    const sent = await sky.sendGlobalMessage(text);
-    if (!sent) {
-      toast.show("Couldn't send global message", "error");
-      return;
-    }
-    analytics.messageSent("global");
-  }, [sky.sendGlobalMessage, network.isConnected, toast]);
+  const handleSendGlobal = useCallback(
+    async (text: string) => {
+      if (!network.isConnected) {
+        await offlineQueue.enqueue({ type: "global_message", payload: { text } });
+        toast.show("Message queued (offline)", "warning");
+        setPendingQueueCount((c) => c + 1);
+        return;
+      }
+      const sent = await sky.sendGlobalMessage(text);
+      if (!sent) {
+        toast.show("Couldn't send global message", "error");
+        return;
+      }
+      analytics.messageSent("global");
+    },
+    [sky, network.isConnected, toast],
+  );
 
   const handleShare = useCallback(async () => {
     try {
@@ -231,7 +272,7 @@ export function useAppState() {
     } catch {
       // User cancelled
     }
-  }, [details.object, sky.currentRoom]);
+  }, [details.object, sky]);
 
   const handleToggleHighlight = useCallback(async () => {
     if (!details.object) return;
@@ -252,7 +293,7 @@ export function useAppState() {
     if (!updated) {
       toast.show("Couldn't update highlight", "error");
     }
-  }, [details.object, sky.currentRoom, network.isConnected, sky.toggleHighlight, toast]);
+  }, [details.object, sky, network.isConnected, toast]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);

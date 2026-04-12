@@ -1,0 +1,8 @@
+node_modules/
+.expo/
+dist/
+android/
+ios/
+coverage/
+package-lock.json
+*.snap

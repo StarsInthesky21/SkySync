@@ -15,7 +15,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 
 const NOTIF_PREFS_KEY = "@skysync/notification_prefs";
-const SCHEDULED_KEY = "@skysync/scheduled_notifications";
 const PUSH_TOKEN_KEY = "@skysync/push_token";
 
 // ------------------------------------------------------------------
@@ -145,13 +144,6 @@ function getToday(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function getTomorrowEvening(): Date {
-  const d = new Date();
-  d.setDate(d.getDate() + 1);
-  d.setHours(20, 0, 0, 0); // 8 PM
-  return d;
-}
-
 function getTodayEvening(): Date {
   const d = new Date();
   d.setHours(20, 30, 0, 0); // 8:30 PM
@@ -256,7 +248,10 @@ function handleNotificationReceived(notification: any): void {
   const title = notification?.request?.content?.title;
   const body = notification?.request?.content?.body;
 
-  console.log("[SkySync Notifications] Foreground notification:", { title, body, data });
+  if (__DEV__) {
+    // eslint-disable-next-line no-console
+    console.log("[SkySync Notifications] Foreground notification:", { title, body, data });
+  }
 
   // Type-specific handling
   if (data?.type === "streak") {
@@ -342,7 +337,7 @@ export const notificationService = {
   async savePrefs(prefs: NotificationPrefs): Promise<void> {
     await AsyncStorage.setItem(NOTIF_PREFS_KEY, JSON.stringify(prefs));
     // Reschedule based on new prefs
-    await this.rescheduleAll(prefs);
+    await this.rescheduleAll();
   },
 
   /**
@@ -354,9 +349,18 @@ export const notificationService = {
     if (!prefs.streakReminders) return;
 
     const messages = [
-      { title: "Keep your streak alive! \u{1F525}", body: `You're on a ${currentStreak}-day streak. Open SkySync to keep it going!` },
-      { title: "The stars are calling \u2728", body: `${currentStreak} days and counting! Don't break your streak tonight.` },
-      { title: "Don't forget to stargaze! \u{1F30C}", body: `Your ${currentStreak}-day streak is at stake. Explore the sky for just a minute.` },
+      {
+        title: "Keep your streak alive! \u{1F525}",
+        body: `You're on a ${currentStreak}-day streak. Open SkySync to keep it going!`,
+      },
+      {
+        title: "The stars are calling \u2728",
+        body: `${currentStreak} days and counting! Don't break your streak tonight.`,
+      },
+      {
+        title: "Don't forget to stargaze! \u{1F30C}",
+        body: `Your ${currentStreak}-day streak is at stake. Explore the sky for just a minute.`,
+      },
     ];
     const msg = messages[currentStreak % messages.length];
     await scheduleLocalNotification(msg.title, msg.body, getTodayEvening(), { type: "streak" });
@@ -406,7 +410,7 @@ export const notificationService = {
   /**
    * Cancel and reschedule all notifications based on current prefs.
    */
-  async rescheduleAll(prefs?: NotificationPrefs): Promise<void> {
+  async rescheduleAll(): Promise<void> {
     await cancelAllScheduled();
     // Notifications will be rescheduled on next app open based on current state
   },

@@ -15,11 +15,11 @@ export class SectionErrorBoundary extends Component<Props, State> {
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error) {
+  override componentDidCatch(error: Error) {
     console.warn(`[SkySync] Error in ${this.props.section}:`, error.message);
   }
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       return (
         <View style={styles.container} accessibilityRole="alert">

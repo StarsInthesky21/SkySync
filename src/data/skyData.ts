@@ -1,4 +1,12 @@
-import { Badge, Constellation, DailyChallenge, GuidedTarget, MythStory, SkyObject, Viewpoint } from "@/types/sky";
+import {
+  Badge,
+  Constellation,
+  DailyChallenge,
+  GuidedTarget,
+  MythStory,
+  SkyObject,
+  Viewpoint,
+} from "@/types/sky";
 import { ChatMessage, SkyRoom } from "@/types/rooms";
 import { hygStars } from "./hygCatalog";
 
@@ -9,7 +17,8 @@ const featuredObjects: SkyObject[] = [
     kind: "star",
     description: "The brightest star in Earth's night sky and a classic anchor point for winter stargazing.",
     distanceFromEarth: "8.6 light-years",
-    mythologyStory: "In many Mediterranean traditions, Sirius was tied to heat, harvest cycles, and the loyal hunting dog of Orion.",
+    mythologyStory:
+      "In many Mediterranean traditions, Sirius was tied to heat, harvest cycles, and the loyal hunting dog of Orion.",
     scientificFacts: [
       "A binary star system with a white dwarf companion called Sirius B.",
       "Its main visible star is about twice the mass of the Sun.",
@@ -28,9 +37,11 @@ const featuredObjects: SkyObject[] = [
     id: "betelgeuse",
     name: "Betelgeuse",
     kind: "star",
-    description: "A red supergiant marking Orion's shoulder, one of the largest stars visible to the naked eye.",
+    description:
+      "A red supergiant marking Orion's shoulder, one of the largest stars visible to the naked eye.",
     distanceFromEarth: "548 light-years",
-    mythologyStory: "Betelgeuse belongs to Orion the hunter, a giant figure found across myths about bravery, pride, and pursuit.",
+    mythologyStory:
+      "Betelgeuse belongs to Orion the hunter, a giant figure found across myths about bravery, pride, and pursuit.",
     scientificFacts: [
       "A red supergiant near the end of its life cycle, expected to supernova within 100,000 years.",
       "Its brightness changes over time in semi-regular pulsation cycles.",
@@ -89,7 +100,8 @@ const featuredObjects: SkyObject[] = [
     kind: "star",
     description: "The westernmost star of Orion's Belt, a multiple star system.",
     distanceFromEarth: "915 light-years",
-    mythologyStory: "Mintaka helps form the Belt of Orion, one of the most recognized asterisms in the night sky.",
+    mythologyStory:
+      "Mintaka helps form the Belt of Orion, one of the most recognized asterisms in the night sky.",
     scientificFacts: [
       "Actually a complex multiple star system with at least five component stars.",
       "Lies almost exactly on the celestial equator.",
@@ -143,7 +155,8 @@ const featuredObjects: SkyObject[] = [
     kind: "star",
     description: "The fiery orange eye of Taurus the Bull.",
     distanceFromEarth: "65 light-years",
-    mythologyStory: "Aldebaran has been linked to a celestial eye watching over Taurus the bull across many ancient cultures.",
+    mythologyStory:
+      "Aldebaran has been linked to a celestial eye watching over Taurus the bull across many ancient cultures.",
     scientificFacts: [
       "An orange giant star about 44 times the diameter of the Sun.",
       "Appears near the Hyades cluster in Taurus but is not gravitationally bound to it.",
@@ -162,7 +175,8 @@ const featuredObjects: SkyObject[] = [
     kind: "star",
     description: "The North Star, the closest bright star to the north celestial pole.",
     distanceFromEarth: "433 light-years",
-    mythologyStory: "Polaris became a universal symbol of guidance, navigation, and constancy in many cultures worldwide.",
+    mythologyStory:
+      "Polaris became a universal symbol of guidance, navigation, and constancy in many cultures worldwide.",
     scientificFacts: [
       "A triple star system with a yellow supergiant primary.",
       "Its position within 1 degree of the celestial pole makes it invaluable for navigation.",
@@ -181,7 +195,8 @@ const featuredObjects: SkyObject[] = [
     kind: "star",
     description: "One of the pointer stars of the Big Dipper in Ursa Major.",
     distanceFromEarth: "123 light-years",
-    mythologyStory: "Ursa Major is often linked to Callisto, a nymph transformed into a bear in Greek mythology.",
+    mythologyStory:
+      "Ursa Major is often linked to Callisto, a nymph transformed into a bear in Greek mythology.",
     scientificFacts: [
       "An orange giant with a fainter companion star.",
       "Part of the Big Dipper pattern, pointing toward Polaris.",
@@ -217,7 +232,8 @@ const featuredObjects: SkyObject[] = [
     kind: "star",
     description: "The brightest star in Lyra and one of the most studied stars in the sky.",
     distanceFromEarth: "25 light-years",
-    mythologyStory: "In Japanese and Chinese legend, Vega represents the Weaver Girl, separated from her lover by the Milky Way.",
+    mythologyStory:
+      "In Japanese and Chinese legend, Vega represents the Weaver Girl, separated from her lover by the Milky Way.",
     scientificFacts: [
       "Once used as the reference standard for stellar brightness (magnitude 0).",
       "Surrounded by a circumstellar disk of dust, hinting at a possible planetary system.",
@@ -237,7 +253,8 @@ const featuredObjects: SkyObject[] = [
     kind: "star",
     description: "The brightest star in the northern celestial hemisphere.",
     distanceFromEarth: "36.7 light-years",
-    mythologyStory: "Its name means 'Guardian of the Bear' in Greek, watching over the Great Bear constellation.",
+    mythologyStory:
+      "Its name means 'Guardian of the Bear' in Greek, watching over the Great Bear constellation.",
     scientificFacts: [
       "An orange giant about 25 times the diameter of the Sun.",
       "Moving unusually fast relative to other nearby stars, suggesting it originated in another part of the galaxy.",
@@ -290,7 +307,8 @@ const featuredObjects: SkyObject[] = [
     kind: "star",
     description: "The heart of the Scorpion, a red supergiant rival to Mars in color.",
     distanceFromEarth: "604 light-years",
-    mythologyStory: "Named 'rival of Mars' (anti-Ares) by the Greeks for its reddish color that mimics the planet.",
+    mythologyStory:
+      "Named 'rival of Mars' (anti-Ares) by the Greeks for its reddish color that mimics the planet.",
     scientificFacts: [
       "A red supergiant over 700 times the diameter of the Sun.",
       "If placed at the center of our solar system, its surface would extend between Mars and Jupiter.",
@@ -365,7 +383,8 @@ const featuredObjects: SkyObject[] = [
     id: "jupiter",
     name: "Jupiter",
     kind: "planet",
-    description: "The king of planets, a massive gas giant visible as one of the brightest objects in the sky.",
+    description:
+      "The king of planets, a massive gas giant visible as one of the brightest objects in the sky.",
     distanceFromEarth: "628 million km",
     mythologyStory: "Named after the king of Roman gods, reflecting its dominance in size and brightness.",
     scientificFacts: [
@@ -387,7 +406,8 @@ const featuredObjects: SkyObject[] = [
     kind: "planet",
     description: "A pale golden giant planet with stunning ring system visible through small telescopes.",
     distanceFromEarth: "1.3 billion km",
-    mythologyStory: "Saturn was linked to Kronos, the Titan of time, harvest, and age in Greek-Roman mythology.",
+    mythologyStory:
+      "Saturn was linked to Kronos, the Titan of time, harvest, and age in Greek-Roman mythology.",
     scientificFacts: [
       "Its rings are made mostly of ice particles and rocky debris, spanning 282,000 km across.",
       "It has 146 known moons, including Titan which has a thick nitrogen atmosphere and methane lakes.",
@@ -425,7 +445,8 @@ const featuredObjects: SkyObject[] = [
     id: "neptune",
     name: "Neptune",
     kind: "planet",
-    description: "The distant blue ice giant, invisible to the naked eye but fascinating through a telescope.",
+    description:
+      "The distant blue ice giant, invisible to the naked eye but fascinating through a telescope.",
     distanceFromEarth: "4.3 billion km",
     mythologyStory: "Named for the Roman god of the sea due to its deep blue color.",
     scientificFacts: [
@@ -447,7 +468,8 @@ const featuredObjects: SkyObject[] = [
     kind: "satellite",
     description: "The International Space Station, visible as a fast-moving bright point crossing the sky.",
     distanceFromEarth: "408 km",
-    mythologyStory: "A modern symbol of international scientific collaboration, not an ancient myth but a living legend.",
+    mythologyStory:
+      "A modern symbol of international scientific collaboration, not an ancient myth but a living legend.",
     scientificFacts: [
       "Circles Earth about every 90 minutes at 28,000 km/h.",
       "One of the brightest artificial objects in the sky, outshining most stars.",
@@ -479,7 +501,8 @@ const featuredObjects: SkyObject[] = [
     magnitude: 1.2,
     motionFactor: 2.1,
     previewTitle: "Space Telescope",
-    previewDescription: "A cylindrical observatory with gleaming solar panels against the blackness of space.",
+    previewDescription:
+      "A cylindrical observatory with gleaming solar panels against the blackness of space.",
   },
   {
     id: "starlink-train",
@@ -487,7 +510,8 @@ const featuredObjects: SkyObject[] = [
     kind: "satellite",
     description: "One of SpaceX's Starlink communication satellites forming a broadband constellation.",
     distanceFromEarth: "550 km",
-    mythologyStory: "Part of the largest artificial constellation ever created, a 21st century addition to the night sky.",
+    mythologyStory:
+      "Part of the largest artificial constellation ever created, a 21st century addition to the night sky.",
     scientificFacts: [
       "Part of a mega-constellation of thousands of satellites providing global internet coverage.",
       "Visible as a bright train of lights shortly after launch before spreading apart.",
@@ -504,7 +528,8 @@ const featuredObjects: SkyObject[] = [
     kind: "meteor",
     description: "The radiant point of the Perseid meteor shower, active each August.",
     distanceFromEarth: "Upper atmosphere",
-    mythologyStory: "Meteor showers often inspired stories of omens, divine sparks, and falling stars across all cultures.",
+    mythologyStory:
+      "Meteor showers often inspired stories of omens, divine sparks, and falling stars across all cultures.",
     scientificFacts: [
       "The Perseids originate from debris of comet Swift-Tuttle, which orbits the Sun every 133 years.",
       "Radiants are perspective effects, not actual objects. Meteors appear to diverge from this point.",
@@ -522,7 +547,8 @@ const featuredObjects: SkyObject[] = [
     kind: "meteor",
     description: "The radiant point of the Geminid meteor shower, one of the best annual showers (December).",
     distanceFromEarth: "Upper atmosphere",
-    mythologyStory: "The Geminids appear to stream from Castor in Gemini, once seen as fiery tears from the heavens.",
+    mythologyStory:
+      "The Geminids appear to stream from Castor in Gemini, once seen as fiery tears from the heavens.",
     scientificFacts: [
       "Unusual among major showers because they originate from an asteroid (3200 Phaethon), not a comet.",
       "Can produce up to 150 multicolored meteors per hour at peak.",
@@ -537,9 +563,7 @@ const featuredObjects: SkyObject[] = [
 
 // Deduplicate: skip hygStars entries that share a name with featuredObjects
 const featuredNames = new Set(featuredObjects.map((o) => o.name.toLowerCase()));
-const deduplicatedHygStars = hygStars.filter(
-  (star) => !featuredNames.has(star.name.toLowerCase()),
-);
+const deduplicatedHygStars = hygStars.filter((star) => !featuredNames.has(star.name.toLowerCase()));
 
 export const skyObjects: SkyObject[] = [...featuredObjects, ...deduplicatedHygStars];
 

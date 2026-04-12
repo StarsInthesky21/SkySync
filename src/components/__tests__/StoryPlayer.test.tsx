@@ -1,4 +1,4 @@
-import { render, fireEvent, act } from "@testing-library/react-native";
+import { render, fireEvent } from "@testing-library/react-native";
 import { StoryPlayer } from "../sky/StoryPlayer";
 import { MythStory } from "@/types/sky";
 
@@ -6,16 +6,16 @@ const mockStory: MythStory = {
   id: "test-story",
   title: "Test Story",
   constellationId: "test-constellation",
-  frames: [
-    "Frame one content.",
-    "Frame two content.",
-    "Frame three content.",
-  ],
+  frames: ["Frame one content.", "Frame two content.", "Frame three content."],
 };
 
 describe("StoryPlayer", () => {
-  beforeEach(() => { jest.useFakeTimers(); });
-  afterEach(() => { jest.useRealTimers(); });
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+  });
 
   it("renders story title", () => {
     const { getByText } = render(<StoryPlayer story={mockStory} />);

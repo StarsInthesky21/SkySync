@@ -1,0 +1,48 @@
+services:
+  # LiveKit SFU — handles WebRTC fan-out for Sky Rooms.
+  # Exposes 7880 (HTTP/WebSocket control), 7881 (TCP WebRTC), 7882/udp (WebRTC data),
+  # 50000-60000/udp (RTP/RTCP media fallback).
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: skysync-livekit
+    restart: unless-stopped
+    command: --config /etc/livekit.yaml --dev=false
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "7882:7882/udp"
+      - "50000-60000:50000-60000/udp"
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+    environment:
+      LIVEKIT_KEYS: "${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}"
+
+  # Redis is required for LiveKit multi-node; single-node deployments can omit this.
+  redis:
+    image: redis:7-alpine
+    container_name: skysync-redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+
+  # Caddy reverse proxy — terminates TLS with Let's Encrypt and proxies wss:// to LiveKit.
+  # Set LIVEKIT_DOMAIN=livekit.yourdomain.com in .env before `docker compose up`.
+  caddy:
+    image: caddy:2-alpine
+    container_name: skysync-caddy
+    restart: unless-stopped
+    depends_on:
+      - livekit
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      LIVEKIT_DOMAIN: "${LIVEKIT_DOMAIN}"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

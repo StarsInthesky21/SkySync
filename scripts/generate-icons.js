@@ -21,7 +21,7 @@ function makeCrcTable() {
   for (let n = 0; n < 256; n += 1) {
     let c = n;
     for (let k = 0; k < 8; k += 1) {
-      c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
+      c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
     }
     table[n] = c >>> 0;
   }
@@ -136,7 +136,17 @@ function drawLetterS(data, width, height, size) {
   drawRect(data, width, height, left, bottom, barWidth, stroke, GLOW, 0.95);
 
   drawRect(data, width, height, left, top, stroke, center - top, GLOW, 0.95);
-  drawRect(data, width, height, left + barWidth - stroke, center, stroke, bottom - center + stroke, GLOW, 0.95);
+  drawRect(
+    data,
+    width,
+    height,
+    left + barWidth - stroke,
+    center,
+    stroke,
+    bottom - center + stroke,
+    GLOW,
+    0.95,
+  );
 }
 
 function createPixelBuffer(size) {

@@ -1,0 +1,15 @@
+appId: app.skysync
+name: Enter and exit AR
+---
+- launchApp
+- tapOn:
+    text: "AR"
+- assertVisible:
+    text: "TRACKING"
+    optional: true
+- assertVisible:
+    text: "pitch"
+- tapOn:
+    id: "Close AR"
+- assertVisible:
+    text: "SKYSYNC"

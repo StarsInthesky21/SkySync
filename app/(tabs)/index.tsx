@@ -1,15 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Keyboard,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import { SectionErrorBoundary } from "@/components/SectionErrorBoundary";
 import { SkyView } from "@/components/sky/SkyView";
 import { SearchBar } from "@/components/SearchBar";
+import { ObservingCard } from "@/components/sections/ObservingCard";
 import { useAppState } from "@/hooks/useAppState";
 import { useDeviceSensors } from "@/hooks/useDeviceSensors";
 import { colors, fontSize, radius, spacing } from "@/theme/colors";
@@ -52,11 +48,7 @@ function SelectedObjectPanel({
 }) {
   if (!object) return null;
 
-  const meta = [
-    object.kind,
-    constellationName,
-    object.distanceFromEarth,
-  ].filter(Boolean).join(" | ");
+  const meta = [object.kind, constellationName, object.distanceFromEarth].filter(Boolean).join(" | ");
   const fact = object.scientificFacts[0];
 
   return (
@@ -66,8 +58,12 @@ function SelectedObjectPanel({
         <View style={styles.panelTitleRow}>
           <View style={[styles.objectSwatch, { backgroundColor: object.color }]} />
           <View style={styles.panelTitleCopy}>
-            <Text style={styles.panelTitle} numberOfLines={1}>{object.name}</Text>
-            <Text style={styles.panelMeta} numberOfLines={1}>{meta}</Text>
+            <Text style={styles.panelTitle} numberOfLines={1}>
+              {object.name}
+            </Text>
+            <Text style={styles.panelMeta} numberOfLines={1}>
+              {meta}
+            </Text>
           </View>
         </View>
         <Pressable
@@ -80,8 +76,14 @@ function SelectedObjectPanel({
         </Pressable>
       </View>
 
-      <Text style={styles.panelBody} numberOfLines={3}>{object.description}</Text>
-      {fact && <Text style={styles.panelFact} numberOfLines={2}>{fact}</Text>}
+      <Text style={styles.panelBody} numberOfLines={3}>
+        {object.description}
+      </Text>
+      {fact && (
+        <Text style={styles.panelFact} numberOfLines={2}>
+          {fact}
+        </Text>
+      )}
 
       <View style={styles.panelActions}>
         <Pressable
@@ -102,7 +104,8 @@ function SelectedObjectPanel({
 
 export default function SkyScreen() {
   const app = useAppState();
-  const { orientation, arActive, toggleAr } = useDeviceSensors();
+  const { orientation, arActive } = useDeviceSensors();
+  const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
 
   const formatDate = (d: Date) => d.toISOString().slice(0, 10);
@@ -124,18 +127,22 @@ export default function SkyScreen() {
   useEffect(() => {
     if (!arActive || !orientation.available) return;
     app.setRotation(orientation.heading);
-  }, [app.setRotation, arActive, orientation.available, orientation.heading]);
+  }, [app, arActive, orientation.available, orientation.heading]);
 
-  const handleSearchSelect = useCallback((objectId: string) => {
-    app.focusObject(objectId);
-    setSearchOpen(false);
-    Keyboard.dismiss();
-    app.toast.show(`Focused on ${app.objects.find((o) => o.id === objectId)?.name ?? objectId}`, "info");
-  }, [app.focusObject, app.objects, app.toast]);
+  const handleSearchSelect = useCallback(
+    (objectId: string) => {
+      app.focusObject(objectId);
+      setSearchOpen(false);
+      Keyboard.dismiss();
+      app.toast.show(`Focused on ${app.objects.find((o) => o.id === objectId)?.name ?? objectId}`, "info");
+    },
+    [app],
+  );
 
   const cycleViewpoint = useCallback(() => {
     const index = app.availableViewpoints.findIndex((item) => item.id === app.viewpoint);
-    const next = app.availableViewpoints[(index + 1 + app.availableViewpoints.length) % app.availableViewpoints.length];
+    const next =
+      app.availableViewpoints[(index + 1 + app.availableViewpoints.length) % app.availableViewpoints.length];
     app.setViewpoint(next.id as Viewpoint);
     app.toast.show(`Viewing from ${next.label}`, "info");
   }, [app]);
@@ -181,22 +188,26 @@ export default function SkyScreen() {
           <View style={styles.statusGlass}>
             <Text style={styles.brand}>SKYSYNC</Text>
             <Text style={styles.statusText} numberOfLines={1}>
-              {activeViewpoint.toUpperCase()} | {app.liveMode ? "LIVE" : formatTime(app.selectedDate)} | {app.zoom.toFixed(1)}x
+              {activeViewpoint.toUpperCase()} | {app.liveMode ? "LIVE" : formatTime(app.selectedDate)} |{" "}
+              {app.zoom.toFixed(1)}x
             </Text>
           </View>
 
           <View style={styles.topActions}>
             <IconButton
               label="Search"
-              onPress={() => setSearchOpen((open) => !open)}
-              active={searchOpen}
-              accessibilityLabel={searchOpen ? "Hide search" : "Search celestial objects"}
+              onPress={() => router.push("/search")}
+              accessibilityLabel="Open global search"
             />
             <IconButton
               label="AR"
-              onPress={toggleAr}
-              active={arActive}
-              accessibilityLabel={arActive ? "Disable compass tracking" : "Enable compass tracking"}
+              onPress={() => router.push("/ar")}
+              accessibilityLabel="Open augmented reality view"
+            />
+            <IconButton
+              label="Alerts"
+              onPress={() => router.push("/notifications")}
+              accessibilityLabel="Open notifications"
             />
           </View>
         </View>
@@ -216,16 +227,8 @@ export default function SkyScreen() {
         )}
 
         <View style={styles.sideControls} pointerEvents="box-none">
-          <IconButton
-            label="+"
-            onPress={() => app.setZoom(app.zoom + 0.16)}
-            accessibilityLabel="Zoom in"
-          />
-          <IconButton
-            label="-"
-            onPress={() => app.setZoom(app.zoom - 0.16)}
-            accessibilityLabel="Zoom out"
-          />
+          <IconButton label="+" onPress={() => app.setZoom(app.zoom + 0.16)} accessibilityLabel="Zoom in" />
+          <IconButton label="-" onPress={() => app.setZoom(app.zoom - 0.16)} accessibilityLabel="Zoom out" />
           <IconButton
             label={app.viewpoint.slice(0, 1).toUpperCase()}
             onPress={cycleViewpoint}
@@ -246,6 +249,14 @@ export default function SkyScreen() {
             </Text>
           </View>
         )}
+
+        <View style={styles.observingGlass} pointerEvents="box-none">
+          <ObservingCard
+            date={app.selectedDate}
+            latitudeDeg={app.observerLocation?.latitude ?? 37.7}
+            longitudeDeg={app.observerLocation?.longitude ?? -122.4}
+          />
+        </View>
 
         <SelectedObjectPanel
           object={app.object}
@@ -367,6 +378,12 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     paddingHorizontal: 10,
     paddingVertical: 6,
+  },
+  observingGlass: {
+    position: "absolute",
+    left: spacing.md,
+    right: spacing.md,
+    bottom: 140,
   },
   compassText: {
     color: colors.textMuted,

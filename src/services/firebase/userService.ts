@@ -1,14 +1,7 @@
-import {
-  doc,
-  getDoc,
-  setDoc,
-  onSnapshot,
-  serverTimestamp,
-  Timestamp,
-} from "firebase/firestore";
+import { doc, getDoc, setDoc, onSnapshot, serverTimestamp } from "firebase/firestore";
 import { db as _db } from "./config";
 const db = _db!; // Non-null: this module is only loaded when Firebase is properly configured
-import { UserProfile, BadgeProgress, ChallengeProgress, AppSettings } from "../storage";
+import { UserProfile, ChallengeProgress, AppSettings } from "../storage";
 
 function userDocRef(userId: string) {
   return doc(db, "users", userId);
@@ -36,10 +29,14 @@ export const userService = {
 
   async saveUserProfile(userId: string, profile: UserProfile): Promise<void> {
     try {
-      await setDoc(userDocRef(userId), {
-        ...profile,
-        lastModified: serverTimestamp(),
-      }, { merge: true });
+      await setDoc(
+        userDocRef(userId),
+        {
+          ...profile,
+          lastModified: serverTimestamp(),
+        },
+        { merge: true },
+      );
     } catch (error) {
       console.warn("[SkySync Firebase] Failed to save user profile:", error);
     }
@@ -84,10 +81,14 @@ export const userService = {
   },
 
   subscribeUserProfile(userId: string, listener: (profile: UserProfile | null) => void): () => void {
-    return onSnapshot(userDocRef(userId), (snap) => {
-      listener(snap.exists() ? (snap.data() as UserProfile) : null);
-    }, (error) => {
-      console.warn("[SkySync Firebase] Profile listener error:", error);
-    });
+    return onSnapshot(
+      userDocRef(userId),
+      (snap) => {
+        listener(snap.exists() ? (snap.data() as UserProfile) : null);
+      },
+      (error) => {
+        console.warn("[SkySync Firebase] Profile listener error:", error);
+      },
+    );
   },
 };

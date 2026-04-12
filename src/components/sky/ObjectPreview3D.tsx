@@ -27,13 +27,26 @@ export function ObjectPreview3D({
     );
     const pulseAnim = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulse, { toValue: 1.08, duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 1, duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(pulse, {
+          toValue: 1.08,
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulse, {
+          toValue: 1,
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
       ]),
     );
     spinAnim.start();
     pulseAnim.start();
-    return () => { spinAnim.stop(); pulseAnim.stop(); };
+    return () => {
+      spinAnim.stop();
+      pulseAnim.stop();
+    };
   }, [spin, pulse]);
 
   const rotateY = spin.interpolate({
@@ -45,7 +58,11 @@ export function ObjectPreview3D({
   const orbSize = kind === "satellite" ? 48 : kind === "meteor" ? 40 : 72;
 
   return (
-    <View style={styles.card} accessibilityRole="image" accessibilityLabel={`3D preview of ${title ?? "celestial object"}. ${description ?? ""}`}>
+    <View
+      style={styles.card}
+      accessibilityRole="image"
+      accessibilityLabel={`3D preview of ${title ?? "celestial object"}. ${description ?? ""}`}
+    >
       <Animated.View style={[styles.previewWrap, { transform: [{ scale: pulse }] }]}>
         <Animated.View style={{ transform: [{ rotateY }] }}>
           <View style={[styles.orb, { backgroundColor: color, width: orbSize, height: orbSize }]}>
@@ -55,7 +72,9 @@ export function ObjectPreview3D({
         {showRing && <View style={styles.ring} />}
       </Animated.View>
       <Text style={styles.title}>{title ?? "Object Preview"}</Text>
-      <Text style={styles.description}>{description ?? "A simplified preview of the selected celestial object."}</Text>
+      <Text style={styles.description}>
+        {description ?? "A simplified preview of the selected celestial object."}
+      </Text>
     </View>
   );
 }

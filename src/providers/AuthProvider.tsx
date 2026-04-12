@@ -69,7 +69,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     initAuth();
-    return () => { clearTimeout(timeout); unsubscribe?.(); };
+    return () => {
+      clearTimeout(timeout);
+      unsubscribe?.();
+    };
   }, []);
 
   const value: AuthContextValue = {

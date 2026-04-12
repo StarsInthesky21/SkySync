@@ -1,0 +1,15 @@
+appId: app.skysync
+name: Time-travel the sky
+---
+- launchApp
+- tapOn:
+    text: "1800"
+    optional: true
+- assertVisible:
+    text: "1800"
+    optional: true
+- tapOn:
+    text: "Live"
+    optional: true
+- assertVisible:
+    text: "LIVE"

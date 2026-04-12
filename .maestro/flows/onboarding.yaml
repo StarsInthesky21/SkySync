@@ -1,0 +1,18 @@
+appId: app.skysync
+name: First launch onboarding
+---
+- launchApp:
+    clearState: true
+- assertVisible: "SkySync"
+- tapOn:
+    text: "Next"
+    optional: true
+    retryTapIfNoChange: true
+- tapOn:
+    text: "Next"
+    optional: true
+- tapOn:
+    text: "Get started"
+    optional: true
+- assertVisible:
+    text: "SKYSYNC"

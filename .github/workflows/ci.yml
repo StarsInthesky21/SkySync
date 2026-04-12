@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  typecheck:
+    name: TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: SkySync/package-lock.json
+      - run: npm ci
+        working-directory: SkySync
+      - run: npm run typecheck
+        working-directory: SkySync
+
+  lint:
+    name: Lint + Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: SkySync/package-lock.json
+      - run: npm ci
+        working-directory: SkySync
+      - run: npm run lint
+        working-directory: SkySync
+      - run: npm run format:check
+        working-directory: SkySync
+
+  test:
+    name: Jest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: SkySync/package-lock.json
+      - run: npm ci
+        working-directory: SkySync
+      - run: npm test -- --ci --coverage
+        working-directory: SkySync
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-lcov
+          path: SkySync/coverage/lcov.info
+          if-no-files-found: ignore
+
+  e2e:
+    name: Maestro E2E (Android)
+    runs-on: macos-14
+    needs: [typecheck, lint, test]
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: SkySync/package-lock.json
+      - run: npm ci
+        working-directory: SkySync
+      - name: Install Maestro
+        run: curl -Ls "https://get.maestro.mobile.dev" | bash
+      - name: Enable AVD KVM
+        run: |
+          echo "KVM not required on macos-14 runner"
+      - name: Run Maestro flows
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          profile: pixel_6
+          script: |
+            export PATH="$PATH":"$HOME/.maestro/bin"
+            cd SkySync
+            npm run build:web || true
+            maestro test .maestro/flows --format junit --output maestro-report.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: maestro-report
+          path: SkySync/maestro-report.xml
+          if-no-files-found: ignore

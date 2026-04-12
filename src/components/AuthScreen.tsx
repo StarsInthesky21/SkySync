@@ -33,25 +33,24 @@ function validateEmail(email: string): string | null {
 
 function validatePassword(password: string, isCreate: boolean): string | null {
   if (!password) return "Password is required";
-  if (isCreate && password.length < 6)
-    return "Password must be at least 6 characters";
+  if (isCreate && password.length < 6) return "Password must be at least 6 characters";
   return null;
 }
 
 function friendlyError(error: unknown): string {
   const msg = error instanceof Error ? error.message : String(error);
-  if (msg.includes("auth/user-not-found") || msg.includes("auth/wrong-password") || msg.includes("auth/invalid-credential"))
+  if (
+    msg.includes("auth/user-not-found") ||
+    msg.includes("auth/wrong-password") ||
+    msg.includes("auth/invalid-credential")
+  )
     return "Invalid email or password. Please try again.";
   if (msg.includes("auth/email-already-in-use"))
     return "An account with this email already exists. Try signing in instead.";
-  if (msg.includes("auth/weak-password"))
-    return "Password is too weak. Use at least 6 characters.";
-  if (msg.includes("auth/invalid-email"))
-    return "Please enter a valid email address.";
-  if (msg.includes("auth/too-many-requests"))
-    return "Too many attempts. Please try again later.";
-  if (msg.includes("auth/network-request-failed"))
-    return "Network error. Check your internet connection.";
+  if (msg.includes("auth/weak-password")) return "Password is too weak. Use at least 6 characters.";
+  if (msg.includes("auth/invalid-email")) return "Please enter a valid email address.";
+  if (msg.includes("auth/too-many-requests")) return "Too many attempts. Please try again later.";
+  if (msg.includes("auth/network-request-failed")) return "Network error. Check your internet connection.";
   return msg || "Something went wrong. Please try again.";
 }
 
@@ -107,25 +106,15 @@ export function AuthScreen({ onClose, initialMode = "signIn" }: Props) {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView
-          contentContainerStyle={styles.scroll}
-          keyboardShouldPersistTaps="handled"
-        >
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.brand}>SkySync</Text>
-            <Text style={styles.title}>
-              {isCreate ? "Create Account" : "Sign In"}
-            </Text>
+            <Text style={styles.title}>{isCreate ? "Create Account" : "Sign In"}</Text>
             <Text style={styles.subtitle}>
-              {isCreate
-                ? "Save your progress and sync across devices"
-                : "Welcome back, stargazer"}
+              {isCreate ? "Save your progress and sync across devices" : "Welcome back, stargazer"}
             </Text>
           </View>
 
@@ -134,10 +123,7 @@ export function AuthScreen({ onClose, initialMode = "signIn" }: Props) {
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Email</Text>
               <TextInput
-                style={[
-                  styles.input,
-                  fieldErrors.email ? styles.inputError : null,
-                ]}
+                style={[styles.input, fieldErrors.email ? styles.inputError : null]}
                 placeholder="you@example.com"
                 placeholderTextColor={colors.textDim}
                 autoCapitalize="none"
@@ -151,18 +137,13 @@ export function AuthScreen({ onClose, initialMode = "signIn" }: Props) {
                 }}
                 editable={!loading}
               />
-              {fieldErrors.email ? (
-                <Text style={styles.fieldError}>{fieldErrors.email}</Text>
-              ) : null}
+              {fieldErrors.email ? <Text style={styles.fieldError}>{fieldErrors.email}</Text> : null}
             </View>
 
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Password</Text>
               <TextInput
-                style={[
-                  styles.input,
-                  fieldErrors.password ? styles.inputError : null,
-                ]}
+                style={[styles.input, fieldErrors.password ? styles.inputError : null]}
                 placeholder={isCreate ? "At least 6 characters" : "Your password"}
                 placeholderTextColor={colors.textDim}
                 secureTextEntry
@@ -175,9 +156,7 @@ export function AuthScreen({ onClose, initialMode = "signIn" }: Props) {
                 onSubmitEditing={handleSubmit}
                 editable={!loading}
               />
-              {fieldErrors.password ? (
-                <Text style={styles.fieldError}>{fieldErrors.password}</Text>
-              ) : null}
+              {fieldErrors.password ? <Text style={styles.fieldError}>{fieldErrors.password}</Text> : null}
             </View>
 
             {error ? (
@@ -198,9 +177,7 @@ export function AuthScreen({ onClose, initialMode = "signIn" }: Props) {
               {loading ? (
                 <ActivityIndicator color={colors.onAccent} />
               ) : (
-                <Text style={styles.primaryBtnText}>
-                  {isCreate ? "Create Account" : "Sign In"}
-                </Text>
+                <Text style={styles.primaryBtnText}>{isCreate ? "Create Account" : "Sign In"}</Text>
               )}
             </Pressable>
           </View>
@@ -208,13 +185,9 @@ export function AuthScreen({ onClose, initialMode = "signIn" }: Props) {
           {/* Toggle mode */}
           <Pressable onPress={toggleMode} style={styles.toggleRow}>
             <Text style={styles.toggleText}>
-              {isCreate
-                ? "Already have an account? "
-                : "Don't have an account? "}
+              {isCreate ? "Already have an account? " : "Don't have an account? "}
             </Text>
-            <Text style={styles.toggleLink}>
-              {isCreate ? "Sign In" : "Create Account"}
-            </Text>
+            <Text style={styles.toggleLink}>{isCreate ? "Sign In" : "Create Account"}</Text>
           </Pressable>
 
           {/* Divider */}

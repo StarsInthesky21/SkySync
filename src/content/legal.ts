@@ -58,9 +58,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocumentKey, LegalDocument> = {
       },
       {
         heading: "Contact",
-        body: [
-          "For privacy questions, contact privacy@skysync.app.",
-        ],
+        body: ["For privacy questions, contact privacy@skysync.app."],
       },
     ],
   },
@@ -98,15 +96,11 @@ export const LEGAL_DOCUMENTS: Record<LegalDocumentKey, LegalDocument> = {
       },
       {
         heading: "Termination",
-        body: [
-          "Access may be limited or suspended for abuse or policy violations.",
-        ],
+        body: ["Access may be limited or suspended for abuse or policy violations."],
       },
       {
         heading: "Contact",
-        body: [
-          "For support or legal questions, contact hello@skysync.app.",
-        ],
+        body: ["For support or legal questions, contact hello@skysync.app."],
       },
     ],
   },

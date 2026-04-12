@@ -37,7 +37,10 @@ function relativeLongitude(objectLongitude: number, transform: SkyTransform, mot
   return shifted > 180 ? shifted - 360 : shifted;
 }
 
-export function renderSkyObjects(transform: SkyTransform): RenderedSkyObject[] {
+export function renderSkyObjects(
+  transform: SkyTransform,
+  catalog: SkyObject[] = skyObjects,
+): RenderedSkyObject[] {
   const safeZoom = Math.max(0.1, Math.min(10, Number.isFinite(transform.zoom) ? transform.zoom : 1));
   const safeRotation = Number.isFinite(transform.rotation) ? transform.rotation : 0;
   const safeTransform = { ...transform, zoom: safeZoom, rotation: safeRotation };
@@ -45,13 +48,8 @@ export function renderSkyObjects(transform: SkyTransform): RenderedSkyObject[] {
   // Observer latitude affects which part of the sky is visible
   // Northern observers see more northern sky, southern observers see more southern sky
   const observerLat = safeTransform.observerLatitude ?? 0;
-  const observerLon = safeTransform.observerLongitude ?? 0;
 
-  // Local sidereal time approximation: shifts the sky based on time + longitude
-  const hours = totalHoursSinceReference(safeTransform.date);
-  const lst = (hours * 15.04107 + observerLon) % 360; // approximate LST in degrees
-
-  return skyObjects.map((object) => {
+  return catalog.map((object) => {
     const lon = relativeLongitude(object.longitude, safeTransform, object.motionFactor);
     // Shift latitude rendering based on observer position
     // Objects at the observer's zenith appear near center; objects below horizon are hidden
@@ -63,7 +61,8 @@ export function renderSkyObjects(transform: SkyTransform): RenderedSkyObject[] {
 
     const x = 0.5 + (lon / 180) * 0.46 * safeTransform.zoom;
     const y = 0.5 - (objectDeclination / 90) * 0.33 * safeTransform.zoom;
-    const sizeBoost = object.kind === "planet" ? 2.5 : object.kind === "satellite" ? 1.5 : object.kind === "meteor" ? 2 : 0;
+    const sizeBoost =
+      object.kind === "planet" ? 2.5 : object.kind === "satellite" ? 1.5 : object.kind === "meteor" ? 2 : 0;
     const size = Math.max(2.5, 6.2 - object.magnitude + sizeBoost);
     const isInView = x >= -0.2 && x <= 1.2 && y >= -0.15 && y <= 1.15;
     const isVisible = isInView && isAboveHorizon;
@@ -101,7 +100,10 @@ export function getConstellationSegments(renderedObjects: RenderedSkyObject[]) {
   });
 }
 
-export function getCustomConstellationSegments(renderedObjects: RenderedSkyObject[], customs: CustomConstellation[]) {
+export function getCustomConstellationSegments(
+  renderedObjects: RenderedSkyObject[],
+  customs: CustomConstellation[],
+) {
   const byId = Object.fromEntries(renderedObjects.map((object) => [object.id, object]));
 
   return customs.flatMap((pattern) => {
@@ -157,7 +159,11 @@ export function focusRotationForObject(objectId: string, date: Date, viewpoint: 
 
 export function getVisibleThingsTonight(renderedObjects: RenderedSkyObject[]) {
   return renderedObjects
-    .filter((object) => object.isVisible && (object.kind === "planet" || object.kind === "satellite" || object.magnitude < 1.1))
+    .filter(
+      (object) =>
+        object.isVisible &&
+        (object.kind === "planet" || object.kind === "satellite" || object.magnitude < 1.1),
+    )
     .sort((left, right) => left.magnitude - right.magnitude)
     .slice(0, 6);
 }

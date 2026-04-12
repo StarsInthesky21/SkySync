@@ -1,0 +1,16 @@
+appId: app.skysync
+name: Search and open an object
+---
+- launchApp
+- tapOn:
+    text: "Search"
+- inputText: "Sirius"
+- tapOn:
+    text: "Sirius"
+- assertVisible:
+    text: "Sirius"
+- assertVisible:
+    text: "Distance"
+- tapOn:
+    text: "Open card"
+- assertVisible: "Sirius"

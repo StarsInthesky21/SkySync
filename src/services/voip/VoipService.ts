@@ -58,7 +58,9 @@ class VoipServiceImpl {
   subscribe(listener: VoipEventListener): () => void {
     this.listeners.add(listener);
     listener({ ...this.state, participants: [...this.state.participants] });
-    return () => { this.listeners.delete(listener); };
+    return () => {
+      this.listeners.delete(listener);
+    };
   }
 
   async joinLounge(roomId: string, userId: string, username: string): Promise<void> {
@@ -122,7 +124,7 @@ class VoipServiceImpl {
       ...this.state,
       isMuted: !this.state.isMuted,
       participants: this.state.participants.map((p) =>
-        p.userId === this.currentUserId ? { ...p, isMuted: !this.state.isMuted } : p
+        p.userId === this.currentUserId ? { ...p, isMuted: !this.state.isMuted } : p,
       ),
     };
     this.notify();

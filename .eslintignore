@@ -1,0 +1,9 @@
+node_modules/
+.expo/
+dist/
+android/
+ios/
+coverage/
+*.config.js
+babel.config.js
+scripts/
