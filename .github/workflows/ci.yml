@@ -55,7 +55,7 @@ jobs:
         working-directory: SkySync
       - name: Upload coverage
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-lcov
           path: SkySync/coverage/lcov.info
@@ -91,7 +91,7 @@ jobs:
             cd SkySync
             npm run build:web || true
             maestro test .maestro/flows --format junit --output maestro-report.xml
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: maestro-report
